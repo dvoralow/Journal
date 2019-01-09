@@ -1,9 +1,14 @@
 ---
-title: "Journal Thesis"
+title: "Thesis"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+Ctrl+Alt+i make new chunk
+
+
+
+all the libraries required to the whole code:
+```{r}
 
 library(dplyr)
 library(tidyverse)
@@ -11,9 +16,16 @@ library(devtools)
 library(gridExtra)
 library(ggplot2)
 
+```
+end code
 
-#----------functions data-------------
 
+
+#!!!run every time from every computer!!!
+setting the name of the computer as "thesis directory"
+to have a source for all the reading and writing data
+
+```{r}
 #!!!run every time from every computer!!!
 
 #---define passes to any computer ---- 
@@ -25,9 +37,14 @@ my_home=paste(split_home[1:3],collapse = "/")
 #passes to the folder "data" in my thesis folder
 thesis_directory=paste(my_home,"Google Drive/second degree/thesis/data",sep ="/")
 
+```
+end chunk
 
 
 
+clean the data
+
+```{r eval=FALSE, include=FALSE}
 #------clean the data---!!no need to run again!!---
 
 
@@ -76,7 +93,17 @@ thesis_directory=paste(my_home,"Google Drive/second degree/thesis/data",sep ="/"
     
 
 
+``` 
+end chunk
+
+
 #--------------------functions--------------------------------------------------
+1.annual catch
+2.MTC index
+3.monthly agragation the data
+4.seasonal agregate the data
+
+```{r}
 
 #----1. annual catch----
 #This function get 1 data frame and 1 vector: 
@@ -201,10 +228,18 @@ mtc_index_calc=function(time_species_data,sp_tpref_data){
     return(season)
    }
     
-   
-  #-------------------mtc calculations--------------------------------------------------------
-    
-   #----calcualte t prefference for spceis and for sp_code---
+ 
+
+```
+end chunk
+
+
+#-------------------mtc calculations--------------------------------------------------------
+
+ #----calcualte t prefference for spceis and for sp_code---
+
+```{r}
+
     
     #the mean prefference temperature for every species - Cheung t_pref combined with myn
     t_pref=read.csv(file=paste(thesis_directory, "R/prosseced data/mean_temp_pref_cheung.csv",sep = "/"),stringsAsFactors = F)
@@ -251,8 +286,13 @@ mtc_index_calc=function(time_species_data,sp_tpref_data){
     colnames(wht_temp)="Tpref"
     mean_tcode=rbind(mean_tcode,wht_temp)
     
-    
+```
+
+
+
 #----mean month, season and year net temperature and depth----
+```{r}
+
     all_data=read.csv(file= paste(thesis_directory, "R/prosseced data/all_data_fishes_known_origin.csv",sep = "/" ),stringsAsFactors = F)
     #-- mean year temp
     #select yaer and temperature column
@@ -335,10 +375,14 @@ mtc_index_calc=function(time_species_data,sp_tpref_data){
     #join all seasons to 1 data frame
     season_temp_depth=rbind(winter_temp,spring_temp,summer_temp,autumn_temp)
     
-    
-    #--- calling annual catch function---
-    
-  species_to_scientific_name=read.csv(file= paste(thesis_directory, "R/prosseced data/sceintific_names_fishes_known_origin.csv" , sep = "/"),stringsAsFactors = F)
+ 
+
+```
+
+
+#--- calling annual catch function---
+```{r}
+ species_to_scientific_name=read.csv(file= paste(thesis_directory, "R/prosseced data/sceintific_names_fishes_known_origin.csv" , sep = "/"),stringsAsFactors = F)
   all_data=read.csv(file= paste(thesis_directory, "R/prosseced data/all_data_fishes_known_origin.csv",sep = "/" ),stringsAsFactors = F)
   species_code<-unique(species_to_scientific_name$Sp_code)  
   annual_sp_catch=annual_catch(all_data,species_code)
@@ -347,10 +391,13 @@ mtc_index_calc=function(time_species_data,sp_tpref_data){
     
     
  
-    
+
+```
+ 
+
     
 #---calling mtc function---
-
+```{r}
 annual_mtc=mtc_index_calc(annual_sp_catch,mean_tcode)
 #start from 1987
 annual_mtc=annual_mtc[annual_mtc$index %in% c(1987:2013),]
@@ -359,10 +406,10 @@ annual_mtc=cbind("mtc"=annual_mtc$mtc,year_temp_depth)
 
 plot(annual_mtc,main="annual mtc")
 
-
+```
 
 #--seperate mediterrinian and red sea species
-
+```{r}
 species_to_scientific_name=read.csv(file= paste(thesis_directory, "R/prosseced data/sceintific_names_fishes_known_origin.csv" , sep = "/"),stringsAsFactors = F)
 all_data=read.csv(file= paste(thesis_directory, "R/prosseced data/all_data_fishes_known_origin.csv",sep = "/" ),stringsAsFactors = F)
 
@@ -415,8 +462,11 @@ ggplot(red_annual_mtc, aes(x=Temp,y=mtc,colour=Depth))+
   geom_point()+
   ggtitle("Annual Red sea species MTC by mean net temperature")
 
+```
+
 
 #----month mtc----
+```{r}
     #---all_fishes
   #call the month catch function
   monthly_all_catch=month_catch(all_data,species_code)
@@ -470,9 +520,11 @@ month_mediter_mtc=cbind(month_mediter_mtc,"Month"=c (rep(1:12,each=32)))
 month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
 
 
+```
 
 #---seasonal mtc----
-  #call the season catch function
+```{r}
+ #call the season catch function
   season_all_catch=season_catch(all_data,species_code)
 
   #empety data frame for the loop
@@ -607,8 +659,11 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
    ggtitle("autumn red sea species MTC by mean net temperature")
  
  
+```
+
 #----net mtc----
-  #drop the useless data for the mtc function
+```{r}
+ #drop the useless data for the mtc function
   species_code=rownames(mean_tcode)
   net_all_data=select(all_data,X.3,species_code)
 
@@ -623,16 +678,28 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
    ggtitle("NET'S MTC by Temperature")+xlab("Net Temperature")  
 
  
-  
- 
- 
+
+```
+
+
+
+
 #---------------------fenology-----------------------------------------------------------------------------
+
+upluod the whole fish data
+```{r}
 #uploud fishes data 
 all_data_unfilter=read.csv(file = paste(thesis_directory,"R/prosseced data/all_data_fishes_only.csv",sep = "/"), stringsAsFactors = F)
  scientific_names_unfilter=read.csv(file = paste(thesis_directory,"R/prosseced data/sceintific_names_fishes_only.csv",sep = "/"), stringsAsFactors = F)
 #cerate species names vector
  sp_code_unfiletr=scientific_names_unfilter$Sp_code
  scientific_code_unfilter=scientific_names_unfilter$scintific_name
+```
+
+
+catch graphs
+```{r}
+
 #call the monthly catch function
  month_catch_unfilter=month_catch(all_data_unfilter,sp_code_unfiletr)
 #begen in 1987
@@ -684,18 +751,11 @@ for (i in length(sp_code_unfiletr)) {
   #ggsave(file = paste (sp_code_unfiletr[i],"png",sep ="."),g)
 
   }#end for
- 
-knitr::opts_chunk$set(echo = TRUE)
+
 ```
 
-#Thesis
 
-##This is where your thesis will go
-
-Put code here:
-```{r}
-#here
-```
+weekly normalization
 ```{r}
 library(lubridate)
 all_data_unfilter$date<-paste(all_data_unfilter$Year,all_data_unfilter$Month,all_data_unfilter$Day,sep = "-")
@@ -705,7 +765,8 @@ all_data_unfilter$week<-week(all_data_unfilter$date)
 test<-all_data_unfilter %>% group_by(year,week) %>% summarise("s"=mean(week))
 
 
-
 ```
+
+
 
 
