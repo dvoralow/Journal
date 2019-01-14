@@ -713,7 +713,7 @@ month_catch_unfilter_c=  month_catch_unfilter[month_catch_unfilter$Year %in% c(2
 month_catch_unfilter_d=  month_catch_unfilter[month_catch_unfilter$Year %in% c(2007:2013),]
  
 #
-for (i in length(sp_code_unfiletr)) {
+for (i in 1:length(sp_code_unfiletr)) {
   
 #make a single graph for any quart of the years
   p1= ggplot(month_catch_unfilter_a, aes(x=Month, y=month_catch_unfilter_a[,sp_code_unfiletr[i]],color=Year )) +
@@ -758,15 +758,103 @@ for (i in length(sp_code_unfiletr)) {
 
 weekly normalization
 ```{r}
-library(lubridate)
-all_data_unfilter$Date<-paste(all_data_unfilter$Year,all_data_unfilter$Month,all_data_unfilter$Day,sep = "-")
-all_data_unfilter$Date<-ymd(all_data_unfilter$Date)
-all_data_unfilter$Week<-week(all_data_unfilter$Date)
+ library(lubridate)
+  #cerate date column
+  all_data_unfilter$Date<-paste(all_data_unfilter$Year,all_data_unfilter$Month,all_data_unfilter$Day,sep = "-")
+    #order the column by year month day
+    all_data_unfilter$Date<-ymd(all_data_unfilter$Date)
+      #create week column - the number of the week in th year
+      all_data_unfilter$Week<-week(all_data_unfilter$Date)
 
-week_sum<-all_data_unfilter %>% group_by(Year,Week) %>% summarise("Sum"=sum(all_data_unfilter[,colnames(all_data_unfilter) %in% sp_code_unfiletr]))
+    #take the species, weeks and years
+    week_data= select(all_data_unfilter,Year,Week,Aal:WHT)
+    #aggregate the catch by weeks
+    week_data = week_data %>% group_by(Year,Week) %>% summarise_all(funs(sum))
+    #sum of the catch
+    week_sum=week_data %>%ungroup() %>% select(Aal:WHT) 
+    week_sum=week_sum  %>% mutate("Sum"=rowSums(week_sum))
+    #put the sum of the catch into "week_data" just for testing
+    week_data=data.frame(week_data,"Sum" = week_sum$Sum)
+    #vector with the sum of the catch
+    x_sum_week=list()
+    x_sum_week=week_sum$Sum
+
+    #remove the sum column from "week_sum"
+    week_sum=select(week_sum,Aal:WHT)
+
+    #creat empty data frame for the loop
+    week_ratio=data.frame()
+      #loop - calculate the ratio of any weekly catch
+  for (i in 1:length(x_sum_week)) {
+
+      week_sum_col=week_sum[i,]
+      week_sum_col=week_sum_col/x_sum_week[i]
+      week_ratio=rbind(week_ratio,week_sum_col)
+  
+  }#end for
+
+    #bind the ratio with the year and week index
+    week_ratio=cbind("Year"= week_data$Year,"Week"= week_data$Week,week_ratio)
+      #begen in 1987
+    week_ratio=week_ratio[week_ratio$Year %in% c(1987:2013),] 
+    
+    #create data frame for any quart of the years
+    week_ratio_a=  week_ratio[week_ratio$Year %in% c(1987:1993),]
+    week_ratio_b=  week_ratio[week_ratio$Year %in% c(1994:2000),]
+    week_ratio_c=  week_ratio[week_ratio$Year %in% c(2001:2006),]
+    week_ratio_d=  week_ratio[week_ratio$Year %in% c(2007:2013),]
+    
 
 
 ```
+
+graphs of the ratio catch
+
+```{r}
+ 
+    for (i in 1:length(sp_code_unfiletr)) {
+      
+      #make a single graph for any quart of the years
+      p1= ggplot(week_ratio_a, aes(x=Week, y=week_ratio_a[,sp_code_unfiletr[i]],color=Year )) +
+        geom_line()+
+        scale_colour_gradientn(colours=rainbow(4))+
+        facet_grid(Year~.)+ggtitle(paste (sp_code_unfiletr[i],scientific_code_unfilter[i],sep =" - "))+
+        ylab("Ratio of Catchs")+scale_x_continuous(breaks = seq(1,53,by=4))
+      
+      
+      p2=ggplot(week_ratio_b, aes(x=Week, y=week_ratio_b[,sp_code_unfiletr[i]],color=Year )) +
+        geom_line()+
+        scale_colour_gradientn(colours=rainbow(4))+
+        facet_grid(Year~.)+ggtitle(paste (sp_code_unfiletr[i],scientific_code_unfilter[i],sep =" - "))+
+        ylab("Ratio of Catchs")+scale_x_continuous(breaks = seq(1,53,by=4))
+      
+      p3=ggplot(week_ratio_c, aes(x=Week, y=week_ratio_c[,sp_code_unfiletr[i]],color=Year )) +
+        geom_line()+
+        scale_colour_gradientn(colours=rainbow(4))+
+        facet_grid(Year~.)+ggtitle(paste (sp_code_unfiletr[i],scientific_code_unfilter[i],sep =" - "))+
+        ylab("Ratio of Catchs")+scale_x_continuous(breaks = seq(1,53,by=4))
+      
+      p4=ggplot(week_ratio_d, aes(x=Week, y=week_ratio_d[,sp_code_unfiletr[i]],color=Year )) +
+        geom_line()+
+        scale_colour_gradientn(colours=rainbow(4))+
+        facet_grid(Year~.)+ggtitle(paste (sp_code_unfiletr[i],scientific_code_unfilter[i],sep =" - "))+
+        ylab("Ratio of Catchs")+scale_x_continuous(breaks = seq(1,53,by=4))
+      
+      
+      #ceate one graph included 4 graphs for any species
+  grid.arrange(p1, p2, p3, p4,ncol=2)
+      
+      #save the graphs - !!set the directory before use!!
+      #if saving without the "g" part, save just 1 of the 4, but in high resolution
+      #so it's better for papars. [could order them by myself after]
+        #order for saving
+        g <- arrangeGrob(p1, p2, p3, p4, nrow=2) #generates g
+        ggsave(file = paste (sp_code_unfiletr[i],"png",sep ="."),g)
+      
+    }#end for
+
+```
+
 
 
 
