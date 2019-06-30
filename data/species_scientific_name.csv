@@ -1,0 +1,63 @@
+,Sp_code,Common_name,scintific_name,Dori_price,fisherman_price,price_source,Market_price,Store,Estimated_price,Origin,Vulnerability,Trophic_level
+,Sig,Aars,Siganus rivulatus/Siganus luridus,,,,,,,Red,,
+35,Rrh,Alafuchim,Rhinobatos rhinobatos,NA,27,Doron,NA,,NA,Med,68.07,4.1
+9,Eer,Anshubi,Engraulis encrasicolus,19.5,35,shaldag.net,65,dagbareshet.,NA,Med,24.7,3.1
+21,Mme,Bakala,Merluccius merluccius,NA,50,dagbareshet.,100,dagbareshet.,NA,Med,63.85,4.4
+20,Mme,Bakala_masmerim,Merluccius merluccius,NA,40,dagbareshet.,80,dagbareshet.,NA,Med,63.85,4.4
+25,Nra,Barbon,Nemipterus randalli,25,42.5,Doron,65,dagbareshet.,NA,Red,16.15,3.7
+23,MUL_UP,barbunia,Mullus/Upeneus sp. (Mullus barbatus/Mullus surmuletus/Upeneus pori/Upeneus moluccensis),NA,40,Pier,120,dagbareshet.,NA,Both,29.605,3.65
+1,Aal,Ben_Gurion,Alectis alexandrinus ,NA,55,dagbareshet.,110,dagbareshet.,NA,Med,50.31,3.6
+19,Mce,Bori,Mugil cephalus/Liza sp. (Liza aurata/Liza ramada),23.4,37.5,dagbareshet.,75,dagbareshet.,NA,Med,46.25333333,2.533333333
+6,BOX,Box_General,General_box,NA,NA,,NA,,40,,NA,NA
+32,Pse,Crab,Portunus segnis,18,37.5,dagbareshet.,75,dagbareshet.,NA,Red,NA,NA
+10,Eha,Daba,Epinephelus haifensis,NA,85,Doron,135,dagbareshet.,NA,Med,68,4
+39,Sau,Denis,Sparus aurata,NA,40,shaldag.net,100,Shaldag,NA,Med,40.2,3.7
+28,Pca,Farida,Pagrus caeruleostictus,55.5,40,Pier,108,dagbareshet.,NA,Med,45.89,3.7
+14,FIS,Fish,Fish_box,NA,NA,,NA,,40,,NA,NA
+30,Pja,Gambari,Penaeus japonicus,68,90,shaldag.net,170,dagbareshet.,NA,Red,NA,NA
+18,Mae,Gambari_Adom,Metapenaeopsis aegyptia,NA,NA,,NA,,40,Red,NA,NA
+43,Sma,Gambari_castina,Squilla mantis/Erugosquilla massavensis,NA,NA,,NA,,15,Both,NA,NA
+29,Per,Gerbida,Pagellus erythrinus,32.9,40,Pier,50,dagbareshet.,NA,Med,39.81,3.5
+33,Rrh,Gitara,Rhinobatos rhinobatos,NA,27,Doron,NA,,NA,Med,68.07,4.1
+,Psa,Gomber,Pomatomus saltator,,,,,,,Med,,
+5,Bca,Hazir,Balistes carolinensis,38.6,45,Doron,75,dagbareshet.,NA,Med,49,4.1
+53,Sud,Hulim,Saurida undosquamis/Synodus saurus,29.6,25,Pier,65,dagbareshet.,NA,Red,31.36,4.5
+41,Sd,Intias,Seriola dumerili,90,60,Doron,110,dagbareshet.,NA,Med,53.95,4.5
+17,Lvu,Kalamari,Loligo vulgaris,20.1,40,shaldag.net,75,dagbareshet.,NA,Med,NA,NA
+44,Sma,Kaptzonim,Squilla mantis/Erugosquilla massavensis,NA,NA,,NA,,15,Both,NA,NA
+57,WHT,Lavan,Lithognathus mormyrus/Diplodus sp. (Diplodus saragus/Diplodus vulgaris/Diplodus cervinus/Diplodus puntazoo),NA,37,Doron,70,dagbareshet.,NA,Med,42.418,3.42
+12,EPI,Lokus,Epinephelus sp. (Epinephelus marginatus/Epinephelus aeneus),93.25,85,Doron,130,dagbareshet.,NA,Med,61.955,4.2
+11,EPI,Lokus_bibi,Epinephelus sp. (Epinephelus marginatus/Epinephelus aeneus),85,85,Doron,130,dagbareshet.,NA,Med,61.955,4.2
+13,EPI,Lokus_manot,Epinephelus sp. (Epinephelus marginatus/Epinephelus aeneus),93.25,85,Doron,130,dagbareshet.,NA,Med,61.955,4.2
+52,Sud,Makarunim,Saurida undosquamis/Synodus saurus,29.6,25,Pier,65,dagbareshet.,NA,Red,31.36,4.5
+46,SPH,Malitta,Sphyraena sp. (Sphyraena sphyraena/Sphyraena chrysotaenia/Sphyraena viridensis),37.4,30,Doron,85,dagbareshet.,NA,Red,24.27,4
+16,Lmo,Marmir,lithognathus mormyrus,25.6,32.5,Doron,55,dagbareshet.,NA,Med,40.38,3.4
+2,Arg,Musar,Argyrosomus regius,NA,62,Doron,85,dagbareshet.,NA,Med,67.17,4.3
+50,Sso,Muslach,Solea solea,NA,110,dagbareshet.,220,dagbareshet.,NA,Med,36.09,3.2
+27,Ovu,Octepus,Octopus vulgaris,NA,42.5,dagbareshet.,85,dagbareshet.,NA,Med,NA,NA
+40,Sco,Palamud,scomberomorus commerson,40.4,50,dagbareshet.,100,dagbareshet.,NA,Red,41,4.5
+55,Umo,Pas_Tzahov,Upeneus moluccensis,54.8,40,Pier,120,dagbareshet.,NA,Red,21.92,3.6
+,Dce,Pijama,Diplodus cervinus,,,,,,,Med,,
+4,Bbo,Rofus,Boops boops,17,22.5,dagbareshet.,45,dagbareshet.,NA,Med,41.22,2.8
+47,SPI,Rofus_Fake,Spicara sp. (Spicara manena/Spicara smaris),10,22.5,dagbareshet.,45,dagbareshet.,NA,Med,42.45,3.6
+45,Sof,Sabida,Sepia officinalis,NA,22.5,dagbareshet.,45,dagbareshet.,NA,Med,NA,NA
+8,DIP,Saragus,Diplodus sp. (Diplodus saragus/Diplodus vulgaris/Diplodus cervinus/Diplodus puntazoo),34.4,37,Doron,85,dagbareshet.,NA,Med,42.9275,3.425
+36,SAR,Sardin,Sardinella sp. (Sardinella aurita/Sardinella maderensis),20.3,22,shaldag.net,65,dagbareshet.,NA,Med,26.115,3.25
+37,SAR,Sardin_round,Sardinella sp. (Sardinella aurita/Sardinella maderensis),20.3,22,shaldag.net,65,dagbareshet.,NA,Med,26.115,3.25
+42,Sja,Scombri,scomber japonicus,17.3,24,dagbareshet.,48,dagbareshet.,NA,Med,31,3.4
+34,Rrh,Shalpohim,Rhinobatos rhinobatos,NA,27,Doron,NA,,NA,Med,68.07,4.1
+,Sha,shark,,,,,,,,,,
+15,Lbu,Shed_Yam,Lophius budegassa,NA,95,dagbareshet.,190,dagbareshet.,NA,Med,68,4.4
+51,Sso,Sol,Solea solea,NA,110,dagbareshet.,220,dagbareshet.,NA,Med,36.09,3.2
+22,MUL,Soltan,Mullus sp. (Mullus barbatus/Mullus surmuletus),74.775,40,Pier,120,dagbareshet.,NA,Med,34.15,3.3
+56,Upo,Soltan_Fake,Upeneus pori,NA,40,Pier,120,dagbareshet.,NA,Red,28.2,4.4
+24,MUL_UP,Soltan_Mix,Mullus/Upeneus sp. (Mullus barbatus/Mullus surmuletus/Upeneus pori/Upeneus moluccensis),64,40,Pier,120,dagbareshet.,NA,Both,29.605,3.65
+48,SPL,Special,Fish_box_special,NA,NA,,NA,,40,,NA,NA
+26,Ovu,Tamnoon,Octopus vulgaris,NA,42.5,dagbareshet.,85,dagbareshet.,NA,Med,NA,NA
+54,TRA,Tarachun,Trachurus sp. (Trachurus trachurus/Trachurus mediterraneus),30,22.5,Doron,85,dagbareshet.,NA,Med,52.925,3.75
+3,BAT,Taref,Batoidea (Superorder),NA,17,Doron,NA,,NA,Med,61.595,3.8
+49,Ssi,Televisia,Sillago sihama,NA,22.5,dagbareshet.,45,dagbareshet.,NA,Red,23.64,3.3
+7,Ccr,Trulus,Caranx crysos/Alepes djedaba,13.9,30,shaldag.net,85,dagbareshet.,NA,Both,29.495,3.7
+38,Sau,Tziporot,Sparus aurata,NA,40,Doron,100,Shaldag,NA,Med,40.2,3.7
+,Pin,vak vak,Pomadasys incisus,,,,,,,,,
+31,Plo,Varod,Parapeneaus longirostris,NA,NA,,NA,,40,Med,NA,NA

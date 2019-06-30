@@ -15,44 +15,22 @@ library(tidyverse)
 library(devtools)
 library(gridExtra)
 library(ggplot2)
+library(jcolors)
+library(RColorBrewer)
 
 ```
 end code
 
 
 
-#!!!run every time from every computer!!!
-setting the name of the computer as "thesis directory"
-to have a source for all the reading and writing data
-
-```{r}
-#!!!run every time from every computer!!!
-
-#---define passes to any computer ---- 
-#call the sistem enviromental variable of the directory of this computer
-HOME <- Sys.getenv("HOME")
-#get out the passes to "Documents"
-split_home=unlist(strsplit(HOME,"/"))
-my_home=paste(split_home[1:3],collapse = "/")
-#passes to the folder "data" in my thesis folder
-thesis_directory=paste(my_home,"Google Drive/second degree/thesis/data",sep ="/")
-
-```
-end chunk
-
-
 
 clean the data
 
 ```{r eval=FALSE, include=FALSE}
-#------clean the data---!!no need to run again!!---
-
  #put the net temperautre into the all_data
-   #all_data=read.csv(file=paste(thesis_directory,"all_data.csv",sep = "/"),stringsAsFactors = F)
-   #net_temp=read.csv(file = paste(thesis_directory,"R/prosseced data/net_temperatures_all.csv",sep = "/"))
-   #all_data=cbind(all_data,"Temp"=net_temp$temp)
-   #write.csv(all_data,file = paste(thesis_directory,"all_data.csv",sep = "/") )
-   
+        #all_data=read.csv(file=paste(thesis_directory,"all_data.csv",sep = "/"),stringsAsFactors = F)
+        #all_data=cbind(all_data,"Temp"=net_temp$temp)
+        #write.csv(all_data,file = paste(thesis_directory,"all_data.csv",sep = "/") )
 
   #names of shrimps, crabs, octopus, squids - cod names.
   drops_no_fish <- c("Lvu","Ovu","Plo","Sof","Mae","Pja","Pse")
@@ -63,10 +41,11 @@ clean the data
   all_data=read.csv(file=paste(thesis_directory,"all_data.csv",sep = "/"),stringsAsFactors = F)
   scientific_names=read.csv(file =paste(thesis_directory,"species_scientific_name.csv",sep = "/"),stringsAsFactors = F)
   species_names_seperate=read.csv(file =paste(thesis_directory, "species name_seperate.csv",sep = "/"),stringsAsFactors = F)
- t_pref=read.csv(file=paste(thesis_directory, "R/prosseced data/mean_temp_prefference.csv",sep = "/"),stringsAsFactors = F)
+  net_temp=read.csv(file = paste(thesis_directory,"R/prosseced data/net_temperatures_all.csv",sep = "/"))
+  t_pref=read.csv(file=paste(thesis_directory, "R/prosseced data/mean_temp_prefference.csv",sep = "/"),stringsAsFactors = F)
   
- 
-
+  
+  
   
   #sort to alepahbeta order by sp_cod - the 'all_data' and 'scientific_names' are alrady sorted
   species_names_seperate=species_names_seperate[order(species_names_seperate$Sp_code),]
@@ -104,7 +83,6 @@ end chunk
 4.seasonal agregate the data
 
 ```{r}
-
 #----1. annual catch----
 #This function get 1 data frame and 1 vector: 
 # data with "Year" and abundence of species in every net.
@@ -228,7 +206,6 @@ mtc_index_calc=function(time_species_data,sp_tpref_data){
     return(season)
    }
     
- 
 
 ```
 end chunk
@@ -240,8 +217,7 @@ end chunk
 
 ```{r}
 
-    
-    #the mean prefference temperature for every species - Cheung t_pref combined with myn
+   #the mean prefference temperature for every species - Cheung t_pref combined with myn
     t_pref=read.csv(file=paste(thesis_directory, "R/prosseced data/mean_temp_pref_cheung.csv",sep = "/"),stringsAsFactors = F)
    
       #for the t_pref caculate from GBIF & Bio Oracle
@@ -293,6 +269,7 @@ end chunk
 #----mean month, season and year net temperature and depth----
 ```{r}
 
+   #----mean month, season and year net temperature and depth----
     all_data=read.csv(file= paste(thesis_directory, "R/prosseced data/all_data_fishes_known_origin.csv",sep = "/" ),stringsAsFactors = F)
     #-- mean year temp
     #select yaer and temperature column
@@ -303,7 +280,6 @@ end chunk
     #mean of the temperature
     year_temp=aggregate.data.frame(year_temp,list(year_temp$Year),FUN = mean,drop=F)
     year_temp=select(year_temp,Year,Temp )
-    year_temp=year_temp[year_temp$Year %in% 1987:2013,]
     
     #mean year depth
     year_depth=select(all_data,Year,loc_DEPTH)
@@ -311,7 +287,7 @@ end chunk
     year_depth=na.omit(year_depth) 
     year_depth=aggregate.data.frame(year_depth,list(year_depth$Year),FUN = mean,drop = F)
     year_depth=select(year_depth,Year,loc_DEPTH)
-    #start from 1987
+    #remove years with no temperature
     year_depth=year_depth[7:nrow(year_depth),]
     #bind the temperature and depth
     year_temp_depth=cbind(year_temp,"Depth"=year_depth$loc_DEPTH)
@@ -405,7 +381,21 @@ annual_mtc=annual_mtc[annual_mtc$index %in% c(1987:2013),]
 #bind mean net temperature and mean depth
 annual_mtc=cbind("mtc"=annual_mtc$mtc,year_temp_depth)
 
+#start from 1991
+annual_mtc=annual_mtc[annual_mtc$Year %in% c(1987:2013),]
+
 plot(annual_mtc,main="annual mtc")
+
+ggplot(annual_mtc, aes(x=Temp,y=mtc,colour=Year, size=5))+
+  geom_point()+scale_color_brewer(palette="
+                                  Reds")+
+  ggtitle("Annual Catch MTC by mean net temperature")
+
+ggplot(annual_mtc, aes(x=Year,y=mtc,colour=Temp, size=3))+
+  geom_point()+
+  ggtitle("Annual catch MTC by year")
+
+scale_color_brewer(palette="Dark2")
 
 ```
 
@@ -444,10 +434,16 @@ red_annual_mtc=red_annual_mtc[red_annual_mtc$index %in% c(1987:2013),]
 mediter_annual_mtc=cbind("mtc"=mediter_annual_mtc$mtc,year_temp_depth)
 red_annual_mtc=cbind("mtc"=red_annual_mtc$mtc,year_temp_depth)
 
+
+#start in 1991
+mediter_annual_mtc=mediter_annual_mtc[mediter_annual_mtc$Year %in% c(1991:2013),]
+red_annual_mtc=red_annual_mtc[red_annual_mtc$Year %in% c(1991:2013),]
+
+
 plot(mediter_annual_mtc, main="Mediterrinian Annual mtc")
 plot(red_annual_mtc,main="Red Annual mtc")
 
-ggplot(mediter_annual_mtc, aes(x=Temp,y=mtc,colour=Year))+
+ggplot(mediter_annual_mtc, aes(x=Temp,y=mtc,colour=Year, size=3))+
   geom_point()+
   ggtitle("Annual Mediterranian species MTC by mean net temperature")
 
@@ -455,7 +451,11 @@ ggplot(mediter_annual_mtc, aes(x=Temp,y=mtc,colour=Depth))+
   geom_point()+
   ggtitle("Annual Mediterranian species MTC by mean net temperature")
 
-ggplot(red_annual_mtc, aes(x=Temp,y=mtc,colour=Year))+
+ggplot(mediter_annual_mtc, aes(x=Year,y=mtc,colour=Temp, size=3))+
+  geom_point()+
+  ggtitle("Annual Mediterranian species MTC by year")
+
+ggplot(red_annual_mtc, aes(x=Temp,y=mtc,colour=Year, size=3))+
   geom_point()+
   ggtitle("Annual Red sea species MTC by mean net temperature")
 
@@ -463,12 +463,16 @@ ggplot(red_annual_mtc, aes(x=Temp,y=mtc,colour=Depth))+
   geom_point()+
   ggtitle("Annual Red sea species MTC by mean net temperature")
 
+ggplot(red_annual_mtc, aes(x=Year,y=mtc,colour=Temp, size=3))+
+  geom_point()+
+  ggtitle("Annual Red Sea species MTC by year")
+
 ```
 
 
 #----month mtc----
 ```{r}
-    #---all_fishes
+      #---all_fishes
   #call the month catch function
   monthly_all_catch=month_catch(all_data,species_code)
  
@@ -519,7 +523,6 @@ for (i in 1:12) {
 }
 month_mediter_mtc=cbind(month_mediter_mtc,"Month"=c (rep(1:12,each=32)))
 month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
-
 
 ```
 
@@ -660,6 +663,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
    ggtitle("autumn red sea species MTC by mean net temperature")
  
  
+ 
 ```
 
 #----net mtc----
@@ -695,6 +699,9 @@ all_data_unfilter=read.csv(file = paste(thesis_directory,"R/prosseced data/all_d
 #cerate species names vector
  sp_code_unfiletr=scientific_names_unfilter$Sp_code
  scientific_code_unfilter=scientific_names_unfilter$scintific_name
+
+ #remove gamberi nets
+ all_data_unfilter=all_data_unfilter[all_data_unfilter$Gambari_net==FALSE,]
 ```
 
 
@@ -752,6 +759,7 @@ for (i in 1:length(sp_code_unfiletr)) {
   #ggsave(file = paste (sp_code_unfiletr[i],"png",sep ="."),g)
 
   }#end for
+ 
 
 ```
 
@@ -765,44 +773,47 @@ weekly normalization
     all_data_unfilter$Date<-ymd(all_data_unfilter$Date)
       #create week column - the number of the week in th year
       all_data_unfilter$Week<-week(all_data_unfilter$Date)
+      
+      all_data_unfilter=all_data_unfilter[!is.na(all_data_unfilter$Month),]
+      all_data_unfilter=all_data_unfilter[!is.na(all_data_unfilter$Week),]
+      
+      
+      #create week ID coulmn wich I can count - year/month/week
+      all_data_unfilter$Week_ID = with(all_data_unfilter,paste(Year,Month,Week,sep = "/"))
+      #count how many nets in every week [count Week ID]
+      week_count=all_data_unfilter %>% group_by(Week_ID) %>% summarise(count=n()) 
 
-    #take the species, weeks and years
-    week_data= select(all_data_unfilter,Year,Week,Aal:WHT)
-    #aggregate the catch by weeks
-    week_data = week_data %>% group_by(Year,Week) %>% summarise_all(funs(sum))
-    #sum of the catch
-    week_sum=week_data %>%ungroup() %>% select(Aal:WHT) 
-    week_sum=week_sum  %>% mutate("Sum"=rowSums(week_sum))
-    #put the sum of the catch into "week_data" just for testing
-    week_data=data.frame(week_data,"Sum" = week_sum$Sum)
-    #vector with the sum of the catch
-    x_sum_week=list()
-    x_sum_week=week_sum$Sum
+      
+ 
+    #take the week_ID and species
+    week_data= select(all_data_unfilter,Week_ID,Aal:WHT)
+    #sum fo weekly catch of each speceis: aggergate by ID
+   week_data=week_data %>% group_by(Week_ID) %>% summarise_all(funs(sum))
 
-    #remove the sum column from "week_sum"
-    week_sum=select(week_sum,Aal:WHT)
+    #create weekly mean catch:diviate the weekly sum of catch of each species in the 
+    #sum of nets in the week
+    week_data=week_data %>% select(Aal:WHT)   
+    week_data=week_data/week_count$count  
+    
+    #seperate the Id string to Year and Week and bind to "week data"
+    week_id_sep=week_count %>% separate(Week_ID,c("Year","Month","Week"))
+    week_data=cbind("Week_ID"= week_count$Week_ID,"Year"=week_id_sep$Year,"Week"=week_id_sep$Week ,week_data)
 
-    #creat empty data frame for the loop
-    week_ratio=data.frame()
-      #loop - calculate the ratio of any weekly catch
-  for (i in 1:length(x_sum_week)) {
-
-      week_sum_col=week_sum[i,]
-      week_sum_col=week_sum_col/x_sum_week[i]
-      week_ratio=rbind(week_ratio,week_sum_col)
+    week_data$Week=as.numeric(as.character(week_data$Week))  
+    week_data$Year=as.numeric(as.character(week_data$Year))
+   
   
-  }#end for
-
-    #bind the ratio with the year and week index
-    week_ratio=cbind("Year"= week_data$Year,"Week"= week_data$Week,week_ratio)
-      #begen in 1987
-    week_ratio=week_ratio[week_ratio$Year %in% c(1987:2013),] 
+   
+    
+        
+    #begen in 1987
+    week_data=week_data[week_data$Year %in% c(1987:2013),] 
     
     #create data frame for any quart of the years
-    week_ratio_a=  week_ratio[week_ratio$Year %in% c(1987:1993),]
-    week_ratio_b=  week_ratio[week_ratio$Year %in% c(1994:2000),]
-    week_ratio_c=  week_ratio[week_ratio$Year %in% c(2001:2006),]
-    week_ratio_d=  week_ratio[week_ratio$Year %in% c(2007:2013),]
+    week_data_a=  week_data[week_data$Year %in% c(1987:1993),]
+    week_data_b=  week_data[week_data$Year %in% c(1994:2000),]
+    week_data_c=  week_data[week_data$Year %in% c(2001:2006),]
+    week_data_d=  week_data[week_data$Year %in% c(2007:2013),]
     
 
 
@@ -812,50 +823,129 @@ graphs of the ratio catch
 
 ```{r}
  
+    
     for (i in 1:length(sp_code_unfiletr)) {
       
       #make a single graph for any quart of the years
-      p1= ggplot(week_ratio_a, aes(x=Week, y=week_ratio_a[,sp_code_unfiletr[i]],color=Year )) +
+      p1= ggplot(week_data_a, aes(x=Week, y=week_data_a[,sp_code_unfiletr[i]],color=Year )) +
         geom_line()+
         scale_colour_gradientn(colours=rainbow(4))+
         facet_grid(Year~.)+ggtitle(paste (sp_code_unfiletr[i],scientific_code_unfilter[i],sep =" - "))+
-        ylab("Ratio of Catchs")+scale_x_continuous(breaks = seq(1,53,by=4))
+        ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4))
       
       
-      p2=ggplot(week_ratio_b, aes(x=Week, y=week_ratio_b[,sp_code_unfiletr[i]],color=Year )) +
+      p2=ggplot(week_data_b, aes(x=Week, y=week_data_b[,sp_code_unfiletr[i]],color=Year )) +
         geom_line()+
         scale_colour_gradientn(colours=rainbow(4))+
         facet_grid(Year~.)+ggtitle(paste (sp_code_unfiletr[i],scientific_code_unfilter[i],sep =" - "))+
-        ylab("Ratio of Catchs")+scale_x_continuous(breaks = seq(1,53,by=4))
+        ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4))
       
-      p3=ggplot(week_ratio_c, aes(x=Week, y=week_ratio_c[,sp_code_unfiletr[i]],color=Year )) +
+      p3=ggplot(week_data_c, aes(x=Week, y=week_data_c[,sp_code_unfiletr[i]],color=Year )) +
         geom_line()+
         scale_colour_gradientn(colours=rainbow(4))+
         facet_grid(Year~.)+ggtitle(paste (sp_code_unfiletr[i],scientific_code_unfilter[i],sep =" - "))+
-        ylab("Ratio of Catchs")+scale_x_continuous(breaks = seq(1,53,by=4))
+        ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4))
       
-      p4=ggplot(week_ratio_d, aes(x=Week, y=week_ratio_d[,sp_code_unfiletr[i]],color=Year )) +
+      p4=ggplot(week_data_d, aes(x=Week, y=week_data_d[,sp_code_unfiletr[i]],color=Year )) +
         geom_line()+
         scale_colour_gradientn(colours=rainbow(4))+
         facet_grid(Year~.)+ggtitle(paste (sp_code_unfiletr[i],scientific_code_unfilter[i],sep =" - "))+
-        ylab("Ratio of Catchs")+scale_x_continuous(breaks = seq(1,53,by=4))
+        ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4))
       
       
       #ceate one graph included 4 graphs for any species
-  grid.arrange(p1, p2, p3, p4,ncol=2)
+  grid.arrange(p1, p3, p2, p4,ncol=2)
       
       #save the graphs - !!set the directory before use!!
       #if saving without the "g" part, save just 1 of the 4, but in high resolution
       #so it's better for papars. [could order them by myself after]
         #order for saving
-        g <- arrangeGrob(p1, p2, p3, p4, nrow=2) #generates g
-        ggsave(file = paste (sp_code_unfiletr[i],"png",sep ="."),g)
+        #g <- arrangeGrob(p1, p3, p2, p4, nrow=2) #generates g
+        #ggsave(file = paste (sp_code_unfiletr[i],"png",sep ="."),g)
       
     }#end for
 
 ```
 
 
+
+#-------------graphs for the poster------------------------
+```{r}
+#Scomberomorus commerson [Sco] graph
+  
+  
+  Sco_data=dplyr::select(week_data,Year,Week, Week_ID, Sco)
+  Sco_data=week_data[week_data$Year %in% c(1998:2012) ,]
+  Sco_data=Sco_data[Sco_data$Week %in% c(20:53), ]
+  
+  Sco_data=Sco_data[Sco_data$Year != 2011,]
+  Sco_data=Sco_data[Sco_data$Year != 1999,]
+  Sco_data=Sco_data[Sco_data$Year != 2007,]
+  
+
+  ggplot(Sco_data, aes(x=Week, y=Sco_data$Sco,color=Year)) +
+    geom_line(size=1.5)+
+    scale_color_jcolors_contin(palette="pal4") +
+    facet_grid(Year~.)+
+    ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4)) 
+    
+    
+    
+    #Upeneus pori UPO graph
+    Upo_data=dplyr::select(week_data,Year,Week, Week_ID, Upo)
+    Upo_data=week_data[week_data$Year %in% c(2005:2013) ,]
+    Upo_data=Upo_data[Upo_data$Week %in% c(30:53), ]
+    
+    Upo_data=Upo_data[Upo_data$Year != 2012,]
+    Upo_data=Upo_data[Upo_data$Year != 2013,]
+    
+    
+    
+    ggplot(Upo_data, aes(x=Week, y=Upo_data$Upo,color=Year)) +
+      geom_line(size=1.5)+
+      scale_color_jcolors_contin(palette="pal4") +
+      facet_grid(Year~.)+ggtitle("Mean Catch of Upeneus Pori")
+    ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=1)) 
+    
+    #Truacura sp
+    TRA_data=dplyr::select(week_data,Year,Week, Week_ID, TRA)
+    TRA_data=week_data[week_data$Year %in% c(2003:2012) ,]
+    TRA_data=TRA_data[TRA_data$Week %in% c(29:53), ]
+    
+    TRA_data=TRA_data[TRA_data$Year != 2011,]
+    TRA_data=TRA_data[TRA_data$Year != 2012,]
+    TRA_data=TRA_data[TRA_data$Year != 2013,]
+    TRA_data=TRA_data[TRA_data$Year != 2007,]
+    
+    
+    ggplot(TRA_data, aes(x=Week, y=TRA_data$TRA,color=Year)) +
+      geom_line(size=1.5)+
+      scale_color_jcolors_contin(palette="pal4") +
+      facet_grid(Year~.)+ggtitle("Mean Catch of Truchurus sp.")+
+    ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=1)) 
+    
+    
+    #Seriola Dumerili
+    Sd_data=dplyr::select(week_data,Year,Week, Week_ID, Sd)
+    Sd_data=week_data[week_data$Year %in% c(1998:2012) ,]
+    Sd_data=Sd_data[Sd_data$Week %in% c(15:53), ]
+    
+    Sd_data=Sd_data[Sd_data$Year != 1999,]
+    Sd_data=Sd_data[Sd_data$Year != 2007,]
+    Sd_data=Sd_data[Sd_data$Year != 2013,]
+    Sd_data=Sd_data[Sd_data$Year != 2007,]
+    
+    
+    ggplot(Sd_data, aes(x=Week, y=Sd_data$Sd,color=Year)) +
+      geom_line(size=1.5)+
+      scale_color_jcolors_contin(palette="pal4") +
+      facet_grid(Year~.)+ggtitle("Mean Catch of Seriola Dumerili")+
+      ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=1))
+    
+   
+
+
+```
 
 
 

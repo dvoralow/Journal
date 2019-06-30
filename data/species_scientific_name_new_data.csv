@@ -1,0 +1,55 @@
+Common_name,Sp_code,Origin,Sceintific_name
+Ben_Gurion,Aal,Med,Alectis alexandrines/alexandrina
+Musar,Arg,Med,Engraulis encrasicolus
+Taref,BAT,Med,Siganus rivulatus/Siganus luridus
+Rofus,Bbo,Med,Merluccius merluccius
+Hazaim,Bca,Med,Nemipterus randalli
+Hazir,Bca,Med,Alectis alexandrinus 
+Box_General,BOX,,General_box
+Trulus,Ccr,Both,Portunus segnis
+Pijama,Dce,Med,Penaeus japonicus
+Saragus,DIP,Med,Epinephelus haifensis
+Anshubi,Eer,Both,Sparus aurata
+Daba,Eha,Med,Pagrus caeruleostictus
+Lokus,EPI,Med,Fish_box
+Lokus_manot,EPI,Med,Penaeus japonicus
+Fish,FIS,,Pagellus erythrinus
+Shed.Yam,Lbu,Med,Rhinobatos rhinobatos
+Marmir,Lmo,Med,Pomatomus saltator
+Kalamari,Lvu,Med,Balistes carolinensis
+Bakala,Mme,Med,Balistes carolinensis
+Adom,MUL,Med,Saurida undosquamis/Synodus saurus
+Soltan,MUL,Med,Seriola dumerili
+Soltan_Mix,MUL_UP,Both,Loligo vulgaris
+Barbon,Nra,Red,Lithognathus mormyrus/Diplodus sp. (Diplodus saragus/Diplodus vulgaris/Diplodus cervinus/Diplodus puntazoo)
+Octepus,Ovu,Med,Epinephelus sp. (Epinephelus marginatus/Epinephelus aeneus)
+Farida,Pca,Med,Epinephelus sp. (Epinephelus marginatus/Epinephelus aeneus)
+Gerbida,Per,Med,Saurida undosquamis/Synodus saurus
+Vak.Vak,Pin,Med,Sphyraena sp. (Sphyraena sphyraena/Sphyraena chrysotaenia/Sphyraena viridensis)
+Cristal,Pja,Red,lithognathus mormyrus
+Gambari,Pja,Red,Argyrosomus regius
+Varod,Plo,Med,Solea solea
+Gomber,Psa,Med,Octopus vulgaris
+Crab,Pse,Red,scomberomorus commerson
+Gitara,Rrh,Med,Upeneus moluccensis
+Sardin,SAR,Both,Diplodus cervinus
+Denis,Sau,Med,Boops boops
+Tziporot,Sau,Med,Spicara sp. (Spicara manena/Spicara smaris)
+Palamud,Sco,Red,Sepia officinalis
+Intias,Sd,Med,Diplodus sp. (Diplodus saragus/Diplodus vulgaris/Diplodus cervinus/Diplodus puntazoo)
+Shark,Sha,,Sardinella sp. (Sardinella aurita/Sardinella maderensis)
+Aras,Sig,Red,scomber japonicus
+Scombri,Sja,Med,
+Sabida,Sof,Med,Lophius budegassa
+Malitta,SPH,Red,Mullus sp. (Mullus barbatus/Mullus surmuletus)
+Rofus_Fake,SPI,Med,Upeneus pori
+Special,SPL,,Upeneus pori
+Televisia,Ssi,Red,Mullus/Upeneus sp. (Mullus barbatus/Mullus surmuletus/Upeneus pori/Upeneus moluccensis)
+Muslach,Sso,Med,Fish_box_special
+Hulim,Sud,Both,Trachurus sp. (Trachurus trachurus/Trachurus mediterraneus)
+Makarunim,Sud,Both,Batoidea (Superorder)
+Tarachun,TRA,Both,Sillago sihama
+Pas_Tzahov,Umo,Red,Caranx crysos/Alepes djedaba
+Soltan_Fake,Upo,Red,Sparus aurata
+Soltan_Hul,Upo,Red,Pomadasys incisus
+Lavan,WHT,Med,Parapeneaus longirostris
