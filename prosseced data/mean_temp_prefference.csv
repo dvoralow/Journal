@@ -1,3 +1,41 @@
-"","Tpref"
-"Siganus luridus",25.218628572614
-"Siganus rivulatus",24.3299691716179
+"","X.2","X.1","X","Tpref_my_code","sp_code","Origin","Ch_Tpref50","Ch_Tpref25","Ch_Tpref70","Tpref","Perecent","Tpref_percent"
+"1",1,1,"Alectis alexandrinus ",26.73155943,"Aal","Med",24,21,26,24,NA,NA
+"2",2,2,"Argyrosomus regius",20.50650088,"Arg","Med",19,16,21,19,NA,NA
+"3",3,3,"raja clavata",13.16135548,"BAT","Med",17,14,20,17,NA,NA
+"4",4,4,"Raja miraletus",22.96209921,"BAT","Med",NA,NA,NA,22.96209921,NA,NA
+"5",5,5,"Torpedo torpedo",22.24704239,"BAT","Med",NA,NA,NA,22.24704239,NA,NA
+"6",6,6,"dasyatis pastinaca",19.70259349,"BAT","Med",21,17,25,21,NA,NA
+"7",7,7,"Boops boops",20.02918813,"Bbo","Med",20,16,24,20,NA,NA
+"8",8,8,"Balistes carolinensis",26.24302388,"Bca","Med",NA,NA,NA,26.24302388,NA,NA
+"9",9,9,"Diplodus saragus",19.58093694,"DIP","Med",22,19,25,22,0.494141251,10.87110752
+"10",10,10,"Diplodus vulgaris",19.37566862,"DIP","Med",21,18,24,21,0.312901544,6.570932416
+"11",11,11,"Diplodus cervinus",19.80899645,"DIP","Med",21,18,24,21,0.126599587,2.658591331
+"12",12,12,"Diplodus puntazoo",19.06158484,"DIP","Med",23,20,25,23,0.066357618,1.526225216
+"13",14,14,"Epinephelus haifensis",23.04656475,"Eha","Med",NA,NA,NA,23.04656475,NA,NA
+"14",15,15,"Epinephelus marginatus",21.15842504,"EPI","Med",25,21,27,25,NA,NA
+"15",16,16,"Epinephelus aeneus",24.30372326,"EPI","Med",27,25,28,27,NA,NA
+"16",17,17,"Lophius budegassa",19.34329101,"Lbu","Med",25,23,28,25,NA,NA
+"17",18,18,"lithognathus mormyrus",19.96554175,"Lmo","Med",24,20,27,24,NA,NA
+"18",19,19,"Liza aurata",18.01263996,"Mce","Med",16,13,19,16,0.5,NA
+"19",20,20,"Liza ramada",18.24521765,"Mce","Med",NA,NA,NA,18.24521765,0.5,NA
+"20",21,21,"Merluccius merluccius",17.67188111,"Mme","Med",18,15,20,18,NA,NA
+"21",22,22,"Mullus barbatus",19.2905235,"MUL","Med",17,12,22,17,0.673335399,11.44670177
+"22",23,23,"Mullus surmuletus",17.54460027,"MUL","Med",19,13,23,19,0.326664601,6.206627428
+"23",24,24,"Nemipterus randalli",25.99200672,"Nra","Red",28,27,28,28,NA,NA
+"24",25,25,"Pagrus caeruleostictus",25.79465496,"Pca","Med",23,20,26,23,NA,NA
+"25",26,26,"Pagellus erythrinus",19.43726552,"Per","Med",18,16,20,18,NA,NA
+"26",27,27,"Rhinobatos rhinobatos",24.90816822,"Rrh","Med",NA,NA,NA,24.90816822,NA,NA
+"27",30,30,"Sparus aurata",18.86408864,"Sau","Med",NA,NA,NA,18.86408864,NA,NA
+"28",31,31,"scomberomorus commerson",26.79732903,"Sco","Red",28,27,28,28,NA,NA
+"29",32,32,"Seriola dumerili",26.73135908,"Sd","Med",27,26,28,27,NA,NA
+"30",33,33,"scomber japonicus",15.54568215,"Sja","Med",23,18,27,23,NA,NA
+"31",37,37,"Spicara manena",19.31820366,"SPI","Med",16,12,19,16,0.449362074,7.189793178
+"32",38,38,"Spicara smaris",19.37719075,"SPI","Med",NA,NA,NA,19.37719075,0.550637926,10.66981613
+"33",39,39,"Sillago sihama",27.04527422,"Ssi","Red",27,26,28,27,NA,NA
+"34",40,40,"Solea solea",12.49549431,"Sso","Med",16,12,19,16,NA,NA
+"35",45,45,"Upeneus moluccensis",27.05034989,"Umo","Red",NA,NA,NA,27.05034989,NA,NA
+"36",46,46,"Upeneus pori",23.09348636,"Upo","Red",NA,NA,NA,23.09348636,NA,NA
+"37",47,47,"Pomadasys incisus",NA,"Pin","Med",27,25,28,27,NA,NA
+"38",48,48,"Pomatomus saltator",NA,"Psa","Med",27,25,28,27,NA,NA
+"39",49,49,"Siganus rivulatus",24.32996917,"Sig","Red",NA,NA,NA,24.32996917,NA,NA
+"40",50,50,"Siganus luridus",25.21862857,"Sig","Red",NA,NA,NA,25.21862857,NA,NA

@@ -35,14 +35,17 @@ clean the data
   #names of shrimps, crabs, octopus, squids - cod names.
   drops_no_fish <- c("Lvu","Ovu","Plo","Sof","Mae","Pja","Pse")
   #names of fishes with unknown origin and general category with no speceis
-  drops_no_origin=c("Ccr","MUL_UP","Sma","BOX","FIS","SPL","TRA","Eer","SAR","SPH","Sud")
+  drops_no_origin=c("Ccr","MUL_UP","Sma","BOX","FIS","SPL","TRA","Eer","SAR","SPH","Sud","Sha")
 
   #upload the dataframes
-  all_data=read.csv(file=paste(thesis_directory,"all_data.csv",sep = "/"),stringsAsFactors = F)
-  scientific_names=read.csv(file =paste(thesis_directory,"species_scientific_name.csv",sep = "/"),stringsAsFactors = F)
-  species_names_seperate=read.csv(file =paste(thesis_directory, "species name_seperate.csv",sep = "/"),stringsAsFactors = F)
-  net_temp=read.csv(file = paste(thesis_directory,"R/prosseced data/net_temperatures_all.csv",sep = "/"))
-  t_pref=read.csv(file=paste(thesis_directory, "R/prosseced data/mean_temp_prefference.csv",sep = "/"),stringsAsFactors = F)
+  all_data=read.csv(file="data/final_data_1987_2018.csv", stringsAsFactors = F)
+  scientific_names=read.csv(file = "data/species_scientific_name.csv" ,stringsAsFactors = F)
+  species_names_seperate=read.csv(file = "data/species name_seperate.csv",stringsAsFactors = F)
+  t_pref=read.csv(file = "prosseced data/mean_temp_pref_cheung.csv",stringsAsFactors = F)
+  
+  #----!!! net temp - need to work on!!!------#
+  net_temp=read.csv(file = "prosseced data/net_temperatures_all.csv")
+  
   
   
   
@@ -56,19 +59,22 @@ clean the data
 
   #remove not fishes [alredy removed from 'speceis_names_seperate']
   all_data =all_data[ , !(names(all_data) %in% drops_no_fish)]
-    write.csv(all_data,file = paste(thesis_directory,"R/prosseced data/all_data_fishes_only.csv",sep = "/"))
+    write.csv(all_data,file = "prosseced data/all_data_fishes_only.csv")
   scientific_names=scientific_names[!(scientific_names$Sp_code%in%drops_no_fish),]
-    write.csv(scientific_names,file =paste(thesis_directory,"R/prosseced data/sceintific_names_fishes_only.csv",sep = "/") ) 
+    write.csv(scientific_names,file ="prosseced data/sceintific_names_fishes_only.csv") 
 
   #remove no origin
   all_data=all_data[,!(names(all_data)%in% drops_no_origin)]
-    write.csv(all_data,file = paste(thesis_directory,"R/prosseced data/all_data_fishes_known_origin.csv",sep = "/"))
-  scientific_names=scientific_names[!(scientific_names$Sp_code %in% drops_no_origin),]
-    write.csv(scientific_names,file = paste(thesis_directory,"R/prosseced data/sceintific_names_fishes_known_origin.csv" ,sep = "/"))
-  species_names_seperate=species_names_seperate[!(species_names_seperate$Sp_code%in%drops_no_fish),]
-    write.csv(species_names_seperate,file =paste(thesis_directory, "R/prosseced data/species_names_seperate_fish_known_origin.csv",sep = "/") )
-  t_pref=t_pref[!(t_pref$sp_code%in%drops_no_origin),]
-    write.csv(t_pref,file = paste(thesis_directory,"R/prosseced data/mean_temp_prefference.csv",sep = "/"))
+    write.csv(all_data,file = "prosseced data/all_data_fishes_known_origin.csv")
+  
+    scientific_names=scientific_names[!(scientific_names$Sp_code %in% drops_no_origin),]
+    write.csv(scientific_names,file = "prosseced data/sceintific_names_fishes_known_origin.csv" )
+  
+    species_names_seperate=species_names_seperate[!(species_names_seperate$Sp_code%in%drops_no_origin),]
+    write.csv(species_names_seperate,file = "prosseced data/species_names_seperate_fish_known_origin.csv" )
+  
+    t_pref=t_pref[!(t_pref$sp_code%in%drops_no_origin),]
+    write.csv(t_pref,file = "prosseced data/mean_temp_prefference.csv")
     
 
 
@@ -91,9 +97,9 @@ end chunk
 #the old code for this function is in "mtc_function", I dont think its useful
 annual_catch=function(the_big_data,code){
     
-    filter_data=select(all_data,Year,code)
+    filter_data=dplyr::select(all_data,Year,code)
     filter_data=aggregate.data.frame(filter_data,list(filter_data$Year),FUN = sum,drop=F)
-    filter_data=select(filter_data,Year=Group.1,code ) 
+    filter_data=dplyr:: select(filter_data,Year=Group.1,code ) 
     return(filter_data)
   }
   
@@ -218,13 +224,12 @@ end chunk
 ```{r}
 
    #the mean prefference temperature for every species - Cheung t_pref combined with myn
-    t_pref=read.csv(file=paste(thesis_directory, "R/prosseced data/mean_temp_pref_cheung.csv",sep = "/"),stringsAsFactors = F)
+    t_pref=read.csv(file= "prosseced data/mean_temp_pref_cheung.csv",stringsAsFactors = F)
    
-      #for the t_pref caculate from GBIF & Bio Oracle
-      #t_pref=read.csv(file=paste(thesis_directory, "R/prosseced data/mean_temp_prefference.csv",sep = "/"),stringsAsFactors = F)
+      
     
     #loop for calculating the mean temperature for every sp_code - form the mean t_pref
-    #sp_code is the fisheries names, wich include some species togther
+    #sp_code is the fisheries names, which include some species togther
     species_code<-unique(t_pref$sp_code)
     mean_tcode<-c()
     
@@ -270,10 +275,10 @@ end chunk
 ```{r}
 
    #----mean month, season and year net temperature and depth----
-    all_data=read.csv(file= paste(thesis_directory, "R/prosseced data/all_data_fishes_known_origin.csv",sep = "/" ),stringsAsFactors = F)
+    all_data=read.csv(file= "prosseced data/all_data_fishes_known_origin.csv", stringsAsFactors = F)
     #-- mean year temp
     #select yaer and temperature column
-    year_temp=select(all_data,Year,Temp)
+    year_temp= dplyr:: select(all_data,Year,Temp)
     #remove 0 and NA rows
     year_temp=year_temp[year_temp$Temp!=0,]
     year_temp=na.omit(year_temp)
@@ -282,38 +287,39 @@ end chunk
     year_temp=select(year_temp,Year,Temp )
     
     #mean year depth
-    year_depth=select(all_data,Year,loc_DEPTH)
+    year_depth= dplyr:: select(all_data,Year,loc_DEPTH)
     year_depth=year_depth[year_depth$loc_DEPTH!=0,] 
     year_depth=na.omit(year_depth) 
     year_depth=aggregate.data.frame(year_depth,list(year_depth$Year),FUN = mean,drop = F)
-    year_depth=select(year_depth,Year,loc_DEPTH)
+    year_depth=dplyr:: select(year_depth,Year,loc_DEPTH)
     #remove years with no temperature
     year_depth=year_depth[7:nrow(year_depth),]
     #bind the temperature and depth
     year_temp_depth=cbind(year_temp,"Depth"=year_depth$loc_DEPTH)
-    plot(year_depth)
+  
+     plot(year_depth)
     plot(year_temp)
     
     
     
 #--mean month depth and temperature
-    month_depth=select(all_data,Year,Month,loc_DEPTH)
+    month_depth=dplyr:: select(all_data,Year,Month,loc_DEPTH)
     #remove 0 and NA
     month_depth=na.omit(month_depth)
     month_depth=month_depth[month_depth$loc_DEPTH!=0,]
     #aggregate by year by month
     month_depth=aggregate.data.frame(month_depth,list(month_depth$Year,month_depth$Month),FUN = mean,drop = F)
     month_depth=na.omit(month_depth)
-    month_depth=select(month_depth,Year=Group.1,Month=Group.2,Depth=loc_DEPTH)
+    month_depth=dplyr:: select(month_depth,Year=Group.1,Month=Group.2,Depth=loc_DEPTH)
     month_depth=month_depth[month_depth$Year %in% c(1987:2013),]
     
     #mean month net temperature - same as month depth [seperate because the NA rows doesn't equal]
-    month_temp=select(all_data,Year,Month,Temp)
+    month_temp=dplyr:: select(all_data,Year,Month,Temp)
     month_temp=na.omit(month_temp)
     month_temp=month_temp[month_temp$Temp!=0,]
     month_temp=aggregate.data.frame(month_temp,list(month_temp$Year,month_temp$Month),FUN=mean,drop = F)
     month_temp=na.omit(month_temp)
-    month_temp=select(month_temp,Year=Group.1,Month=Group.2,Temp)
+    month_temp=dplyr:: select(month_temp,Year=Group.1,Month=Group.2,Temp)
     
     month_temp_depth=cbind(month_temp,Depth=month_depth$Depth)
     
@@ -331,23 +337,23 @@ end chunk
     #mean temperature and depth by year
     winter_temp=aggregate.data.frame(winter_temp,list(winter_temp$Year),FUN = mean,drop = F)
     #remove the calcukations columns
-    winter_temp=select(winter_temp,Year,Temp,Depth)
+    winter_temp=dplyr:: select(winter_temp,Year,Temp,Depth)
     #join column with the season name 
     winter_temp=cbind("Season"=rep("winter"),winter_temp)
     
     spring_temp=month_temp_depth[month_temp_depth$Month %in% spring_vec,]
     spring_temp=aggregate.data.frame(spring_temp,list(spring_temp$Year),FUN=mean,drop = F)
-    spring_temp=select(spring_temp,Year,Temp,Depth)
+    spring_temp=dplyr:: select(spring_temp,Year,Temp,Depth)
     spring_temp=cbind("Season"=rep("spring"),spring_temp)
     
     summer_temp=month_temp_depth[month_temp_depth$Month %in% summer_vec,]
     summer_temp=aggregate.data.frame(summer_temp,list(summer_temp$Year), FUN = mean,drop = F)
-    summer_temp=select(summer_temp,Year,Temp,Depth)
+    summer_temp=dplyr:: select(summer_temp,Year,Temp,Depth)
     summer_temp=cbind("Season"=rep("summer"),summer_temp)
     
     autumn_temp=month_temp_depth[month_temp_depth$Month %in% autumn_vec,]
     autumn_temp=aggregate.data.frame(autumn_temp,list(autumn_temp$Year),FUN=mean,drop = F)
-    autumn_temp=select(autumn_temp,Year,Temp,Depth)
+    autumn_temp=dplyr:: select(autumn_temp,Year,Temp,Depth)
     autumn_temp=cbind("Season"=rep("autumn"),autumn_temp)
     #join all seasons to 1 data frame
     season_temp_depth=rbind(winter_temp,spring_temp,summer_temp,autumn_temp)
@@ -359,12 +365,12 @@ end chunk
 
 #--- calling annual catch function---
 ```{r}
- species_to_scientific_name=read.csv(file= paste(thesis_directory, "R/prosseced data/sceintific_names_fishes_known_origin.csv" , sep = "/"),stringsAsFactors = F)
-  all_data=read.csv(file= paste(thesis_directory, "R/prosseced data/all_data_fishes_known_origin.csv",sep = "/" ),stringsAsFactors = F)
+ species_to_scientific_name=read.csv(file= "prosseced data/sceintific_names_fishes_known_origin.csv" ,stringsAsFactors = F)
+  all_data=read.csv(file= "prosseced data/all_data_fishes_known_origin.csv",stringsAsFactors = F)
   species_code<-unique(species_to_scientific_name$Sp_code)  
   annual_sp_catch=annual_catch(all_data,species_code)
     
-  write.csv(annual_sp_catch,file =paste(thesis_directory, "R/prosseced data/annual_catch.csv",sep = "/"))
+  write.csv(annual_sp_catch,file = "prosseced data/annual_catch.csv")
     
     
  
@@ -482,7 +488,7 @@ month_all_mtc=data.frame()
   for (i in 1:12) {
   
     month_1=monthly_all_catch[which(monthly_all_catch$Month ==i),]
-    month_1=select(month_1,-(Month))
+    month_1=dplyr:: select(month_1,-(Month))
     month_mtc=mtc_index_calc(month_1,mean_tcode)
    # plot(month_mtc,main=paste("Month", i ,"MTC"))
       
@@ -505,8 +511,8 @@ for (i in 1:12) {
   mediter_month=month_mediter_catch[which(month_mediter_catch$Month==i),]
   red_month=month_red_catch[which(month_red_catch$Month==i),]
   
-  mediter_month=select(mediter_month,-(Month))
-  red_month=select(red_month,-(Month))
+  mediter_month=dplyr:: select(mediter_month,-(Month))
+  red_month=dplyr:: select(red_month,-(Month))
   
   mediter_mtc=mtc_index_calc(mediter_month,mediter_mean_tcode)
   red_mtc=mtc_index_calc(red_month,red_mean_tcode)
@@ -540,7 +546,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
   for (i in 1:4) {
 
     season_loop=season_all_catch[which(season_all_catch$Season ==season[i]),]
-    season_loop=select(season_loop,-(Season))
+    season_loop=dplyr:: select(season_loop,-(Season))
     season_mtc=mtc_index_calc(season_loop,mean_tcode)
     plot(season_mtc,main=paste( season[i] ,"MTC"))
     season_all_mtc=rbind(season_all_mtc,season_mtc)
@@ -572,8 +578,8 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
     mediter_season=season_mediter_catch[which(season_mediter_catch$Season==season[i]),]
     red_season=season_red_catch[which(season_red_catch$Season==season[i]),]
     
-    mediter_season=select(mediter_season,-(Season))
-    red_season=select(red_season,-(Season))
+    mediter_season=dplyr:: select(mediter_season,-(Season))
+    red_season=dplyr:: select(red_season,-(Season))
     
     mediter_mtc=mtc_index_calc(mediter_season,mediter_mean_tcode)
     red_mtc=mtc_index_calc(red_season,red_mean_tcode)
@@ -670,7 +676,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
 ```{r}
  #drop the useless data for the mtc function
   species_code=rownames(mean_tcode)
-  net_all_data=select(all_data,X.3,species_code)
+  net_all_data=dplyr:: select(all_data,X.3,species_code)
 
   #calling mtc function
   net_mtc=mtc_index_calc(net_all_data,mean_tcode)
@@ -786,13 +792,13 @@ weekly normalization
       
  
     #take the week_ID and species
-    week_data= select(all_data_unfilter,Week_ID,Aal:WHT)
+    week_data= dplyr:: select(all_data_unfilter,Week_ID,Aal:WHT)
     #sum fo weekly catch of each speceis: aggergate by ID
    week_data=week_data %>% group_by(Week_ID) %>% summarise_all(funs(sum))
 
     #create weekly mean catch:diviate the weekly sum of catch of each species in the 
     #sum of nets in the week
-    week_data=week_data %>% select(Aal:WHT)   
+    week_data=week_data %>% dplyr:: select(Aal:WHT)   
     week_data=week_data/week_count$count  
     
     #seperate the Id string to Year and Week and bind to "week data"
@@ -874,7 +880,7 @@ graphs of the ratio catch
 #Scomberomorus commerson [Sco] graph
   
   
-  Sco_data=dplyr::select(week_data,Year,Week, Week_ID, Sco)
+  Sco_data=dplyr:: select(week_data,Year,Week, Week_ID, Sco)
   Sco_data=week_data[week_data$Year %in% c(1998:2012) ,]
   Sco_data=Sco_data[Sco_data$Week %in% c(20:53), ]
   
