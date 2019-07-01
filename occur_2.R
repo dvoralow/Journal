@@ -13,21 +13,12 @@ library(maps)
 
 #----------functions data-------------
 
-#!!!run every time from every computer!!!
-
-#---define passes to any computer ---- 
-#call the sistem enviromental variable of the directory of this computer
-HOME <- Sys.getenv("HOME")
-#get out the passes to "Documents"
-split_home=unlist(strsplit(HOME,"/"))
-my_home=paste(split_home[1:3],collapse = "/")
-#passes to the folder "data" in my thesis folder
-thesis_directory=paste(my_home,"Google Drive/second degree/thesis/data",sep ="/")
 
 
 
+new.data <- read.csv("data/species name_seperate.csv")
 
-new.data <- read.csv(file=paste(thesis_directory, "R/prosseced data/species_names_seperate_fish_known_origin.csv",sep="/"))
+new.data = new.data[new.data$Sp_code=="Sig",] 
 
 #names(new.data)[6]="species"
 
@@ -119,10 +110,11 @@ for(i in 1:length(species)){
 
 #to join Epinephelus haifensis and Hyporthodus haifensis
 
-write.csv(sp.data, file=paste(thesis_directory, "R/prosseced data/sp.data.csv",sep = "/"))
+write.csv(sp.data, file= "prosseced data/sp.data.csv")
+write.csv(sp.data, file= "prosseced data/siganus_occur.csv")
 
 
-#sp.data=sp_data_3
+
 
 mp <- NULL
 mapWorld <- borders("world", colour="gray50", fill="gray50") # create a layer of borders

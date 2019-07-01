@@ -22,33 +22,37 @@ index,Sp_code,,Common_name,scintific_name,Origin,records
 22,Ovu,1,Tamnoon,Octopus vulgaris,Med,Na
 23,Pca,1,Farida,Pagrus caeruleostictus,Med,905
 24,Per,1,Gerbida,Pagellus erythrinus,Med,1370
-25,Plo,1,Varod,Parapeneaus longirostris,Med,Na
-26,Rrh,1,Gitara,Rhinobatos rhinobatos,Med,787
-27,SAR,Sardinella sp,,Sardinella aurita,Med,16629
-28,SAR,Sardinella sp,Sardin,Sardinella maderensis,Med,2002
-29,Sau,1,Tziporot,Sparus aurata,Med,1433
-30,Sd,1,Intias,Seriola dumerili,Med,19716
-31,Sja,1,Scombri,scomber japonicus,Med,9183
-32,Sof,1,Sabida,Sepia officinalis,Med,Na
-33,SPI,Spicara sp,,Spicara manena,Med,1700
-34,SPI,Spicara sp,Rofus_Fake,Spicara smaris,Med,499
-35,Sso,1,Muslach,Solea solea,Med,11756
-36,TRA,Trachurus sp,,Trachurus trachurus,Med,9995
-37,TRA,Trachurus sp,Tarachun,Trachurus mediterraneus,Med,806
-38,WHT,Lithognathus mormyrus/Diplodus sp,,Diplodus saragus,Med,dup
-39,WHT,Lithognathus mormyrus/Diplodus sp,,Diplodus vulgaris,Med,dup
-40,WHT,Lithognathus mormyrus/Diplodus sp,,Diplodus cervinus,Med,dup
-41,WHT,Lithognathus mormyrus/Diplodus sp,Lavan,Diplodus puntazoo,Med,dup
-42,Mae,1,Gambari_Adom,Metapenaeopsis aegyptia,Red,NA
-43,Nra,1,Barbon,Nemipterus randalli,Red,76
-44,Pja,1,Gambari,Penaeus japonicus,Red,Na
-45,Pse,1,Crab,Portunus segnis,Red,NA
-46,Sco,1,Palamud,scomberomorus commerson,Red,2117
-47,SPH,Sphyraena sp,,Sphyraena sphyraena,Red,549
-48,SPH,Sphyraena sp,,Sphyraena chrysotaenia,Red,66
-49,SPH,Sphyraena sp,Malitta,Sphyraena viridensis,Red,192
-50,Ssi,1,Televisia,Sillago sihama,Red,1286
-51,Sud,Sud sp,,Saurida undosquamis,Red,6039
-52,Sud,Sud sp,Makarunim,Synodus saurus,Red,363
-53,Umo,1,Pas_Tzahov,Upeneus moluccensis,Red,953
-54,Upo,1,Soltan_Fake,Upeneus pori,Red,58
+25,Pin,1,Vak Vak,Pomadasys incisus,Med,
+26,Plo,1,Varod,Parapeneaus longirostris,Med,Na
+27,Psa,1,Gomber,Pomatomus saltator,Med,
+28,Rrh,1,Gitara,Rhinobatos rhinobatos,Med,787
+29,SAR,Sardinella sp,,Sardinella aurita,Med,16629
+30,SAR,Sardinella sp,Sardin,Sardinella maderensis,Med,2002
+31,Sau,1,Tziporot,Sparus aurata,Med,1433
+32,Sd,1,Intias,Seriola dumerili,Med,19716
+33,Sja,1,Scombri,scomber japonicus,Med,9183
+34,Sof,1,Sabida,Sepia officinalis,Med,Na
+35,SPI,Spicara sp,,Spicara manena,Med,1700
+36,SPI,Spicara sp,Rofus_Fake,Spicara smaris,Med,499
+37,Sso,1,Muslach,Solea solea,Med,11756
+38,TRA,Trachurus sp,,Trachurus trachurus,Med,9995
+39,TRA,Trachurus sp,Tarachun,Trachurus mediterraneus,Med,806
+40,WHT,Lithognathus mormyrus/Diplodus sp,,Diplodus saragus,Med,dup
+41,WHT,Lithognathus mormyrus/Diplodus sp,,Diplodus vulgaris,Med,dup
+42,WHT,Lithognathus mormyrus/Diplodus sp,,Diplodus cervinus,Med,dup
+43,WHT,Lithognathus mormyrus/Diplodus sp,Lavan,Diplodus puntazoo,Med,dup
+44,Mae,1,Gambari_Adom,Metapenaeopsis aegyptia,Red,NA
+45,Nra,1,Barbon,Nemipterus randalli,Red,76
+46,Pja,1,Gambari,Penaeus japonicus,Red,Na
+47,Pse,1,Crab,Portunus segnis,Red,NA
+48,Sco,1,Palamud,scomberomorus commerson,Red,2117
+49,Sig,Siganus sp,Aras,Siganus luridus,Red,
+50,Sig,Siganus sp,Aras,Siganus rivulatus,Red,
+51,SPH,Sphyraena sp,,Sphyraena sphyraena,Red,549
+52,SPH,Sphyraena sp,,Sphyraena chrysotaenia,Red,66
+53,SPH,Sphyraena sp,Malitta,Sphyraena viridensis,Red,192
+54,Ssi,1,Televisia,Sillago sihama,Red,1286
+55,Sud,Sud sp,,Saurida undosquamis,Red,6039
+56,Sud,Sud sp,Makarunim,Synodus saurus,Red,363
+57,Umo,1,Pas_Tzahov,Upeneus moluccensis,Red,953
+58,Upo,1,Soltan_Fake,Upeneus pori,Red,58

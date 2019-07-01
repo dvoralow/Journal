@@ -7,25 +7,13 @@ library(jsonlite)
 
 #----------functions data-------------
 
-#!!!run every time from every computer!!!
 
-#---define passes to any computer ---- 
-#call the sistem enviromental variable of the directory of this computer
-HOME <- Sys.getenv("HOME")
-#get out the passes to "Documents"
-split_home=unlist(strsplit(HOME,"/"))
-my_home=paste(split_home[1:3],collapse = "/")
-#passes to the folder "data" in my thesis folder
-thesis_directory=paste(my_home,"Google Drive/second degree/thesis/data",sep ="/")
+sstmean <- raster("bio oracle/Present.Surface.Temperature.Mean.asc")
+sstmin <- raster("bio oracle/Present.Surface.Temperature.Min.asc")
+sstmax <- raster("bio oracle/Present.Surface.Temperature.Max.asc")
+sstrange <- raster("bio oracle/Present.Surface.Temperature.Range.asc")
 
-
-
-sstmean <- raster(paste(thesis_directory, "R/bio oracle/Present.Surface.Temperature.Mean.asc",sep = "/"))
-sstmin <- raster(paste(thesis_directory, "R/bio oracle/Present.Surface.Temperature.Min.asc",sep = "/"))
-sstmax <- raster(paste(thesis_directory, "R/bio oracle/Present.Surface.Temperature.Max.asc", sep = "/"))
-sstrange <- raster(paste(thesis_directory, "R/bio oracle/Present.Surface.Temperature.Range.asc",sep = "/"))
-
-sp.data<-read.csv(file =paste(thesis_directory, "R/prosseced data/sp.data.csv",sep = "/"), row.names=1, stringsAsFactors=FALSE)
+sp.data<-read.csv(file = "prosseced data/siganus_occur.csv", row.names=1, stringsAsFactors=FALSE)
 
 
 # Extracting the temperatures 
@@ -48,7 +36,7 @@ colnames(sp.range.tmp)<-"range.tmp"
 
 sp.data<-cbind(sp.data,sp.mean.tmp,sp.min.tmp,sp.max.tmp,sp.range.tmp)
 
-write.csv(sp.data,file = paste(thesis_directory, "R/prosseced data/occr_tmp.csv",sep = "/"))
+write.csv(sp.data,file = "prosseced data/occr_tmp.csv")
 
 #----- t prefference---------
 #calculate the preffernce temperature of the speceis with a simple avarage of all the
@@ -75,11 +63,11 @@ colnames(mean_temp)=c("Tpref")
 
 #bind the sp_code to the T_pref data
 #!the WHT code isn't apear in the t_pre data because its duplicate - the DIP species with Lmo species
-scientific_names_seperate=read.csv(file=paste(thesis_directory, "R/prosseced data/species_names_seperate_fish_known_origin.csv",sep = "/"))
+scientific_names_seperate=read.csv(file= "prosseced data/species_names_seperate_fish_known_origin.csv")
 sp_code=scientific_names_seperate$Sp_code
 sp_code=sp_code[1:42]
 mean_temp=cbind(mean_temp,sp_code)
 mean_temp=cbind(mean_temp,sp_code=rep("BAT",4))
 
-write.csv(mean_temp,file =paste(thesis_directory, "R/prosseced data/mean_temp_prefference.csv",sep = "/"))
+write.csv(mean_temp,file ="prosseced data/mean_temp_prefference.csv")
 
