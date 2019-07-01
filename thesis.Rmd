@@ -267,6 +267,8 @@ end chunk
     colnames(wht_temp)="Tpref"
     mean_tcode=rbind(mean_tcode,wht_temp)
     
+    #----!!!!!! need to do for siganus!! ---
+    
 ```
 
 
@@ -311,7 +313,7 @@ end chunk
     month_depth=aggregate.data.frame(month_depth,list(month_depth$Year,month_depth$Month),FUN = mean,drop = F)
     month_depth=na.omit(month_depth)
     month_depth=dplyr:: select(month_depth,Year=Group.1,Month=Group.2,Depth=loc_DEPTH)
-    month_depth=month_depth[month_depth$Year %in% c(1987:2013),]
+    month_depth=month_depth[month_depth$Year %in% c(1987:2018),]
     
     #mean month net temperature - same as month depth [seperate because the NA rows doesn't equal]
     month_temp=dplyr:: select(all_data,Year,Month,Temp)
@@ -383,21 +385,28 @@ end chunk
 ```{r}
 annual_mtc=mtc_index_calc(annual_sp_catch,mean_tcode)
 #start from 1987
-annual_mtc=annual_mtc[annual_mtc$index %in% c(1987:2013),]
+annual_mtc=annual_mtc[annual_mtc$index %in% c(1987:2018),]
+year_depth = year_depth[year_depth$Year %in% c(1987:2018),]
+
 #bind mean net temperature and mean depth
-annual_mtc=cbind("mtc"=annual_mtc$mtc,year_temp_depth)
+#annual_mtc=cbind("mtc"=annual_mtc$mtc,year_temp_depth)
+
+
+annual_mtc=cbind("mtc"=annual_mtc$mtc,year_depth)
 
 #start from 1991
-annual_mtc=annual_mtc[annual_mtc$Year %in% c(1987:2013),]
+#annual_mtc=annual_mtc[annual_mtc$Year %in% c(1987:2018),]
 
 plot(annual_mtc,main="annual mtc")
 
-ggplot(annual_mtc, aes(x=Temp,y=mtc,colour=Year, size=5))+
+ggplot(annual_mtc, aes(x=loc_DEPTH,y=mtc,colour=Year, size=5))+
   geom_point()+scale_color_brewer(palette="
                                   Reds")+
   ggtitle("Annual Catch MTC by mean net temperature")
 
-ggplot(annual_mtc, aes(x=Year,y=mtc,colour=Temp, size=3))+
+
+
+ggplot(annual_mtc, aes(x=Year,y=mtc,colour=loc_DEPTH, size=3))+
   geom_point()+
   ggtitle("Annual catch MTC by year")
 
@@ -407,8 +416,8 @@ scale_color_brewer(palette="Dark2")
 
 #--seperate mediterrinian and red sea species
 ```{r}
-species_to_scientific_name=read.csv(file= paste(thesis_directory, "R/prosseced data/sceintific_names_fishes_known_origin.csv" , sep = "/"),stringsAsFactors = F)
-all_data=read.csv(file= paste(thesis_directory, "R/prosseced data/all_data_fishes_known_origin.csv",sep = "/" ),stringsAsFactors = F)
+species_to_scientific_name=read.csv(file= "prosseced data/sceintific_names_fishes_known_origin.csv",stringsAsFactors = F)
+all_data=read.csv(file="prosseced data/all_data_fishes_known_origin.csv" ,stringsAsFactors = F)
 
 #sp_code of the mediterrinian and red sea origin 
 mediter_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Med"),"Sp_code"]
@@ -435,15 +444,18 @@ mediter_annual_mtc=mtc_index_calc(mediter_annual_catch,mediter_mean_tcode)
 red_annual_mtc=mtc_index_calc(red_annual_catch,red_mean_tcode)
 
 #start in 1987 and bind mean net temperature and mean depth
-mediter_annual_mtc=mediter_annual_mtc[mediter_annual_mtc$index %in% c(1987:2013),]
-red_annual_mtc=red_annual_mtc[red_annual_mtc$index %in% c(1987:2013),]
-mediter_annual_mtc=cbind("mtc"=mediter_annual_mtc$mtc,year_temp_depth)
-red_annual_mtc=cbind("mtc"=red_annual_mtc$mtc,year_temp_depth)
+mediter_annual_mtc=mediter_annual_mtc[mediter_annual_mtc$index %in% c(1987:2018),]
+red_annual_mtc=red_annual_mtc[red_annual_mtc$index %in% c(1987:2018),]
+#mediter_annual_mtc=cbind("mtc"=mediter_annual_mtc$mtc,year_temp_depth)
+#red_annual_mtc=cbind("mtc"=red_annual_mtc$mtc,year_temp_depth)
+
+mediter_annual_mtc=cbind("mtc"=mediter_annual_mtc$mtc,year_depth)
+red_annual_mtc=cbind("mtc"=red_annual_mtc$mtc,year_depth)
 
 
 #start in 1991
-mediter_annual_mtc=mediter_annual_mtc[mediter_annual_mtc$Year %in% c(1991:2013),]
-red_annual_mtc=red_annual_mtc[red_annual_mtc$Year %in% c(1991:2013),]
+mediter_annual_mtc=mediter_annual_mtc[mediter_annual_mtc$Year %in% c(1991:2018),]
+red_annual_mtc=red_annual_mtc[red_annual_mtc$Year %in% c(1991:2018),]
 
 
 plot(mediter_annual_mtc, main="Mediterrinian Annual mtc")
@@ -472,6 +484,14 @@ ggplot(red_annual_mtc, aes(x=Temp,y=mtc,colour=Depth))+
 ggplot(red_annual_mtc, aes(x=Year,y=mtc,colour=Temp, size=3))+
   geom_point()+
   ggtitle("Annual Red Sea species MTC by year")
+
+ggplot(red_annual_mtc, aes(x=Year,y=mtc,colour=loc_DEPTH, size=3))+
+  geom_point()+
+  ggtitle("Annual Red Sea species MTC by year")
+
+ggplot(mediter_annual_mtc, aes(x=Year,y=mtc,colour=loc_DEPTH, size=3))+
+  geom_point()+
+  ggtitle("Annual Mediterranian species MTC by year")
 
 ```
 
@@ -555,7 +575,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
 
   
   #start from 1987
-  season_all_mtc=season_all_mtc[season_all_mtc$index %in% c(1987:2013),]
+  season_all_mtc=season_all_mtc[season_all_mtc$index %in% c(1987:2018),]
   season_all_mtc=dplyr:: rename(season_all_mtc,Year=index)
   
   #bind mean net temperature and mean depth - NA in the missing values 
@@ -598,8 +618,8 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
  season_red_mtc=cbind(season_red_mtc,"Season"=c(rep(season,each=32)))
   
  #start from 1987
- season_mediter_mtc=season_mediter_mtc[season_mediter_mtc$index %in% c(1987:2013),]
- season_red_mtc=season_red_mtc[season_red_mtc$index %in% c(1987:2013),]
+ season_mediter_mtc=season_mediter_mtc[season_mediter_mtc$index %in% c(1987:2018),]
+ season_red_mtc=season_red_mtc[season_red_mtc$index %in% c(1987:2018),]
  #season_mediter_mtc=rename(season_mediter_mtc,replace =  c("index"="Year"))
  season_mediter_mtc=rename(season_mediter_mtc,Year=index)
  #season_red_mtc=rename(season_red_mtc,replace =  c("index"="Year"))
@@ -717,7 +737,7 @@ catch graphs
 #call the monthly catch function
  month_catch_unfilter=month_catch(all_data_unfilter,sp_code_unfiletr)
 #begen in 1987
- month_catch_unfilter=month_catch_unfilter[month_catch_unfilter$Year %in% c(1987:2013),] 
+ month_catch_unfilter=month_catch_unfilter[month_catch_unfilter$Year %in% c(1987:2018),] 
  
 #create data frame for any quart of the years
 month_catch_unfilter_a=  month_catch_unfilter[month_catch_unfilter$Year %in% c(1987:1993),]
@@ -813,7 +833,7 @@ weekly normalization
     
         
     #begen in 1987
-    week_data=week_data[week_data$Year %in% c(1987:2013),] 
+    week_data=week_data[week_data$Year %in% c(1987:2018),] 
     
     #create data frame for any quart of the years
     week_data_a=  week_data[week_data$Year %in% c(1987:1993),]
