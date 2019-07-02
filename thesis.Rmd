@@ -752,6 +752,33 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
 
 ```
 
+#------ compare net temperature -----
+
+compare the net temperature accepted from Copernicus MOdel to Heker Yamim observasions.
+
+
+```{r}
+#upload data
+old_data = read.csv("prosseced data/final_data_fishes_known_origin_1987_2013.CSV")
+observ = read.delim("data/ADCP_temp_2004_2018.txt")
+
+#rename column
+observ = observ %>% rename(date =X.Date ,temp = Daily.Average.Bottom.Temperaure.C..deg..26.m..depth ) 
+
+observ$date = as.character(observ$date)
+
+observ$date = gsub(" ", ":",observ$date)
+observ$date = gsub(":00:00:00", "",observ$date)
+
+
+observ = observ %>% separate(date, c("Year","Month", "Day"), sep = ":") %>% filter(Year <=2013) %>% 
+
+  observ =  dplyr::filter(Month_ob>9)
+
+old_data = old_data %>% dplyr::select(Year,Month,Day,depth_meter,Temp) %>% filter(Year>=2004) %>% filter((depth_meter > 15) & (depth_meter<37))
+
+
+```
 
 
 
@@ -938,100 +965,38 @@ graphs of the ratio catch
 
 
 
-#-------------graphs for the poster------------------------
-```{r}
-#Scomberomorus commerson [Sco] graph
-  
-  
-  Sco_data=dplyr:: select(week_data,Year,Week, Week_ID, Sco)
-  Sco_data=week_data[week_data$Year %in% c(1998:2012) ,]
-  Sco_data=Sco_data[Sco_data$Week %in% c(20:53), ]
-  
-  Sco_data=Sco_data[Sco_data$Year != 2011,]
-  Sco_data=Sco_data[Sco_data$Year != 1999,]
-  Sco_data=Sco_data[Sco_data$Year != 2007,]
-  
-
-  ggplot(Sco_data, aes(x=Week, y=Sco_data$Sco,color=Year)) +
-    geom_line(size=1.5)+
-    scale_color_jcolors_contin(palette="pal4") +
-    facet_grid(Year~.)+
-    ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4)) 
-    
-    
-    
-    #Upeneus pori UPO graph
-    Upo_data=dplyr::select(week_data,Year,Week, Week_ID, Upo)
-    Upo_data=week_data[week_data$Year %in% c(2005:2013) ,]
-    Upo_data=Upo_data[Upo_data$Week %in% c(30:53), ]
-    
-    Upo_data=Upo_data[Upo_data$Year != 2012,]
-    Upo_data=Upo_data[Upo_data$Year != 2013,]
-    
-    
-    
-    ggplot(Upo_data, aes(x=Week, y=Upo_data$Upo,color=Year)) +
-      geom_line(size=1.5)+
-      scale_color_jcolors_contin(palette="pal4") +
-      facet_grid(Year~.)+ggtitle("Mean Catch of Upeneus Pori")
-    ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=1)) 
-    
-    #Truacura sp
-    TRA_data=dplyr::select(week_data,Year,Week, Week_ID, TRA)
-    TRA_data=week_data[week_data$Year %in% c(2003:2012) ,]
-    TRA_data=TRA_data[TRA_data$Week %in% c(29:53), ]
-    
-    TRA_data=TRA_data[TRA_data$Year != 2011,]
-    TRA_data=TRA_data[TRA_data$Year != 2012,]
-    TRA_data=TRA_data[TRA_data$Year != 2013,]
-    TRA_data=TRA_data[TRA_data$Year != 2007,]
-    
-    
-    ggplot(TRA_data, aes(x=Week, y=TRA_data$TRA,color=Year)) +
-      geom_line(size=1.5)+
-      scale_color_jcolors_contin(palette="pal4") +
-      facet_grid(Year~.)+ggtitle("Mean Catch of Truchurus sp.")+
-    ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=1)) 
-    
-    
-    #Seriola Dumerili
-    Sd_data=dplyr::select(week_data,Year,Week, Week_ID, Sd)
-    Sd_data=week_data[week_data$Year %in% c(1998:2012) ,]
-    Sd_data=Sd_data[Sd_data$Week %in% c(15:53), ]
-    
-    Sd_data=Sd_data[Sd_data$Year != 1999,]
-    Sd_data=Sd_data[Sd_data$Year != 2007,]
-    Sd_data=Sd_data[Sd_data$Year != 2013,]
-    Sd_data=Sd_data[Sd_data$Year != 2007,]
-    
-    
-    ggplot(Sd_data, aes(x=Week, y=Sd_data$Sd,color=Year)) +
-      geom_line(size=1.5)+
-      scale_color_jcolors_contin(palette="pal4") +
-      facet_grid(Year~.)+ggtitle("Mean Catch of Seriola Dumerili")+
-      ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=1))
-    
-   
-
-
-```
-
-
 #----------- b size ----------------- 
 
 
 ```{r}
 
+#It is just on 2013_2018 data, need to check what in Itay data
+
+#uploud data
 size_all_data = read.csv("data/kg_data_sizes.CSV")
 
+#take just row with b siz = "Zair" only
 b_size_all = size_all_data %>% dplyr::select(X:species,kg_b) %>% filter(!is.na(kg_b))
-species_b = unique(b_size_all$species)
 
-for (i in species_b)
+#list of the species has b size, and make it character
+species_b = unique(b_size_all$species)
+species_b = as.character(species_b)
+
+#loop of graphs for any specy
+for (i in 1:length(species_b))
 {
-  tepm_b_species = b_size_all %>% dplyr::select(Year.XXXX.,Month.XX.,species,kg_b) %>% filter(species == "i")
-  plot(tepm_b_species)
+  tepm_b_species = b_size_all %>% dplyr::select(Year.XXXX.,Month.XX.,species,kg_b) %>% filter(species == species_b[i])
+
+    
+    
+      
+      p=ggplot(tepm_b_species, aes(x=Month.XX., y=kg_b,color=Year.XXXX. )) +
+    geom_line()+
+    scale_colour_gradientn(colours=rainbow(4))+
+    facet_grid(Year.XXXX.~.)+ggtitle(species_b[i])+
+    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
   
+    grid.arrange(p)
 }  
   
 ```
