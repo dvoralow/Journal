@@ -1,6 +1,8 @@
 ---
 title: "Thesis"
 output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 Ctrl+Alt+i make new chunk
@@ -17,6 +19,7 @@ library(gridExtra)
 library(ggplot2)
 library(jcolors)
 library(RColorBrewer)
+library(lubridate)
 
 ```
 end code
@@ -24,7 +27,7 @@ end code
 
 
 
-clean the data
+clean the data - no need to run every time
 
 ```{r eval=FALSE, include=FALSE}
  #put the net temperautre into the all_data
@@ -333,34 +336,63 @@ end chunk
     summer_vec=c(6:8)  
     autumn_vec=c(9:11)
     
-    #make mean for any season
-    #choose the winter data  
-    winter_temp=month_temp_depth[month_temp_depth$Month %in% winter_vec,]
-    #mean temperature and depth by year
-    winter_temp=aggregate.data.frame(winter_temp,list(winter_temp$Year),FUN = mean,drop = F)
-    #remove the calcukations columns
-    winter_temp=dplyr:: select(winter_temp,Year,Temp,Depth)
-    #join column with the season name 
-    winter_temp=cbind("Season"=rep("winter"),winter_temp)
+    #mean with net temperature
     
-    spring_temp=month_temp_depth[month_temp_depth$Month %in% spring_vec,]
-    spring_temp=aggregate.data.frame(spring_temp,list(spring_temp$Year),FUN=mean,drop = F)
-    spring_temp=dplyr:: select(spring_temp,Year,Temp,Depth)
-    spring_temp=cbind("Season"=rep("spring"),spring_temp)
-    
-    summer_temp=month_temp_depth[month_temp_depth$Month %in% summer_vec,]
-    summer_temp=aggregate.data.frame(summer_temp,list(summer_temp$Year), FUN = mean,drop = F)
-    summer_temp=dplyr:: select(summer_temp,Year,Temp,Depth)
-    summer_temp=cbind("Season"=rep("summer"),summer_temp)
-    
-    autumn_temp=month_temp_depth[month_temp_depth$Month %in% autumn_vec,]
-    autumn_temp=aggregate.data.frame(autumn_temp,list(autumn_temp$Year),FUN=mean,drop = F)
-    autumn_temp=dplyr:: select(autumn_temp,Year,Temp,Depth)
-    autumn_temp=cbind("Season"=rep("autumn"),autumn_temp)
-    #join all seasons to 1 data frame
-    season_temp_depth=rbind(winter_temp,spring_temp,summer_temp,autumn_temp)
-    
+    # #make mean for any season
+    # #choose the winter data  
+    # winter_temp=month_temp_depth[month_temp_depth$Month %in% winter_vec,]
+    # #mean temperature and depth by year
+    # winter_temp=aggregate.data.frame(winter_temp,list(winter_temp$Year),FUN = mean,drop = F)
+    # #remove the calcukations columns
+    # winter_temp=dplyr:: select(winter_temp,Year,Temp,Depth)
+    # #join column with the season name 
+    # winter_temp=cbind("Season"=rep("winter"),winter_temp)
+    # 
+    # spring_temp=month_temp_depth[month_temp_depth$Month %in% spring_vec,]
+    # spring_temp=aggregate.data.frame(spring_temp,list(spring_temp$Year),FUN=mean,drop = F)
+    # spring_temp=dplyr:: select(spring_temp,Year,Temp,Depth)
+    # spring_temp=cbind("Season"=rep("spring"),spring_temp)
+    # 
+    # summer_temp=month_temp_depth[month_temp_depth$Month %in% summer_vec,]
+    # summer_temp=aggregate.data.frame(summer_temp,list(summer_temp$Year), FUN = mean,drop = F)
+    # summer_temp=dplyr:: select(summer_temp,Year,Temp,Depth)
+    # summer_temp=cbind("Season"=rep("summer"),summer_temp)
+    # 
+    # autumn_temp=month_temp_depth[month_temp_depth$Month %in% autumn_vec,]
+    # autumn_temp=aggregate.data.frame(autumn_temp,list(autumn_temp$Year),FUN=mean,drop = F)
+    # autumn_temp=dplyr:: select(autumn_temp,Year,Temp,Depth)
+    # autumn_temp=cbind("Season"=rep("autumn"),autumn_temp)
+    # #join all seasons to 1 data frame
+    # season_temp_depth=rbind(winter_temp,spring_temp,summer_temp,autumn_temp)
+    # 
  
+     #mean depth for any season
+    #choose the winter data  
+    winter_depth=month_depth[month_depth$Month %in% winter_vec,]
+    #mean temperature and depth by year
+    winter_depth=aggregate.data.frame(winter_depth,list(winter_depth$Year),FUN = mean,drop = F)
+    #remove the calcukations columns
+    winter_depth=dplyr:: select(winter_depth,Year,Depth)
+    #join column with the season name 
+    winter_depth=cbind("Season"=rep("winter"),winter_depth)
+    
+    spring_depth=month_depth[month_depth$Month %in% spring_vec,]
+    spring_depth=aggregate.data.frame(spring_depth,list(spring_depth$Year),FUN=mean,drop = F)
+    spring_depth=dplyr:: select(spring_depth,Year,Depth)
+    spring_depth=cbind("Season"=rep("spring"),spring_depth)
+    
+    summer_depth=month_depth[month_depth$Month %in% summer_vec,]
+    summer_depth=aggregate.data.frame(summer_depth,list(summer_depth$Year), FUN = mean,drop = F)
+    summer_depth=dplyr:: select(summer_depth,Year,Depth)
+    summer_depth=cbind("Season"=rep("summer"),summer_depth)
+    
+    autumn_depth=month_depth[month_depth$Month %in% autumn_vec,]
+    autumn_depth=aggregate.data.frame(autumn_depth,list(autumn_depth$Year),FUN=mean,drop = F)
+    autumn_depth=dplyr:: select(autumn_depth,Year,Depth)
+    autumn_depth=cbind("Season"=rep("autumn"),autumn_depth)
+    #join all seasons to 1 data frame
+    season_depth=rbind(winter_depth,spring_depth,summer_depth,autumn_depth)
+    
 
 ```
 
@@ -454,8 +486,8 @@ red_annual_mtc=cbind("mtc"=red_annual_mtc$mtc,year_depth)
 
 
 #start in 1991
-mediter_annual_mtc=mediter_annual_mtc[mediter_annual_mtc$Year %in% c(1991:2018),]
-red_annual_mtc=red_annual_mtc[red_annual_mtc$Year %in% c(1991:2018),]
+#mediter_annual_mtc=mediter_annual_mtc[mediter_annual_mtc$Year %in% c(1991:2018),]
+#red_annual_mtc=red_annual_mtc[red_annual_mtc$Year %in% c(1991:2018),]
 
 
 plot(mediter_annual_mtc, main="Mediterrinian Annual mtc")
@@ -517,7 +549,7 @@ month_all_mtc=data.frame()
     
     month_all_mtc=rbind(month_all_mtc,month_mtc)
   }
-month_all_mtc=cbind(month_all_mtc,"Month"= c(rep(1:12,each=32)))
+month_all_mtc=cbind(month_all_mtc,"Month"= c(rep(1:12,each=((nrow(month_all_mtc))/12))))
 
     #----seperate by origin---
     #call the month catch function
@@ -537,18 +569,18 @@ for (i in 1:12) {
   mediter_mtc=mtc_index_calc(mediter_month,mediter_mean_tcode)
   red_mtc=mtc_index_calc(red_month,red_mean_tcode)
   
-  #plot(mediter_mtc,main=paste("Mediter Month", i ,"MTC"))
-  #plot(red_mtc,main=paste("Red Month", i ,"MTC"))
+  plot(mediter_mtc,main=paste("Mediter Month", i ,"MTC"))
+  plot(red_mtc,main=paste("Red Month", i ,"MTC"))
   
   #ggplot(mediter_mtc,aes(x=index,y=mtc))+geom_point() +ggtitle(paste("Mediter Month",i,"MTC")) 
   #ggplot(red_mtc, aes(x=index,y=mtc))+geom_point()+
-  #labs(subtitle = paste("Month",i),title = "Red sea Origin, MTC Vs Year")
+  labs(subtitle = paste("Month",i),title = "Red sea Origin, MTC Vs Year")
    
   month_mediter_mtc=rbind(month_mediter_mtc,mediter_mtc)
   month_red_mtc=rbind(month_red_mtc,red_mtc)
 }
-month_mediter_mtc=cbind(month_mediter_mtc,"Month"=c (rep(1:12,each=32)))
-month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
+month_mediter_mtc=cbind(month_mediter_mtc,"Month"=c (rep(1:12,each=(nrow(month_mediter_mtc))/12)))
+month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/12)))
 
 ```
 
@@ -571,7 +603,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
     plot(season_mtc,main=paste( season[i] ,"MTC"))
     season_all_mtc=rbind(season_all_mtc,season_mtc)
     }#end for
-  season_all_mtc=cbind(season_all_mtc,"Season"= c(rep(season,each=32)))
+  season_all_mtc=cbind(season_all_mtc,"Season"= c(rep(season,each=(nrow(season_all_mtc)/4))))
 
   
   #start from 1987
@@ -579,8 +611,8 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
   season_all_mtc=dplyr:: rename(season_all_mtc,Year=index)
   
   #bind mean net temperature and mean depth - NA in the missing values 
-  season_all_mtc=full_join(season_all_mtc,season_temp_depth,by=c("Year","Season"))
- 
+  #season_all_mtc=full_join(season_all_mtc,season_temp_depth,by=c("Year","Season"))
+  season_all_mtc=full_join(season_all_mtc,season_depth,by=c("Year","Season"))
  
   
   #----season seperate by origin
@@ -614,8 +646,8 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
    season_mediter_mtc=rbind(season_mediter_mtc,mediter_mtc)
    season_red_mtc=rbind(season_red_mtc,red_mtc)
   }
- season_mediter_mtc=cbind(season_mediter_mtc,"Season"=c (rep(season,each=32)))
- season_red_mtc=cbind(season_red_mtc,"Season"=c(rep(season,each=32)))
+ season_mediter_mtc=cbind(season_mediter_mtc,"Season"=c (rep(season,each=(nrow(season_mediter_mtc)/4))))
+ season_red_mtc=cbind(season_red_mtc,"Season"=c(rep(season,each=nrow(season_red_mtc)/4)))
   
  #start from 1987
  season_mediter_mtc=season_mediter_mtc[season_mediter_mtc$index %in% c(1987:2018),]
@@ -626,67 +658,75 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
  season_red_mtc=rename(season_red_mtc,Year=index)
  
  #bind mean net temperature and mean depth - NA in the missing values 
- season_mediter_mtc=full_join(season_mediter_mtc,season_temp_depth,by=c("Year","Season"))
- season_red_mtc=full_join(season_red_mtc,season_temp_depth,by=c("Year","Season"))
+ season_mediter_mtc=full_join(season_mediter_mtc,season_depth,by=c("Year","Season"))
+ season_red_mtc=full_join(season_red_mtc,season_depth,by=c("Year","Season"))
  
 #mesiter seasons graphs
  ggplot(season_mediter_mtc[season_mediter_mtc$Season=="winter",], aes(x=Temp,y=mtc,colour=Year))+
    geom_point()+
    ggtitle("Winter Mediterranian species MTC by mean net temperature")
- ggplot(season_mediter_mtc[season_mediter_mtc$Season=="winter",], aes(x=Temp,y=mtc,colour=Depth))+
-   geom_point()+
-   ggtitle("Winter Mediterranian species MTC by mean net temperature")
+ 
+    ggplot(season_mediter_mtc[season_mediter_mtc$Season=="winter",], aes(x=Year,y=mtc,colour=Depth))+
+      geom_point()+
+      ggtitle("Winter Mediterranian species MTC by mean net temperature")
  
  ggplot(season_mediter_mtc[season_mediter_mtc$Season=="spring",], aes(x=Temp,y=mtc,colour=Year))+
    geom_point()+
    ggtitle("spring Mediterranian species MTC by mean net temperature")
- ggplot(season_mediter_mtc[season_mediter_mtc$Season=="spring",], aes(x=Temp,y=mtc,colour=Depth))+
-   geom_point()+
-   ggtitle("spring Mediterranian species MTC by mean net temperature")
+ 
+    ggplot(season_mediter_mtc[season_mediter_mtc$Season=="spring",], aes(x=Year,y=mtc,colour=Depth))+
+      geom_point()+
+      ggtitle("spring Mediterranian species MTC by mean net temperature")
  
  ggplot(season_mediter_mtc[season_mediter_mtc$Season=="summer",], aes(x=Temp,y=mtc,colour=Year))+
    geom_point()+
    ggtitle("summer Mediterranian species MTC by mean net temperature")
- ggplot(season_mediter_mtc[season_mediter_mtc$Season=="summer",], aes(x=Temp,y=mtc,colour=Depth))+
-   geom_point()+
-   ggtitle("summer Mediterranian species MTC by mean net temperature")
+ 
+    ggplot(season_mediter_mtc[season_mediter_mtc$Season=="summer",], aes(x=Year,y=mtc,colour=Depth))+
+      geom_point()+
+      ggtitle("summer Mediterranian species MTC by mean net temperature")
  
  ggplot(season_mediter_mtc[season_mediter_mtc$Season=="autumn",], aes(x=Temp,y=mtc,colour=Year))+
    geom_point()+
    ggtitle("autumn Mediterranian species MTC by mean net temperature")
- ggplot(season_mediter_mtc[season_mediter_mtc$Season=="autumn",], aes(x=Temp,y=mtc,colour=Depth))+
-   geom_point()+
-   ggtitle("autumn Mediterranian species MTC by mean net temperature")
+ 
+    ggplot(season_mediter_mtc[season_mediter_mtc$Season=="autumn",], aes(x=Year,y=mtc,colour=Depth))+
+      geom_point()+
+      ggtitle("autumn Mediterranian species MTC by mean net temperature")
  
 
 #red sea seasons graphs
  ggplot(season_red_mtc[season_red_mtc$Season=="winter",], aes(x=Temp,y=mtc,colour=Year))+
    geom_point()+
    ggtitle("Winter red sea species MTC by mean net temperature")
- ggplot(season_red_mtc[season_red_mtc$Season=="winter",], aes(x=Temp,y=mtc,colour=Depth))+
-   geom_point()+
-   ggtitle("Winter red sea species MTC by mean net temperature")
+
+     ggplot(season_red_mtc[season_red_mtc$Season=="winter",], aes(x=Year,y=mtc,colour=Depth))+
+      geom_point()+
+      ggtitle("Winter red sea species MTC by mean net temperature")
  
  ggplot(season_red_mtc[season_red_mtc$Season=="spring",], aes(x=Temp,y=mtc,colour=Year))+
    geom_point()+
    ggtitle("spring red sea species MTC by mean net temperature")
- ggplot(season_red_mtc[season_red_mtc$Season=="spring",], aes(x=Temp,y=mtc,colour=Depth))+
-   geom_point()+
-   ggtitle("spring red sea species MTC by mean net temperature")
+ 
+    ggplot(season_red_mtc[season_red_mtc$Season=="spring",], aes(x=Year,y=mtc,colour=Depth))+
+      geom_point()+
+      ggtitle("spring red sea species MTC by mean net temperature")
  
  ggplot(season_red_mtc[season_red_mtc$Season=="summer",], aes(x=Temp,y=mtc,colour=Year))+
    geom_point()+
    ggtitle("summer red sea species MTC by mean net temperature")
- ggplot(season_red_mtc[season_red_mtc$Season=="summer",], aes(x=Temp,y=mtc,colour=Depth))+
-   geom_point()+
-   ggtitle("summer red sea species MTC by mean net temperature")
+  
+    ggplot(season_red_mtc[season_red_mtc$Season=="summer",], aes(x=Year,y=mtc,colour=Depth))+
+      geom_point()+
+      ggtitle("summer red sea species MTC by mean net temperature")
  
  ggplot(season_red_mtc[season_red_mtc$Season=="autumn",], aes(x=Temp,y=mtc,colour=Year))+
    geom_point()+
    ggtitle("autumn red sea species MTC by mean net temperature")
- ggplot(season_red_mtc[season_red_mtc$Season=="autumn",], aes(x=Temp,y=mtc,colour=Depth))+
-   geom_point()+
-   ggtitle("autumn red sea species MTC by mean net temperature")
+  
+    ggplot(season_red_mtc[season_red_mtc$Season=="autumn",], aes(x=Year,y=mtc,colour=Depth))+
+      geom_point()+
+      ggtitle("autumn red sea species MTC by mean net temperature")
  
  
  
@@ -696,7 +736,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
 ```{r}
  #drop the useless data for the mtc function
   species_code=rownames(mean_tcode)
-  net_all_data=dplyr:: select(all_data,X.3,species_code)
+  net_all_data=dplyr:: select(all_data,X,species_code)
 
   #calling mtc function
   net_mtc=mtc_index_calc(net_all_data,mean_tcode)
@@ -704,7 +744,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
 #  plot(net_all_data$Year,net_all_data$mtc)
   
  
- ggplot(net_all_data, aes(x=Temp,y=mtc,colour=Year))+
+ ggplot(net_all_data, aes(x=Year,y=mtc,colour=loc_DEPTH))+
    geom_point()+
    ggtitle("NET'S MTC by Temperature")+xlab("Net Temperature")  
 
@@ -720,14 +760,16 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=32)))
 uploud the whole fish data
 ```{r}
 #uploud fishes data 
-all_data_unfilter=read.csv(file = paste(thesis_directory,"R/prosseced data/all_data_fishes_only.csv",sep = "/"), stringsAsFactors = F)
- scientific_names_unfilter=read.csv(file = paste(thesis_directory,"R/prosseced data/sceintific_names_fishes_only.csv",sep = "/"), stringsAsFactors = F)
+all_data_unfilter=read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAsFactors = F)
+ scientific_names_unfilter=read.csv(file = "prosseced data/sceintific_names_fishes_only.csv", stringsAsFactors = F)
 #cerate species names vector
  sp_code_unfiletr=scientific_names_unfilter$Sp_code
  scientific_code_unfilter=scientific_names_unfilter$scintific_name
 
- #remove gamberi nets
- all_data_unfilter=all_data_unfilter[all_data_unfilter$Gambari_net==FALSE,]
+ # #set NA to FALSE and remove gamberi nets
+
+  all_data_unfilter = all_data_unfilter %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE")
+ 
 ```
 
 
@@ -740,10 +782,10 @@ catch graphs
  month_catch_unfilter=month_catch_unfilter[month_catch_unfilter$Year %in% c(1987:2018),] 
  
 #create data frame for any quart of the years
-month_catch_unfilter_a=  month_catch_unfilter[month_catch_unfilter$Year %in% c(1987:1993),]
-month_catch_unfilter_b=  month_catch_unfilter[month_catch_unfilter$Year %in% c(1994:2000),]
-month_catch_unfilter_c=  month_catch_unfilter[month_catch_unfilter$Year %in% c(2001:2006),]
-month_catch_unfilter_d=  month_catch_unfilter[month_catch_unfilter$Year %in% c(2007:2013),]
+month_catch_unfilter_a=  month_catch_unfilter[month_catch_unfilter$Year %in% c(1987:1994),]
+month_catch_unfilter_b=  month_catch_unfilter[month_catch_unfilter$Year %in% c(1995:2002),]
+month_catch_unfilter_c=  month_catch_unfilter[month_catch_unfilter$Year %in% c(2003:2010),]
+month_catch_unfilter_d=  month_catch_unfilter[month_catch_unfilter$Year %in% c(2011:2018),]
  
 #
 for (i in 1:length(sp_code_unfiletr)) {
@@ -753,35 +795,35 @@ for (i in 1:length(sp_code_unfiletr)) {
     geom_line()+
     scale_colour_gradientn(colours=rainbow(4))+
     facet_grid(Year~.)+ggtitle(paste (sp_code_unfiletr[i],scientific_code_unfilter[i],sep =" - "))+
-    ylab("Number of Catchs [boxes]")+scale_x_continuous(breaks = 1:12)
+    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
   
   
   p2=ggplot(month_catch_unfilter_b, aes(x=Month, y=month_catch_unfilter_b[,sp_code_unfiletr[i]],color=Year )) +
     geom_line()+
     scale_colour_gradientn(colours=rainbow(4))+
     facet_grid(Year~.)+ggtitle(paste (sp_code_unfiletr[i],scientific_code_unfilter[i],sep =" - "))+
-    ylab("Number of Catchs [boxes]")+scale_x_continuous(breaks = 1:12)
+    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
   
   p3=ggplot(month_catch_unfilter_c, aes(x=Month, y=month_catch_unfilter_c[,sp_code_unfiletr[i]],color=Year )) +
     geom_line()+
     scale_colour_gradientn(colours=rainbow(4))+
     facet_grid(Year~.)+ggtitle(paste (sp_code_unfiletr[i],scientific_code_unfilter[i],sep =" - "))+
-    ylab("Number of Catchs [boxes]")+scale_x_continuous(breaks = 1:12)
+    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
   
   p4=ggplot(month_catch_unfilter_d, aes(x=Month, y=month_catch_unfilter_d[,sp_code_unfiletr[i]],color=Year )) +
     geom_line()+
     scale_colour_gradientn(colours=rainbow(4))+
     facet_grid(Year~.)+ggtitle(paste (sp_code_unfiletr[i],scientific_code_unfilter[i],sep =" - "))+
-    ylab("Number of Catchs [boxes]")+scale_x_continuous(breaks = 1:12)
+    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
   
  #ceate one graph included 4 graphs for any species
-  grid.arrange(p1, p2, p3, p4,ncol=2)
+  #grid.arrange(p1, p3, p2, p4,ncol=2)
+  grid.arrange(p4)
   
-  #save the graphs - !!set the directory before use!!
   #if saving without the "g" part, save just 1 of the 4, but in high resolution
   #so it's better for papars. [could order them by nyself after]
   #order for saving
-  #g <- arrangeGrob(p1, p2, p3, p4, nrow=2) #generates g
+  #g <- arrangeGrob(p1, p3, p2, p4, nrow=2) #generates g
   #ggsave(file = paste (sp_code_unfiletr[i],"png",sep ="."),g)
 
   }#end for
@@ -792,7 +834,7 @@ for (i in 1:length(sp_code_unfiletr)) {
 
 weekly normalization
 ```{r}
- library(lubridate)
+ 
   #cerate date column
   all_data_unfilter$Date<-paste(all_data_unfilter$Year,all_data_unfilter$Month,all_data_unfilter$Day,sep = "-")
     #order the column by year month day
@@ -813,7 +855,7 @@ weekly normalization
  
     #take the week_ID and species
     week_data= dplyr:: select(all_data_unfilter,Week_ID,Aal:WHT)
-    #sum fo weekly catch of each speceis: aggergate by ID
+    #sum of weekly catch of each speceis: aggergate by ID
    week_data=week_data %>% group_by(Week_ID) %>% summarise_all(funs(sum))
 
     #create weekly mean catch:diviate the weekly sum of catch of each species in the 
@@ -836,10 +878,10 @@ weekly normalization
     week_data=week_data[week_data$Year %in% c(1987:2018),] 
     
     #create data frame for any quart of the years
-    week_data_a=  week_data[week_data$Year %in% c(1987:1993),]
-    week_data_b=  week_data[week_data$Year %in% c(1994:2000),]
-    week_data_c=  week_data[week_data$Year %in% c(2001:2006),]
-    week_data_d=  week_data[week_data$Year %in% c(2007:2013),]
+    week_data_a=  week_data[week_data$Year %in% c(1987:1994),]
+    week_data_b=  week_data[week_data$Year %in% c(1994:2002),]
+    week_data_c=  week_data[week_data$Year %in% c(2001:2010),]
+    week_data_d=  week_data[week_data$Year %in% c(2007:2018),]
     
 
 
@@ -887,7 +929,8 @@ graphs of the ratio catch
       #so it's better for papars. [could order them by myself after]
         #order for saving
         #g <- arrangeGrob(p1, p3, p2, p4, nrow=2) #generates g
-        #ggsave(file = paste (sp_code_unfiletr[i],"png",sep ="."),g)
+        g <- arrangeGrob( p4) #generates g
+        ggsave(file = paste (sp_code_unfiletr[i],"png",sep ="."),g)
       
     }#end for
 
@@ -974,4 +1017,22 @@ graphs of the ratio catch
 ```
 
 
+#----------- b size ----------------- 
+
+
+```{r}
+
+size_all_data = read.csv("data/kg_data_sizes.CSV")
+
+b_size_all = size_all_data %>% dplyr::select(X:species,kg_b) %>% filter(!is.na(kg_b))
+species_b = unique(b_size_all$species)
+
+for (i in species_b)
+{
+  tepm_b_species = b_size_all %>% dplyr::select(Year.XXXX.,Month.XX.,species,kg_b) %>% filter(species == "i")
+  plot(tepm_b_species)
+  
+}  
+  
+```
 
