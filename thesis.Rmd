@@ -758,24 +758,47 @@ compare the net temperature accepted from Copernicus MOdel to Heker Yamim observ
 
 
 ```{r}
-#upload data
+#upload diary data
 old_data = read.csv("prosseced data/final_data_fishes_known_origin_1987_2013.CSV")
+#upload Heker Yamim observations - near Hadera, 26 m depth, daily mesurments
 observ = read.delim("data/ADCP_temp_2004_2018.txt")
 
-#rename column
+#rename column names
 observ = observ %>% rename(date =X.Date ,temp = Daily.Average.Bottom.Temperaure.C..deg..26.m..depth ) 
 
+#seperate the date to 3 columns
 observ$date = as.character(observ$date)
+  observ$date = gsub(" ", ":",observ$date)
+    observ$date = gsub(":00:00:00", "",observ$date)
+      observ = observ %>% separate(date, c("Year","Month", "Day"), sep = ":") 
 
-observ$date = gsub(" ", ":",observ$date)
-observ$date = gsub(":00:00:00", "",observ$date)
+#take just the dates included in the diary data
+observ$Month = as.numeric(observ$Month)
+drop_observ = observ %>% dplyr::filter(Year =="2013") %>%dplyr::filter(Month <=9)
+observ = observ %>%filter(Year <=2012) 
+observ = rbind(observ,drop_observ)
 
-
-observ = observ %>% separate(date, c("Year","Month", "Day"), sep = ":") %>% filter(Year <=2013) %>% 
-
-  observ =  dplyr::filter(Month_ob>9)
-
+#take just the date included in Heker data, and depthes from 16-36 meter.
 old_data = old_data %>% dplyr::select(Year,Month,Day,depth_meter,Temp) %>% filter(Year>=2004) %>% filter((depth_meter > 15) & (depth_meter<37))
+
+#cerate date column
+  observ$Date<-paste(observ$Year,observ$Month,observ$Day,sep = "-")
+  old_data$Date<-paste(old_data$Year,old_data$Month,old_data$Day,sep = "-")
+  
+    #order the column by year month day
+    observ$Date<-ymd(observ$Date)
+    old_data$Date<-ymd(old_data$Date)
+    
+    #I didn't finish yet. need to: 
+    #1. join togother the nets in the same day in the old_data
+    #2. remove remove from observ data row doiesn't exist in the old data
+    #3. compare temperaturs.
+    
+    
+  old_data = old_data %>% group_by(Date) %>% summerize(Maen_temp = sum(Temp)) %>%
+  group_by(.dots = grouping) %>% summarize(Kg = sum(Kg)) %>%
+  spread(key = species,value = Kg,fill = 0) %>%
+  dplyr:: ungroup()
 
 
 ```
