@@ -818,11 +818,18 @@ old_data = old_data %>% dplyr::select(Year,Month,Day,depth_meter,Temp) %>% filte
 #----------GAM model ----------------------------#
 
 ```{r}
-
+#for now I will use the measurments temperature, which exist just from 2004
 annual_mtc_temp = annual_mtc %>% dplyr::filter(Year %in% 2004:2018)
-annual_mtc_temp = cbind(annual_mtc_temp,year_observ$YearT)
-gam_year = 
+annual_mtc_temp = cbind(annual_mtc_temp,Temp = year_observ$YearT)
+annual_mtc_temp =annual_mtc_temp%>% rename(Depth = loc_DEPTH)
 
+gam(y ~ s(x), data = my_data)
+gam_year = gam(mtc ~ s(Year, bs = "cr") + s(Depth, bs = "ad") + s(Temp, bs = "ad") ,data = annual_mtc_temp)
+
+
+#need to: take the whole data seperate for red and mediteranian, and do mtc for them
+#join temperature columns - by year and by month
+#run the model
 ```
 
 
