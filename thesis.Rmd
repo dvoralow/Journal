@@ -20,6 +20,7 @@ library(ggplot2)
 library(jcolors)
 library(RColorBrewer)
 library(lubridate)
+library(mgcv)
 
 ```
 end code
@@ -493,29 +494,29 @@ red_annual_mtc=cbind("mtc"=red_annual_mtc$mtc,year_depth)
 plot(mediter_annual_mtc, main="Mediterrinian Annual mtc")
 plot(red_annual_mtc,main="Red Annual mtc")
 
-ggplot(mediter_annual_mtc, aes(x=Temp,y=mtc,colour=Year, size=3))+
-  geom_point()+
-  ggtitle("Annual Mediterranian species MTC by mean net temperature")
+# ggplot(mediter_annual_mtc, aes(x=Temp,y=mtc,colour=Year, size=3))+
+#   geom_point()+
+#   ggtitle("Annual Mediterranian species MTC by mean net temperature")
 
-ggplot(mediter_annual_mtc, aes(x=Temp,y=mtc,colour=Depth))+
-  geom_point()+
-  ggtitle("Annual Mediterranian species MTC by mean net temperature")
+# ggplot(mediter_annual_mtc, aes(x=Temp,y=mtc,colour=Depth))+
+#   geom_point()+
+#   ggtitle("Annual Mediterranian species MTC by mean net temperature")
 
-ggplot(mediter_annual_mtc, aes(x=Year,y=mtc,colour=Temp, size=3))+
-  geom_point()+
-  ggtitle("Annual Mediterranian species MTC by year")
+# ggplot(mediter_annual_mtc, aes(x=Year,y=mtc,colour=Temp, size=3))+
+#   geom_point()+
+#   ggtitle("Annual Mediterranian species MTC by year")
+# 
+# ggplot(red_annual_mtc, aes(x=Temp,y=mtc,colour=Year, size=3))+
+#   geom_point()+
+#   ggtitle("Annual Red sea species MTC by mean net temperature")
 
-ggplot(red_annual_mtc, aes(x=Temp,y=mtc,colour=Year, size=3))+
-  geom_point()+
-  ggtitle("Annual Red sea species MTC by mean net temperature")
+# ggplot(red_annual_mtc, aes(x=Temp,y=mtc,colour=Depth))+
+#   geom_point()+
+#   ggtitle("Annual Red sea species MTC by mean net temperature")
 
-ggplot(red_annual_mtc, aes(x=Temp,y=mtc,colour=Depth))+
-  geom_point()+
-  ggtitle("Annual Red sea species MTC by mean net temperature")
-
-ggplot(red_annual_mtc, aes(x=Year,y=mtc,colour=Temp, size=3))+
-  geom_point()+
-  ggtitle("Annual Red Sea species MTC by year")
+# ggplot(red_annual_mtc, aes(x=Year,y=mtc,colour=Temp, size=3))+
+#   geom_point()+
+#   ggtitle("Annual Red Sea species MTC by year")
 
 ggplot(red_annual_mtc, aes(x=Year,y=mtc,colour=loc_DEPTH, size=3))+
   geom_point()+
@@ -662,71 +663,72 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
  season_red_mtc=full_join(season_red_mtc,season_depth,by=c("Year","Season"))
  
 #mesiter seasons graphs
- ggplot(season_mediter_mtc[season_mediter_mtc$Season=="winter",], aes(x=Temp,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("Winter Mediterranian species MTC by mean net temperature")
+ # ggplot(season_mediter_mtc[season_mediter_mtc$Season=="winter",], aes(x=Temp,y=mtc,colour=Year))+
+ #   geom_point()+
+ #   ggtitle("Winter Mediterranian species MTC by mean net temperature")
  
     ggplot(season_mediter_mtc[season_mediter_mtc$Season=="winter",], aes(x=Year,y=mtc,colour=Depth))+
       geom_point()+
-      ggtitle("Winter Mediterranian species MTC by mean net temperature")
+      ggtitle("Winter Mediterranian species MTC by mean net depth")
  
- ggplot(season_mediter_mtc[season_mediter_mtc$Season=="spring",], aes(x=Temp,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("spring Mediterranian species MTC by mean net temperature")
- 
+ # ggplot(season_mediter_mtc[season_mediter_mtc$Season=="spring",], aes(x=Temp,y=mtc,colour=Year))+
+ #   geom_point()+
+ #   ggtitle("spring Mediterranian species MTC by mean net temperature")
+ # 
     ggplot(season_mediter_mtc[season_mediter_mtc$Season=="spring",], aes(x=Year,y=mtc,colour=Depth))+
       geom_point()+
-      ggtitle("spring Mediterranian species MTC by mean net temperature")
- 
- ggplot(season_mediter_mtc[season_mediter_mtc$Season=="summer",], aes(x=Temp,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("summer Mediterranian species MTC by mean net temperature")
+      ggtitle("spring Mediterranian species MTC by mean net depth")
+ # 
+ # ggplot(season_mediter_mtc[season_mediter_mtc$Season=="summer",], aes(x=Temp,y=mtc,colour=Year))+
+ #   geom_point()+
+ #   ggtitle("summer Mediterranian species MTC by mean net temperature")
  
     ggplot(season_mediter_mtc[season_mediter_mtc$Season=="summer",], aes(x=Year,y=mtc,colour=Depth))+
       geom_point()+
-      ggtitle("summer Mediterranian species MTC by mean net temperature")
+      ggtitle("summer Mediterranian species MTC by mean net depth")
  
- ggplot(season_mediter_mtc[season_mediter_mtc$Season=="autumn",], aes(x=Temp,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("autumn Mediterranian species MTC by mean net temperature")
- 
+ # ggplot(season_mediter_mtc[season_mediter_mtc$Season=="autumn",], aes(x=Temp,y=mtc,colour=Year))+
+ #   geom_point()+
+ #   ggtitle("autumn Mediterranian species MTC by mean net temperature")
+ # 
     ggplot(season_mediter_mtc[season_mediter_mtc$Season=="autumn",], aes(x=Year,y=mtc,colour=Depth))+
       geom_point()+
-      ggtitle("autumn Mediterranian species MTC by mean net temperature")
+      ggtitle("autumn Mediterranian species MTC by mean net depth")
  
 
 #red sea seasons graphs
- ggplot(season_red_mtc[season_red_mtc$Season=="winter",], aes(x=Temp,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("Winter red sea species MTC by mean net temperature")
+ 
+    # ggplot(season_red_mtc[season_red_mtc$Season=="winter",], aes(x=Temp,y=mtc,colour=Year))+
+ #   geom_point()+
+ #   ggtitle("Winter red sea species MTC by mean net temperature")
 
      ggplot(season_red_mtc[season_red_mtc$Season=="winter",], aes(x=Year,y=mtc,colour=Depth))+
       geom_point()+
-      ggtitle("Winter red sea species MTC by mean net temperature")
+      ggtitle("Winter red sea species MTC by mean net depth")
  
- ggplot(season_red_mtc[season_red_mtc$Season=="spring",], aes(x=Temp,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("spring red sea species MTC by mean net temperature")
- 
+ # ggplot(season_red_mtc[season_red_mtc$Season=="spring",], aes(x=Temp,y=mtc,colour=Year))+
+ #   geom_point()+
+ #   ggtitle("spring red sea species MTC by mean net temperature")
+ # 
     ggplot(season_red_mtc[season_red_mtc$Season=="spring",], aes(x=Year,y=mtc,colour=Depth))+
       geom_point()+
-      ggtitle("spring red sea species MTC by mean net temperature")
+      ggtitle("spring red sea species MTC by mean net depth")
  
- ggplot(season_red_mtc[season_red_mtc$Season=="summer",], aes(x=Temp,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("summer red sea species MTC by mean net temperature")
-  
+ # ggplot(season_red_mtc[season_red_mtc$Season=="summer",], aes(x=Temp,y=mtc,colour=Year))+
+ #   geom_point()+
+ #   ggtitle("summer red sea species MTC by mean net temperature")
+ #  
     ggplot(season_red_mtc[season_red_mtc$Season=="summer",], aes(x=Year,y=mtc,colour=Depth))+
       geom_point()+
-      ggtitle("summer red sea species MTC by mean net temperature")
+      ggtitle("summer red sea species MTC by mean net depth")
  
- ggplot(season_red_mtc[season_red_mtc$Season=="autumn",], aes(x=Temp,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("autumn red sea species MTC by mean net temperature")
-  
+ # ggplot(season_red_mtc[season_red_mtc$Season=="autumn",], aes(x=Temp,y=mtc,colour=Year))+
+ #   geom_point()+
+ #   ggtitle("autumn red sea species MTC by mean net temperature")
+ #  
     ggplot(season_red_mtc[season_red_mtc$Season=="autumn",], aes(x=Year,y=mtc,colour=Depth))+
       geom_point()+
-      ggtitle("autumn red sea species MTC by mean net temperature")
+      ggtitle("autumn red sea species MTC by mean net depth")
  
  
  
@@ -746,7 +748,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
  
  ggplot(net_all_data, aes(x=Year,y=mtc,colour=loc_DEPTH))+
    geom_point()+
-   ggtitle("NET'S MTC by Temperature")+xlab("Net Temperature")  
+   ggtitle("NET'S MTC by Year")+xlab("Year")  
 
  
 
@@ -772,6 +774,16 @@ observ$date = as.character(observ$date)
     observ$date = gsub(":00:00:00", "",observ$date)
       observ = observ %>% separate(date, c("Year","Month", "Day"), sep = ":") 
 
+  #clean nonsense measurmets and create mean year and month mean  
+   observ = observ %>% dplyr:: filter(temp>0)
+    year_observ = observ %>% dplyr::group_by(Year) %>% summarise(YearT = mean(temp)) %>% ungroup()
+    month_observ = observ %>% dplyr::group_by(Year,Month) %>% summarise(MonthT = mean(temp)) %>% ungroup()
+
+    write.csv(year_observ,"prosseced data/year_temp_ADCP.CSV")
+    write.csv(month_observ,"prosseced data/month_temp_ADCP.CSV")
+    
+  year_temp_paper = read.csv("data/year temperature paper.CSV")
+    
 #take just the dates included in the diary data
 observ$Month = as.numeric(observ$Month)
 drop_observ = observ %>% dplyr::filter(Year =="2013") %>%dplyr::filter(Month <=9)
@@ -802,6 +814,17 @@ old_data = old_data %>% dplyr::select(Year,Month,Day,depth_meter,Temp) %>% filte
 
 
 ```
+
+#----------GAM model ----------------------------#
+
+```{r}
+
+annual_mtc_temp = annual_mtc %>% dplyr::filter(Year %in% 2004:2018)
+annual_mtc_temp = cbind(annual_mtc_temp,year_observ$YearT)
+gam_year = 
+
+```
+
 
 
 
