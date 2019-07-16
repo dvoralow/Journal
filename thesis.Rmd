@@ -48,7 +48,7 @@ clean the data - no need to run every time
   t_pref=read.csv(file = "prosseced data/mean_temp_pref_cheung.csv",stringsAsFactors = F)
   
   #----!!! net temp - need to work on!!!------#
-  net_temp=read.csv(file = "prosseced data/net_temperatures_all.csv")
+  #net_temp=read.csv(file = "prosseced data/net_temperatures_all.csv")
   
   
   
@@ -60,6 +60,17 @@ clean the data - no need to run every time
   #drop the duplicates species [chaneg in their prices only]
   scientific_names=scientific_names[!duplicated(scientific_names$Sp_code),]
 
+  
+  #join season and date to all_data
+  #cerate date column
+  all_data$Date<-paste(all_data$Year,all_data$Month,all_data$Day,sep = "-")
+    #order the column by year month day
+    all_data$Date<-ymd(all_data$Date)
+      #create week column - the number of the week in th year
+      all_data$Week<-week(all_data$Date)
+      season_data  =data.frame()
+      season_data ["Season" = c("winter","spring", "summer", "autumn"),"Month" = c(1:12)]
+      
 
   #remove not fishes [alredy removed from 'speceis_names_seperate']
   all_data =all_data[ , !(names(all_data) %in% drops_no_fish)]
@@ -730,7 +741,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
       geom_point()+
       ggtitle("autumn red sea species MTC by mean net depth")
  
- 
+
  
 ```
 
@@ -743,6 +754,9 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
   #calling mtc function
   net_mtc=mtc_index_calc(net_all_data,mean_tcode)
   net_all_data=cbind(all_data,"mtc"=net_mtc$mtc)
+  
+  write.csv(net_all_data,"prosseced data/net_mtc_data.CSV")
+  
 #  plot(net_all_data$Year,net_all_data$mtc)
   
  
@@ -750,9 +764,75 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
    geom_point()+
    ggtitle("NET'S MTC by Year")+xlab("Year")  
 
- 
+ #--- net mtc by origin---
+  #mediter mtc
+  #drop the useless data for the mtc function
+    species_code=mediter_code
+      net_mediter_data=dplyr:: select(mediter_all_data,X,species_code)
+
+  #calling mtc function
+    net_mediter_mtc=mtc_index_calc(net_mediter_data,mediter_mean_tcode)
+      net_mediter_data=cbind(mediter_all_data,"mtc"=net_mediter_mtc$mtc)
+  
+    write.csv(net_all_data,"prosseced data/mediter_net_mtc.CSV")
+    
+    #red mtc
+  #drop the useless data for the mtc function
+    species_code=red_code
+      net_red_data=dplyr:: select(red_all_data,X,species_code)
+
+  #calling mtc function
+    net_red_mtc=mtc_index_calc(net_red_data,red_mean_tcode)
+      net_red_data=cbind(red_all_data,"mtc"=net_red_mtc$mtc)
+  
+    write.csv(net_all_data,"prosseced data/red_net_mtc.CSV")
 
 ```
+
+
+
+#----------GAM model ----------------------------#
+
+```{r}
+
+#----the whole data GAm model---
+net_all_data = read.csv("prosseced data/net_mtc_data.CSV")
+
+
+#get out rows without mtc
+net_all_data = net_all_data %>%  dplyr:: filter(!is.na(mtc))
+
+#gam model
+gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = net_all_data)
+
+#plot(gam_year,select = 2,shade = TRUE):plot(fitted(gam_year),residuals(gam_year))
+
+par(mfrow = c(2,2)) 
+plot(gam_year,se=TRUE,col = "blue")
+
+
+#---seperate by origin---
+
+net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
+net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
+
+#get out rows without mtc
+  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc))
+  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc))
+
+  #gam model
+mediter_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = net_mediter_data)
+red_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = net_red_data)
+
+#plots
+
+par(mfrow = c(2,2)) 
+  plot(mediter_gam_year,se=TRUE,col = "blue")
+  plot(red_gam_year,se=TRUE,col = "blue")
+
+
+```
+
 
 #------ compare net temperature -----
 
@@ -814,26 +894,6 @@ old_data = old_data %>% dplyr::select(Year,Month,Day,depth_meter,Temp) %>% filte
 
 
 ```
-
-#----------GAM model ----------------------------#
-
-```{r}
-#for now I will use the measurments temperature, which exist just from 2004
-annual_mtc_temp = annual_mtc %>% dplyr::filter(Year %in% 2004:2018)
-annual_mtc_temp = cbind(annual_mtc_temp,Temp = year_observ$YearT)
-annual_mtc_temp =annual_mtc_temp%>% rename(Depth = loc_DEPTH)
-
-gam(y ~ s(x), data = my_data)
-gam_year = gam(mtc ~ s(Year, bs = "cr") + s(Depth, bs = "ad") + s(Temp, bs = "ad") ,data = annual_mtc_temp)
-
-
-#need to: take the whole data seperate for red and mediteranian, and do mtc for them
-#join temperature columns - by year and by month
-#run the model
-```
-
-
-
 
 #---------------------fenology-----------------------------------------------------------------------------
 
