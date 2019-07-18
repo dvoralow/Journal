@@ -68,9 +68,12 @@ clean the data - no need to run every time
     all_data$Date<-ymd(all_data$Date)
       #create week column - the number of the week in th year
       all_data$Week<-week(all_data$Date)
-      season_data  =data.frame()
-      season_data ["Season" = c("winter","spring", "summer", "autumn"),"Month" = c(1:12)]
-      
+    
+      season_data = data.frame("Season" = rep(c("winter","spring", "summer", "autumn"),each = 3),"Month" = c(12,1:11))
+ all_data = left_join(all_data,season_data, by = "Month") 
+ all_data = all_data %>% dplyr::select(X:Day,Date:Season,everything())
+     
+            
 
   #remove not fishes [alredy removed from 'speceis_names_seperate']
   all_data =all_data[ , !(names(all_data) %in% drops_no_fish)]
@@ -295,14 +298,14 @@ end chunk
     all_data=read.csv(file= "prosseced data/all_data_fishes_known_origin.csv", stringsAsFactors = F)
     #-- mean year temp
     #select yaer and temperature column
-    year_temp= dplyr:: select(all_data,Year,Temp)
-    #remove 0 and NA rows
-    year_temp=year_temp[year_temp$Temp!=0,]
-    year_temp=na.omit(year_temp)
-    #mean of the temperature
-    year_temp=aggregate.data.frame(year_temp,list(year_temp$Year),FUN = mean,drop=F)
-    year_temp=select(year_temp,Year,Temp )
-    
+    # year_temp= dplyr:: select(all_data,Year,Temp)
+    # #remove 0 and NA rows
+    # year_temp=year_temp[year_temp$Temp!=0,]
+    # year_temp=na.omit(year_temp)
+    # #mean of the temperature
+    # year_temp=aggregate.data.frame(year_temp,list(year_temp$Year),FUN = mean,drop=F)
+    # year_temp=select(year_temp,Year,Temp )
+    # 
     #mean year depth
     year_depth= dplyr:: select(all_data,Year,loc_DEPTH)
     year_depth=year_depth[year_depth$loc_DEPTH!=0,] 
@@ -312,10 +315,10 @@ end chunk
     #remove years with no temperature
     year_depth=year_depth[7:nrow(year_depth),]
     #bind the temperature and depth
-    year_temp_depth=cbind(year_temp,"Depth"=year_depth$loc_DEPTH)
+   # year_temp_depth=cbind(year_temp,"Depth"=year_depth$loc_DEPTH)
   
      plot(year_depth)
-    plot(year_temp)
+    #plot(year_temp)
     
     
     
@@ -331,15 +334,15 @@ end chunk
     month_depth=month_depth[month_depth$Year %in% c(1987:2018),]
     
     #mean month net temperature - same as month depth [seperate because the NA rows doesn't equal]
-    month_temp=dplyr:: select(all_data,Year,Month,Temp)
-    month_temp=na.omit(month_temp)
-    month_temp=month_temp[month_temp$Temp!=0,]
-    month_temp=aggregate.data.frame(month_temp,list(month_temp$Year,month_temp$Month),FUN=mean,drop = F)
-    month_temp=na.omit(month_temp)
-    month_temp=dplyr:: select(month_temp,Year=Group.1,Month=Group.2,Temp)
-    
-    month_temp_depth=cbind(month_temp,Depth=month_depth$Depth)
-    
+    # month_temp=dplyr:: select(all_data,Year,Month,Temp)
+    # month_temp=na.omit(month_temp)
+    # month_temp=month_temp[month_temp$Temp!=0,]
+    # month_temp=aggregate.data.frame(month_temp,list(month_temp$Year,month_temp$Month),FUN=mean,drop = F)
+    # month_temp=na.omit(month_temp)
+    # month_temp=dplyr:: select(month_temp,Year=Group.1,Month=Group.2,Temp)
+    # 
+    # month_temp_depth=cbind(month_temp,Depth=month_depth$Depth)
+    # 
     
 #---mean season depth and temperature
     #vectors with the seasons monthes numbers
@@ -767,25 +770,23 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
  #--- net mtc by origin---
   #mediter mtc
   #drop the useless data for the mtc function
-    species_code=mediter_code
-      net_mediter_data=dplyr:: select(mediter_all_data,X,species_code)
+      net_mediter_data=dplyr:: select(mediter_all_data,X,mediter_code)
 
   #calling mtc function
     net_mediter_mtc=mtc_index_calc(net_mediter_data,mediter_mean_tcode)
       net_mediter_data=cbind(mediter_all_data,"mtc"=net_mediter_mtc$mtc)
   
-    write.csv(net_all_data,"prosseced data/mediter_net_mtc.CSV")
+    write.csv(net_mediter_data,"prosseced data/mediter_net_mtc.CSV")
     
     #red mtc
   #drop the useless data for the mtc function
-    species_code=red_code
-      net_red_data=dplyr:: select(red_all_data,X,species_code)
+      net_red_data=dplyr:: select(red_all_data,X,red_code)
 
   #calling mtc function
     net_red_mtc=mtc_index_calc(net_red_data,red_mean_tcode)
       net_red_data=cbind(red_all_data,"mtc"=net_red_mtc$mtc)
   
-    write.csv(net_all_data,"prosseced data/red_net_mtc.CSV")
+    write.csv(net_red_data,"prosseced data/red_net_mtc.CSV")
 
 ```
 
@@ -819,16 +820,35 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 #get out rows without mtc
   net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc))
   net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc))
-
+  
   #gam model
-mediter_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = net_mediter_data)
-red_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = net_red_data)
+mediter_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = net_mediter_mtc)
+red_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = net_red_mtc)
 
 #plots
 
 par(mfrow = c(2,2)) 
   plot(mediter_gam_year,se=TRUE,col = "blue")
   plot(red_gam_year,se=TRUE,col = "blue")
+  
+  
+  #---seaon model
+  #clear memory
+  gc()
+  mediter_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") +s(Date, bs = "gp") + s(Season, bs = "cc", k=4) ,data = net_mediter_mtc)
+red_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad")+s(Date, bs = "gp") + s(Season, bs = "cc", k=4) ,data = net_red_mtc)
+
+par(mfrow = c(2,2)) 
+  plot(mediter_gam_season,se=TRUE,col = "blue")
+  plot(red_gam_season,se=TRUE,col = "blue")
+  
+  #---month model
+  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") +s(Date, bs = "gp") + s(Month, bs = "cc", k=12) ,data = net_mediter_mtc)
+red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad")+s(Date, bs = "gp") + s(Month, bs = "cc", k=12) ,data = net_red_mtc)
+
+par(mfrow = c(2,2)) 
+  plot(mediter_gam_month,se=TRUE,col = "blue")
+  plot(red_gam_month,se=TRUE,col = "blue") 
 
 
 ```
