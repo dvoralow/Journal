@@ -53,7 +53,7 @@ clean the data - no need to run every time
   
   
   
-  
+ 
   #sort to alepahbeta order by sp_cod - the 'all_data' and 'scientific_names' are alrady sorted
   species_names_seperate=species_names_seperate[order(species_names_seperate$Sp_code),]
 
@@ -63,9 +63,9 @@ clean the data - no need to run every time
   
   #join season and date to all_data
   #cerate date column
-  all_data$Date<-paste(all_data$Year,all_data$Month,all_data$Day,sep = "-")
+  all_data$Date<-paste(all_data$Year,all_data$Month,all_data$Day,all_data$Start_hh,sep = "-")
     #order the column by year month day
-    all_data$Date<-ymd(all_data$Date)
+    all_data$Date<-ymd_h(all_data$Date)
       #create week column - the number of the week in th year
       all_data$Week<-week(all_data$Date)
     
@@ -814,12 +814,24 @@ plot(gam_year,se=TRUE,col = "blue")
 
 #---seperate by origin---
 
+#upload mediter and re sea data.
 net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
 net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 
 #get out rows without mtc
   net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc))
   net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc))
+  
+  # #set the date to numeric date tipe
+  # net_mediter_mtc$Date = as_datetime(net_mediter_mtc$Date, origin = lubridate::origin, tz = "UTC")
+  # net_red_mtc$Date = as_datetime(net_red_mtc$Date, origin = lubridate::origin, tz = "UTC")
+  
+ #create columns, "Season_num" of numbers from the seasons, for the model. winter=1, etc...    
+  #ceate numeric columns frome the date-time "Date_num"
+  net_mediter_mtc = net_mediter_mtc %>% mutate(Season_num = ifelse(Season=="winter", 1, ifelse(Season=="spring", 2, ifelse(Season=="summer", 3, ifelse(Season=="autumn", 4, NA)))))%>% mutate(Date_num = as.numeric(Date)) %>% dplyr::select(X:Date,Date_num,Week:Season,Season_num ,everything())
+  
+  net_red_mtc = net_red_mtc %>% mutate(Season_num = ifelse(Season=="winter", 1, ifelse(Season=="spring", 2, ifelse(Season=="summer", 3, ifelse(Season=="autumn", 4, NA))))) %>% mutate(Date_num = as.numeric(Date)) %>% dplyr::select(X:Date,Date_num,Week:Season,Season_num ,everything())
+ 
   
   #gam model
 mediter_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = net_mediter_mtc)
@@ -829,26 +841,42 @@ red_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = ne
 
 par(mfrow = c(2,2)) 
   plot(mediter_gam_year,se=TRUE,col = "blue")
+  mtext("Mediterranean", side = 3, line = -2, outer = TRUE)
   plot(red_gam_year,se=TRUE,col = "blue")
+  mtext("Red Sea", side = 3, line = -13.5, outer = TRUE)
   
   
   #---seaon model
   #clear memory
   gc()
-  mediter_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") +s(Date, bs = "gp") + s(Season, bs = "cc", k=4) ,data = net_mediter_mtc)
-red_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad")+s(Date, bs = "gp") + s(Season, bs = "cc", k=4) ,data = net_red_mtc)
+
+  
+  mediter_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") + s(Season_num, bs = "cc", k=4) +s(Date_num, bs = "gp"),data = net_mediter_mtc)
+   # +s(Date_num, bs = "gp")
+  
+red_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") + s(Season_num, bs = "cc", k=4)+s(Date_num, bs = "gp") ,data = net_red_mtc)
+
 
 par(mfrow = c(2,2)) 
   plot(mediter_gam_season,se=TRUE,col = "blue")
+  title("Mediterranean",line = -2, outer=TRUE)
+  
+par(mfrow = c(2,2)) 
   plot(red_gam_season,se=TRUE,col = "blue")
+   title("Red Sea",line = -2, outer=TRUE)
   
   #---month model
-  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") +s(Date, bs = "gp") + s(Month, bs = "cc", k=12) ,data = net_mediter_mtc)
-red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad")+s(Date, bs = "gp") + s(Month, bs = "cc", k=12) ,data = net_red_mtc)
+  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") + s(Month, bs = "cc", k=12)+s(Date_num, bs = "gp") ,data = net_mediter_mtc)
+  # 
+  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") + s(Month, bs = "cc", k=12)+s(Date_num, bs = "gp") ,data = net_red_mtc)
 
 par(mfrow = c(2,2)) 
   plot(mediter_gam_month,se=TRUE,col = "blue")
+title("Mediterranean",line = -2, outer=TRUE)
+ 
+par(mfrow = c(2,2)) 
   plot(red_gam_month,se=TRUE,col = "blue") 
+  title("Red Sea",line = -2, outer=TRUE)
 
 
 ```
