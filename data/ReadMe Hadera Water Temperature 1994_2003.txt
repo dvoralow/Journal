@@ -1,8 +1,4 @@
-נתונים שעתיים ממכשיר
-CTD
-המוצב בעומק 12 מטר
-03.2014-04.2018
-
-דיוק של אלפית המעלה
+Temperature mesures from Hadera, 1994-2003, 11 m depth.
+Mesured by Pacer tool, didn't exist todat.
 Credit to Heker Yamim 
 (Israel Oceanographic & Limnological Research (IOLR) Mediterranean GLOSS #80 station, www.ocean.org.il)

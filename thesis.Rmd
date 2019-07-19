@@ -869,7 +869,8 @@ par(mfrow = c(2,2))
   mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") + s(Month, bs = "cc", k=12)+s(Date_num, bs = "gp") ,data = net_mediter_mtc)
   # 
   red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") + s(Month, bs = "cc", k=12)+s(Date_num, bs = "gp") ,data = net_red_mtc)
-
+#
+  
 par(mfrow = c(2,2)) 
   plot(mediter_gam_month,se=TRUE,col = "blue")
 title("Mediterranean",line = -2, outer=TRUE)
@@ -894,7 +895,8 @@ old_data = read.csv("prosseced data/final_data_fishes_known_origin_1987_2013.CSV
 observ = read.delim("data/ADCP_temp_2004_2018.txt")
 
 #rename column names
-observ = observ %>% rename(date =X.Date ,temp = Daily.Average.Bottom.Temperaure.C..deg..26.m..depth ) 
+observ = observ %>% rename(date = X.Date,Temp = Daily.Average.Bottom.Temperaure.C..deg..26.m..depth )
+
 
 #seperate the date to 3 columns
 observ$date = as.character(observ$date)
@@ -902,15 +904,36 @@ observ$date = as.character(observ$date)
     observ$date = gsub(":00:00:00", "",observ$date)
       observ = observ %>% separate(date, c("Year","Month", "Day"), sep = ":") 
 
+    
+#uploud and seperate date to 3 columns Hadera 1994-2003 temperature data
+old_observ = read.csv("data/Hadera_Water_Temperature_1994_2003_11m_depth.CSV")
+
+old_observ = old_observ %>% rename(date = Date.Time.GMT.
+, Temp = Value.of.hourly.average.sea.water.temperature.measured.at.depth.11.6.m..2km.from.shore.line..Hadera....degrees.Celsius) 
+
+old_observ$date = as.character(old_observ$date)
+old_observ = old_observ %>% separate(date, c("Date","Time"), sep = " ") %>% dplyr::select(Date:Temp)%>% separate(Date, c("Day","Month", "Year"), sep = "/") 
+
+      
   #clean nonsense measurmets and create mean year and month mean  
    observ = observ %>% dplyr:: filter(temp>0)
-    year_observ = observ %>% dplyr::group_by(Year) %>% summarise(YearT = mean(temp)) %>% ungroup()
-    month_observ = observ %>% dplyr::group_by(Year,Month) %>% summarise(MonthT = mean(temp)) %>% ungroup()
+      year_observ = observ %>% dplyr::group_by(Year) %>% summarise(YearT = mean(temp)) %>% ungroup()
+        month_observ = observ %>% dplyr::group_by(Year,Month) %>% summarise(MonthT = mean(temp)) %>% ungroup()
+    
+    old_observ = old_observ %>% dplyr:: filter(!is.na(Temp))
+      year_old_observ = old_observ %>% dplyr::group_by(Year) %>% summarise(YearT = mean(Temp)) %>% ungroup()
+        month_old_observ = old_observ %>% dplyr::group_by(Year,Month) %>% summarise(MonthT = mean(Temp)) %>% ungroup()
 
     write.csv(year_observ,"prosseced data/year_temp_ADCP.CSV")
-    write.csv(month_observ,"prosseced data/month_temp_ADCP.CSV")
+      write.csv(month_observ,"prosseced data/month_temp_ADCP.CSV")
     
-  year_temp_paper = read.csv("data/year temperature paper.CSV")
+    write.csv(year_old_observ,"prosseced data/year_temp_Pacer.CSV")
+      write.csv(month_old_observ,"prosseced data/month_temp_Pacer.CSV")
+  
+    year_temp_paper = read.csv("data/year temperature paper.CSV")
+    
+    year_temp_hadera = rbind(year_old_observ,year_observ)
+    plot(year_temp_hadera)
     
 #take just the dates included in the diary data
 observ$Month = as.numeric(observ$Month)
