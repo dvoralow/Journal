@@ -34,8 +34,7 @@ clean the data - no need to run every time
  #put the net temperautre into the all_data
         #all_data=read.csv(file=paste(thesis_directory,"all_data.csv",sep = "/"),stringsAsFactors = F)
         #all_data=cbind(all_data,"Temp"=net_temp$temp)
-        #write.csv(all_data,file = paste(thesis_directory,"all_data.csv",sep = "/") )
-
+        #write.csv(all_data,file = paste(thesis_directory,"all_data.csv",sep = "/") )=
   #names of shrimps, crabs, octopus, squids - cod names.
   drops_no_fish <- c("Lvu","Ovu","Plo","Sof","Mae","Pja","Pse")
   #names of fishes with unknown origin and general category with no speceis
@@ -792,6 +791,8 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
 
 
 
+
+
 #----------GAM model ----------------------------#
 
 ```{r}
@@ -832,6 +833,12 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
   
   net_red_mtc = net_red_mtc %>% mutate(Season_num = ifelse(Season=="winter", 1, ifelse(Season=="spring", 2, ifelse(Season=="summer", 3, ifelse(Season=="autumn", 4, NA))))) %>% mutate(Date_num = as.numeric(Date)) %>% dplyr::select(X:Date,Date_num,Week:Season,Season_num ,everything())
  
+  #prepare data for joining: put origin column and delete catch columns
+  split_mediter_mtc = net_mediter_mtc %>% mutate(Origin = "med") %>% dplyr::select(-(Aal:WHT))
+    split_red_mtc = net_red_mtc %>% mutate(Origin = "red") %>% dplyr::select(-(Nra:Upo))
+  
+  split_all_mtc = rbind(split_mediter_mtc,split_red_mtc)
+  
   
   #gam model
 mediter_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = net_mediter_mtc)
@@ -878,6 +885,16 @@ title("Mediterranean",line = -2, outer=TRUE)
 par(mfrow = c(2,2)) 
   plot(red_gam_month,se=TRUE,col = "blue") 
   title("Red Sea",line = -2, outer=TRUE)
+
+  
+  split_all_mtc$Origin =as.factor( split_all_mtc$Origin)
+    split_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH) + s(Month, bs = "cc", k=12) ,data = split_all_mtc,subset = origin)
+#
+  
+par(mfrow = c(2,2)) 
+  plot(split_gam_month,se=TRUE,col = "blue")
+title("All split",line = -2, outer=TRUE)
+
 
 
 ```
