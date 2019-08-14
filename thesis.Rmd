@@ -851,10 +851,10 @@ par(mfrow = c(2,2))
   gc()
 
   
-  mediter_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") + s(Season_num, bs = "cc", k=4) +s(Date_num, bs = "gp"),data = net_mediter_mtc)
+  mediter_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH) + s(Season_num, bs = "cc", k=4) ,data = net_mediter_mtc)
    # +s(Date_num, bs = "gp")
   
-red_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") + s(Season_num, bs = "cc", k=4)+s(Date_num, bs = "gp") ,data = net_red_mtc)
+red_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH) + s(Season_num, bs = "cc", k=4) ,data = net_red_mtc)
 
 
 par(mfrow = c(2,2)) 
@@ -866,9 +866,9 @@ par(mfrow = c(2,2))
    title("Red Sea",line = -2, outer=TRUE)
   
   #---month model
-  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") + s(Month, bs = "cc", k=12)+s(Date_num, bs = "gp") ,data = net_mediter_mtc)
+  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH) + s(Month, bs = "cc", k=12) ,data = net_mediter_mtc)
   # 
-  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") + s(Month, bs = "cc", k=12)+s(Date_num, bs = "gp") ,data = net_red_mtc)
+  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH) + s(Month, bs = "cc", k=12) ,data = net_red_mtc)
 #
   
 par(mfrow = c(2,2)) 
