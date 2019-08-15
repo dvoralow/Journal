@@ -476,8 +476,8 @@ red_annual_mtc=red_annual_mtc[red_annual_mtc$index %in% c(1991:2018),]
 mediter_annual_mtc=cbind("mtc"=mediter_annual_mtc$mtc,year_temp_depth)
 red_annual_mtc=cbind("mtc"=red_annual_mtc$mtc,year_temp_depth)
 
-mediter_annual_mtc=cbind("mtc"=mediter_annual_mtc$mtc,year_depth)
-red_annual_mtc=cbind("mtc"=red_annual_mtc$mtc,year_depth)
+mediter_annual_mtc=cbind("mtc"=mediter_annual_mtc$mtc,year_temp_depth)
+red_annual_mtc=cbind("mtc"=red_annual_mtc$mtc,year_temp_depth)
 
 
 
@@ -508,11 +508,11 @@ plot(red_annual_mtc,main="Red Annual mtc")
    geom_point()+
    ggtitle("Annual Red Sea species MTC by year")
 
-ggplot(red_annual_mtc, aes(x=Year,y=mtc,colour=loc_DEPTH, size=3))+
+ggplot(red_annual_mtc, aes(x=Year,y=mtc,colour=Depth, size=3))+
   geom_point()+
   ggtitle("Annual Red Sea species MTC by year")
 
-ggplot(mediter_annual_mtc, aes(x=Year,y=mtc,colour=loc_DEPTH, size=3))+
+ggplot(mediter_annual_mtc, aes(x=Year,y=mtc,colour=Depth, size=3))+
   geom_point()+
   ggtitle("Annual Mediterranian species MTC by year")
 
@@ -652,7 +652,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
  season_mediter_mtc=full_join(season_mediter_mtc,season_temp_depth,by=c("Year","Season"))
  season_red_mtc=full_join(season_red_mtc,season_temp_depth,by=c("Year","Season"))
  
-#mesiter seasons graphs
+#mediter seasons graphs
  ggplot(season_mediter_mtc[season_mediter_mtc$Season=="winter",], aes(x=SST,y=mtc,colour=Year))+
    geom_point()+
    ggtitle("Winter Mediterranian species MTC by mean net temperature")
