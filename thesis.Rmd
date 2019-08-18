@@ -319,7 +319,13 @@ end chunk
     #mean of the temperature
     year_temp=aggregate.data.frame(year_temp,list(year_temp$Year),FUN = mean,drop=F)
     year_temp=select(year_temp,Year,SST )
-    # 
+     
+    
+    #---yearly mean SST and SST anomaly
+    
+    yearly_mean_sst = mean(year_temp$SST)
+    year_temp = year_temp %>% mutate("SST_anom" = SST-yearly_mean_sst)
+    
     #mean year depth
     year_depth= dplyr:: select(all_data,Year,loc_DEPTH)
     year_depth=year_depth[year_depth$loc_DEPTH!=0,] 
@@ -334,6 +340,8 @@ end chunk
      plot(year_depth)
     plot(year_temp)
     
+    
+  
     
     
 #--mean month depth and temperature
@@ -376,22 +384,40 @@ end chunk
     winter_temp=dplyr:: select(winter_temp,Year,SST,Depth)
     #join column with the season name
     winter_temp=cbind("Season"=rep("winter"),winter_temp)
+      #season mean SST and SST anomaly
+    winter_mean_sst = mean(winter_temp$SST)
+    winter_median_sst = median(winter_temp$SST)
+    winter_temp = winter_temp %>% mutate("SST_anom" = SST-winter_mean_sst)
 
     spring_temp=month_temp_depth[month_temp_depth$Month %in% spring_vec,]
     spring_temp=aggregate.data.frame(spring_temp,list(spring_temp$Year),FUN=mean,drop = F)
     spring_temp=dplyr:: select(spring_temp,Year,SST,Depth)
     spring_temp=cbind("Season"=rep("spring"),spring_temp)
+    
+    spring_mean_sst = mean(spring_temp$SST)
+    spring_median_sst = median(spring_temp$SST)
+    spring_temp = spring_temp %>% mutate("SST_anom" = SST-spring_mean_sst)
+
 
     summer_temp=month_temp_depth[month_temp_depth$Month %in% summer_vec,]
     summer_temp=aggregate.data.frame(summer_temp,list(summer_temp$Year), FUN = mean,drop = F)
     summer_temp=dplyr:: select(summer_temp,Year,SST,Depth)
     summer_temp=cbind("Season"=rep("summer"),summer_temp)
 
+    summer_mean_sst = mean(summer_temp$SST)
+    summer_median_sst = median(summer_temp$SST)
+    summer_temp = summer_temp %>% mutate("SST_anom" = SST-summer_mean_sst)
+
     autumn_temp=month_temp_depth[month_temp_depth$Month %in% autumn_vec,]
     autumn_temp=aggregate.data.frame(autumn_temp,list(autumn_temp$Year),FUN=mean,drop = F)
     autumn_temp=dplyr:: select(autumn_temp,Year,SST,Depth)
     autumn_temp=cbind("Season"=rep("autumn"),autumn_temp)
-    #join all seasons to 1 data frame
+    
+    autumn_mean_sst = mean(autumn_temp$SST)
+    autumn_median_sst = median(autumn_temp$SST)
+    autumn_temp = autumn_temp %>% mutate("SST_anom" = SST-autumn_mean_sst)
+    
+      #join all seasons to 1 data frame
     season_temp_depth=rbind(winter_temp,spring_temp,summer_temp,autumn_temp)
     
 
@@ -507,6 +533,7 @@ plot(red_annual_mtc,main="Red Annual mtc")
  ggplot(red_annual_mtc, aes(x=Year,y=mtc,colour=SST, size=3))+
    geom_point()+
    ggtitle("Annual Red Sea species MTC by year")
+ 
 
 ggplot(red_annual_mtc, aes(x=Year,y=mtc,colour=Depth, size=3))+
   geom_point()+
@@ -516,8 +543,25 @@ ggplot(mediter_annual_mtc, aes(x=Year,y=mtc,colour=Depth, size=3))+
   geom_point()+
   ggtitle("Annual Mediterranian species MTC by year")
 
-```
 
+#-----Yearly graphs for paper
+
+
+ggplot(mediter_annual_mtc, aes(x=Year,y=mtc,colour=Depth, size=3))+
+  geom_point()+geom_smooth(method=lm,se=FALSE,size = 1)+   # Add linear regression line, Don't add shaded confidence region
+  scale_size(guide = 'none')+
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+
+  labs(y ="MTC")+
+ scale_x_continuous (breaks=seq(1991,2018, by = 2))+
+  geom_line(aes(y = SST_anom+20.5, colour = SST_anom))+
+  scale_y_continuous(sec.axis = sec_axis(~.-20.5, name = "SST anomaly"))+
+  ggtitle("Annual Mediterranian species MTC by year")
+
+x = year_temp_depth$SST_anom
+x=x+20.5
+```
+geom_line(aes(y = a + Temp*b), color = "red") +
+  scale_y_continuous("Precipitation", sec.axis = sec_axis(~ (. - a)/b, name = "Temperature")) +
 
 #----month mtc----
 ```{r}
@@ -721,6 +765,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
       ggtitle("autumn red sea species MTC by mean net depth")
  
 
+     
  
 ```
 
