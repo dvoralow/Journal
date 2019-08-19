@@ -21,6 +21,7 @@ library(jcolors)
 library(RColorBrewer)
 library(lubridate)
 library(mgcv)
+library(quantmod)
 
 ```
 end code
@@ -546,19 +547,38 @@ ggplot(mediter_annual_mtc, aes(x=Year,y=mtc,colour=Depth, size=3))+
 
 #-----Yearly graphs for paper
 
+formula <- y ~ poly(x, 2, raw = TRUE)
 
-ggplot(mediter_annual_mtc, aes(x=Year,y=mtc,colour=Depth, size=3))+
-  geom_point()+geom_smooth(method=lm,se=FALSE,colour="black",size = 1)+   # Add linear regression line, Don't add shaded confidence region
-  scale_size(guide = 'none')+
+
+ggplot(mediter_annual_mtc, aes(x=Year ,y=mtc,colour=Depth, size=3))+
+  geom_point()+#geom_smooth(method=lm,se=FALSE,colour="black",size = 1)+  
+
+    scale_size(guide = 'none')+
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+
   labs(y ="MTC")+
  scale_x_continuous (breaks=seq(1991,2018, by = 2))+ 
   scale_colour_gradientn(colours=topo.colors(7))+
   geom_line(aes(y = SST_anom+20.5, colour = SST_anom,size = 1))+
-  scale_y_continuous(sec.axis = sec_axis(~.-20.5, name = "SST anomaly"))+
-  ggtitle("Annual Mediterranian species MTC by depth, compare to SST anomaly")
+  scale_y_continuous(sec.axis = sec_axis(~.-20.5, name = "SST Anomaly"))+
+  ggtitle("Annual Mediterranian Species MTC By Depth, Compare To SST Anomaly")+
+  stat_smooth(aes(y = mtc), 
+              method = "lm", formula = formula, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
+  stat_smooth(aes(y =  SST_anom+20.5), 
+              method = "lm", formula = formula, se = FALSE, size = 1, color = "blue",linetype = "twodash")+
+geom_text(data =mediter_annual_mtc[mediter_annual_mtc$Year =="2004", ], aes(label = "MTC"), hjust = 1,vjust = 1.5)+
+geom_text(data =mediter_annual_mtc[mediter_annual_mtc$Year =="1993", ], aes(label = "SST_Anomaly"), hjust = -0.4,vjust = -3,color = "blue")
+  
 
 
+    #geom_text(aes(x = Year, y = SST_anom, label = "SST_anom", color = "SST_anom"))
+  #geom_text(aes(x = Year, y = mtc, label = "mtc", color = "mtc")) 
+  #geom_text(data = legend, aes(x = x_pos, y = y_pos, label = label, color = label, hjust = -1, vjust = 1)) +
+ #guides(color = F)+
+  #geom_text(aes(x = 1999, y = 21, label = "SST", color = "SST_anom")) + 
+#geom_text(aes(x = as.Date("2014-10-01"), y = 45, label = "FB", color = "FB"))
+
+
+  
 ```
 geom_line(aes(y = a + Temp*b), color = "red") +
   scale_y_continuous("Precipitation", sec.axis = sec_axis(~ (. - a)/b, name = "Temperature")) +
