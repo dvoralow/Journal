@@ -141,7 +141,7 @@ annual_catch=function(the_big_data,code){
 
 #input:
   #2 data frames: 
-    #1. time index [year, month] in the first column, sum of catch for the time series, to any speicies
+    #1. time index [year/month/season] in the first column, sum of catch for the time series, to any speicies
     #2. data with the same speceies and same order as 1, with column called "Tpref"
       #with the species prefernce temperature
 
@@ -194,13 +194,28 @@ mtc_index_calc=function(time_species_data,sp_tpref_data){
     filter_data=select(filter_data,Year=Group.1,Month=Group.2,code ) 
    return(filter_data)
   }
-    
+ 
+
+#seaon new function   
+ season_catch=function(the_big_data,code)
+   {
+#take just the relevant column 
+  filter_data=select(the_big_data,Year,Season,code)
+    #sum the cathc by  by year
+    filter_data=aggregate.data.frame(filter_data,list(filter_data$Year,filter_data$Season),FUN = sum,drop=F)
+    #rename the new column and drop sum of years and Season   
+    filter_data=select(filter_data,Year=Group.1,Season=Group.2,code ) 
+   return(filter_data)
+  }
+ 
   
 #---4. seasonal agregate the data
    season_catch=function(the_big_data,code)
    {
     #call to thte month catch function
       season_data=month_catch(the_big_data,code)
+      season_data = na.omit(season_data)
+        year_temp=na.omit(year_temp)
      
       #winter 12-2 monthes
       #create data frame with the winter monthes
