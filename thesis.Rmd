@@ -88,6 +88,7 @@ clean the data - no need to run every time
       
  all_data = left_join(all_data,season_data, by = "Month") 
  all_data = all_data %>% left_join(sst_date, by = "Date") %>% dplyr::select(X:Day,DateTime,Date:Season,SST,everything())
+all_data =all_data %>% dplyr::mutate(Season_num = ifelse(Season=="winter", 1, ifelse(Season=="spring", 2, ifelse(Season=="summer", 3, ifelse(Season=="autumn", 4, NA))))) %>% dplyr::select(X:Season, Season_num, everything())
 
  
   #remove not fishes [alredy removed from 'speceis_names_seperate']
@@ -196,71 +197,21 @@ mtc_index_calc=function(time_species_data,sp_tpref_data){
   }
  
 
-#seaon new function   
+
+
+#---4. seasonal agregate the data 
  season_catch=function(the_big_data,code)
    {
 #take just the relevant column 
-  filter_data=select(the_big_data,Year,Season,code)
-    #sum the cathc by  by year
-    filter_data=aggregate.data.frame(filter_data,list(filter_data$Year,filter_data$Season),FUN = sum,drop=F)
+  filter_data=dplyr::select(the_big_data,Year,Season_num,code)
+    #sum the catch by  by year
+    filter_data=aggregate.data.frame(filter_data,list(filter_data$Year,filter_data$Season_num),FUN = sum,drop=F)
     #rename the new column and drop sum of years and Season   
-    filter_data=select(filter_data,Year=Group.1,Season=Group.2,code ) 
+    filter_data=select(filter_data,Year=Group.1,Season_num=Group.2,code ) 
    return(filter_data)
   }
  
   
-#---4. seasonal agregate the data
-   season_catch=function(the_big_data,code)
-   {
-    #call to thte month catch function
-      season_data=month_catch(the_big_data,code)
-      season_data = na.omit(season_data)
-        year_temp=na.omit(year_temp)
-     
-      #winter 12-2 monthes
-      #create data frame with the winter monthes
-     winter=season_data[(season_data$Month==12),]
-     winter=rbind(winter,season_data[season_data$Month==1,])
-     winter=rbind(winter,season_data[season_data$Month==2,])
-     #sum the catch by year
-     winter_data=aggregate.data.frame(winter, list( winter$Year),FUN=sum,drop = F)
-     #order the data
-     winter_data=select(winter_data,Year=Group.1,code)
-     #create column with the name of the season
-     winter_data=cbind("Season"=rep("winter"),winter_data)
-     
-     #repete to the all seasond
-     #spring 3-5
-    spring=season_data[(season_data$Month==3),]
-    spring=rbind(spring,season_data[season_data$Month==4,])
-    spring=rbind(spring,season_data[season_data$Month==5,])
-    spring_data=aggregate.data.frame(spring, list(spring$Year),FUN=sum,drop = F)
-    spring_data=select(spring_data,Year=Group.1,code)
-    spring_data=cbind("Season"=rep("spring"),spring_data)
-    
-    #summer - 6-8
-    summer=season_data[(season_data$Month==6),]
-    summer=rbind(summer,season_data[season_data$Month==7,])
-    summer=rbind(summer,season_data[season_data$Month==8,])
-    summer_data=aggregate.data.frame(summer, list(summer$Year),FUN=sum,drop = F)
-    summer_data=select(summer_data,Year=Group.1,code)
-    summer_data=cbind("Season"=rep("summer"),summer_data)
-    
-    #autumn 9-11
-    autumn=season_data[(season_data$Month==9),]
-    autumn=rbind(autumn,season_data[season_data$Month==10,])
-    autumn=rbind(autumn,season_data[season_data$Month==11,])
-    autumn_data=aggregate.data.frame(autumn, list(autumn$Year),FUN=sum,drop = F)
-    autumn_data=select(autumn_data,Year=Group.1,code)
-    autumn_data=cbind("Season"=rep("autumn"),autumn_data)
-    
-    #one data frame with all the season catch
-    season=rbind(winter_data,spring_data,summer_data,autumn_data)
-    
-    return(season)
-   }
-    
-
 ```
 end chunk
 
@@ -362,6 +313,8 @@ end chunk
     
 #--mean month depth and temperature
     month_depth=dplyr:: select(all_data,Year,Month,loc_DEPTH)
+    
+    
     #remove 0 and NA
     month_depth=na.omit(month_depth)
     month_depth=month_depth[month_depth$loc_DEPTH!=0,]
@@ -383,58 +336,40 @@ end chunk
      
     
 #---mean season depth and temperature
-    #vectors with the seasons monthes numbers
-    winter_vec=c(12,1,2)
-    spring_vec=c(3:5)
-    summer_vec=c(6:8)  
-    autumn_vec=c(9:11)
+     season_depth=dplyr:: select(all_data,Year,Season_num,loc_DEPTH)
+    #remove 0 and NA
+    season_depth=na.omit(season_depth)
+    season_depth=season_depth[season_depth$loc_DEPTH!=0,]
+    #aggregate by year by season
     
-    #mean with net temperature
+    #season_depth =season_depth %>% dplyr::mutate(Season_num = ifelse(Season=="winter", 1, ifelse(Season=="spring", 2, ifelse(Season=="summer", 3, ifelse(Season=="autumn", 4, NA))))) %>% dplyr::select(Year, Season_num, loc_DEPTH)
+    season_depth = aggregate.data.frame(season_depth,list(season_depth$Year,season_depth$Season_num),FUN = mean,drop = F)
+     season_depth=season_depth[season_depth$Year %in% c(1991:2018),]
+    season_depth=na.omit(season_depth)
+    season_depth=dplyr:: select(season_depth,Year,Season_num,Depth=loc_DEPTH)
+   
     
-    #make mean for any season
-    #choose the winter data
-    winter_temp=month_temp_depth[month_temp_depth$Month %in% winter_vec,]
-    #mean temperature and depth by year
-    winter_temp=aggregate.data.frame(winter_temp,list(winter_temp$Year),FUN = mean,drop = F)
-    #remove the calcukations columns
-    winter_temp=dplyr:: select(winter_temp,Year,SST,Depth)
-    #join column with the season name
-    winter_temp=cbind("Season"=rep("winter"),winter_temp)
-      #season mean SST and SST anomaly
-    winter_mean_sst = mean(winter_temp$SST)
-    winter_median_sst = median(winter_temp$SST)
-    winter_temp = winter_temp %>% mutate("SST_anom" = SST-winter_mean_sst)
+    #mean season net temperature - same as season depth [seperate because the NA rows doesn't equal]
+    season_temp=dplyr:: select(all_data,Year,Season_num,SST)
+    season_temp=na.omit(season_temp)
+    season_temp=season_temp[season_temp$SST!=0,]
+     #season_temp =season_temp %>% dplyr::mutate(Season_num = ifelse(Season=="winter", 1, ifelse(Season=="spring", 2, ifelse(Season=="summer", 3, ifelse(Season=="autumn", 4, NA))))) %>% dplyr::select(Year, Season_num, SST)
+    season_temp=aggregate.data.frame(season_temp,list(season_temp$Year,season_temp$Season_num),FUN=mean,drop = F)
+    season_temp=na.omit(season_temp)
+    season_temp=dplyr:: select(season_temp,Year,Season_num,SST)
 
-    spring_temp=month_temp_depth[month_temp_depth$Month %in% spring_vec,]
-    spring_temp=aggregate.data.frame(spring_temp,list(spring_temp$Year),FUN=mean,drop = F)
-    spring_temp=dplyr:: select(spring_temp,Year,SST,Depth)
-    spring_temp=cbind("Season"=rep("spring"),spring_temp)
+    season_temp_depth=cbind(season_temp,Depth=season_depth$Depth)
+      season_temp_depth =season_temp_depth %>% dplyr::mutate(Season = ifelse(Season_num==1,"winter", ifelse(Season_num==2, "spring", ifelse(Season_num==3, "summer", ifelse(Season_num==4, "autumn", NA))))) 
+   
     
-    spring_mean_sst = mean(spring_temp$SST)
-    spring_median_sst = median(spring_temp$SST)
-    spring_temp = spring_temp %>% mutate("SST_anom" = SST-spring_mean_sst)
-
-
-    summer_temp=month_temp_depth[month_temp_depth$Month %in% summer_vec,]
-    summer_temp=aggregate.data.frame(summer_temp,list(summer_temp$Year), FUN = mean,drop = F)
-    summer_temp=dplyr:: select(summer_temp,Year,SST,Depth)
-    summer_temp=cbind("Season"=rep("summer"),summer_temp)
-
-    summer_mean_sst = mean(summer_temp$SST)
-    summer_median_sst = median(summer_temp$SST)
-    summer_temp = summer_temp %>% mutate("SST_anom" = SST-summer_mean_sst)
-
-    autumn_temp=month_temp_depth[month_temp_depth$Month %in% autumn_vec,]
-    autumn_temp=aggregate.data.frame(autumn_temp,list(autumn_temp$Year),FUN=mean,drop = F)
-    autumn_temp=dplyr:: select(autumn_temp,Year,SST,Depth)
-    autumn_temp=cbind("Season"=rep("autumn"),autumn_temp)
     
-    autumn_mean_sst = mean(autumn_temp$SST)
-    autumn_median_sst = median(autumn_temp$SST)
-    autumn_temp = autumn_temp %>% mutate("SST_anom" = SST-autumn_mean_sst)
     
-      #join all seasons to 1 data frame
-    season_temp_depth=rbind(winter_temp,spring_temp,summer_temp,autumn_temp)
+    # #vectors with the seasons monthes numbers
+    # winter_vec=c(12,1,2)
+    # spring_vec=c(3:5)
+    # summer_vec=c(6:8)  
+    # autumn_vec=c(9:11)
+    
     
 
 ```
@@ -656,8 +591,8 @@ for (i in 1:12) {
   mediter_mtc=mtc_index_calc(mediter_month,mediter_mean_tcode)
   red_mtc=mtc_index_calc(red_month,red_mean_tcode)
   
-  plot(mediter_mtc,main=paste("Mediter Month", i ,"MTC"))
-  plot(red_mtc,main=paste("Red Month", i ,"MTC"))
+  #plot(mediter_mtc,main=paste("Mediter Month", i ,"MTC"))
+  #plot(red_mtc,main=paste("Red Month", i ,"MTC"))
   
   #ggplot(mediter_mtc,aes(x=index,y=mtc))+geom_point() +ggtitle(paste("Mediter Month",i,"MTC")) 
   #ggplot(red_mtc, aes(x=index,y=mtc))+geom_point()+
@@ -675,6 +610,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
 ```{r}
  #call the season catch function
   season_all_catch=season_catch(all_data,species_code)
+   season_all_catch =season_all_catch %>% dplyr::mutate(Season = ifelse(Season_num==1,"winter", ifelse(Season_num==2, "spring", ifelse(Season_num==3, "summer", ifelse(Season_num==4, "autumn", NA))))) %>% dplyr::select(Year,Season_num,Season,everything())
 
   #empety data frame for the loop
   season_all_mtc=data.frame()
@@ -684,8 +620,8 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
   #loop for the mtc in every season
   for (i in 1:4) {
 
-    season_loop=season_all_catch[which(season_all_catch$Season ==season[i]),]
-    season_loop=dplyr:: select(season_loop,-(Season))
+    season_loop=season_all_catch[which(season_all_catch$Season_num ==i),]
+    season_loop=dplyr:: select(season_loop,-(Season),-(Season_num))
     season_mtc=mtc_index_calc(season_loop,mean_tcode)
     plot(season_mtc,main=paste( season[i] ,"MTC"))
     season_all_mtc=rbind(season_all_mtc,season_mtc)
@@ -708,23 +644,23 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
  season_red_catch=season_catch(red_all_data, red_code)   
  
  #season's names vector
- season=c("winter","spring","summer","autumn") 
+ 
  #empety data frame for the loop
  season_mediter_mtc=data.frame()
  season_red_mtc=data.frame()
   #loop for the mtc in everyseason to every origin
   for (i in 1:4) {
-    mediter_season=season_mediter_catch[which(season_mediter_catch$Season==season[i]),]
-    red_season=season_red_catch[which(season_red_catch$Season==season[i]),]
+    mediter_season=season_mediter_catch[which(season_mediter_catch$Season_num==i),]
+    red_season=season_red_catch[which(season_red_catch$Season_num==i),]
     
-    mediter_season=dplyr:: select(mediter_season,-(Season))
-    red_season=dplyr:: select(red_season,-(Season))
+    mediter_season=dplyr:: select(mediter_season,-(Season_num))
+    red_season=dplyr:: select(red_season,-(Season_num))
     
     mediter_mtc=mtc_index_calc(mediter_season,mediter_mean_tcode)
     red_mtc=mtc_index_calc(red_season,red_mean_tcode)
     
-    plot(mediter_mtc,main=paste("Mediter", season[i] ,"MTC"))
-    plot(red_mtc,main=paste("Red Sea", season[i] ,"MTC"))
+   # plot(mediter_mtc,main=paste("Mediter", season[i] ,"MTC"))
+    #plot(red_mtc,main=paste("Red Sea", season[i] ,"MTC"))
     
     #ggplot(mediter_mtc,aes(x=index,y=mtc))+geom_point() +ggtitle(paste("Mediter",season[i],"MTC")) 
     #ggplot(red_mtc, aes(x=index,y=mtc))+geom_point()+
