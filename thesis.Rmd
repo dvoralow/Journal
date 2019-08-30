@@ -1094,7 +1094,29 @@ par(mfrow = c(2,2))
   plot(red_gam_month,se=TRUE,col = "blue") 
   title("Red Sea",line = -2, outer=TRUE)
 
+ 
   
+  #convert month to factor
+  med_mtc_mo_fa = net_mediter_mtc %>% dplyr::mutate(Month = as.factor(Month))
+  red_mtc_mo_fa = net_red_mtc %>% dplyr::mutate(Month = as.factor(Month))
+    
+  
+  mediter_gam_mo_fa = gam(mtc ~ s(SST, by = Month)   ,data = med_mtc_mo_fa)
+# + s(depth_meter, bs = "ts") offset(Duration) +s(Year, bs = "cr")  ++Month
+par(mfrow = c(2,2)) 
+  plot(  mediter_gam_mo_fa,se=TRUE,col = "blue")
+  summary(  mediter_gam_mo_fa)
+  
+   red_gam_mo_fa = gam(mtc ~ s(SST, by = Month)   ,data = red_mtc_mo_fa)
+# + s(depth_meter, bs = "ts") offset(Duration) +s(Year, bs = "cr")  ++Month
+par(mfrow = c(2,2)) 
+  plot(  red_gam_mo_fa,se=TRUE,col = "blue")
+  summary(  res_gam_mo_fa)
+  
+ 
+  
+#---------- the split data ------ 
+  #data with different column to "origin", any net in 2 rows, 1 for "med" and 1 for "red"    
   split_all_mtc$Origin =as.factor( split_all_mtc$Origin)
   
 #year by origin  
@@ -1110,12 +1132,14 @@ split_gam_month = gam(mtc ~offset(Duration) + s(Year, by = Origin) +Origin+ s(de
 # 
 par(mfrow = c(3,2)) 
   plot(split_gam_month,se=TRUE,col = "blue")
+   summary(split_gam_month)
   
 #year and SST by origin with the whole covariates
 split_gam_month = gam(mtc ~offset(Duration) + s(Year, by = Origin) +Origin+ s(depth_meter, bs = "ts") + s(Month, bs = "cc", k=12) +s(SST, by = Origin)  ,data = split_all_mtc)
 # 
 par(mfrow = c(3,2)) 
   plot(split_gam_month,se=TRUE,col = "blue")
+  summary(split_gam_mon)
 
   
   
@@ -1127,6 +1151,13 @@ par(mfrow = c(2,1))
   plot(split_gam_month,se=TRUE,col = "blue")
 title("All split",line = -2, outer=TRUE)
 
+#check of SST and month corrolation
+sst_month_gam <- gam(SST~s(Month, bs = "cc", k=12), data = split_all_mtc)
+ summary(sst_month_gam)
+  plot(sst_month_gam,se=TRUE,col = "blue")
+
+  
+sst_month_gam
 
 
 ```
