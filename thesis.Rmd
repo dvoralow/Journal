@@ -61,10 +61,6 @@ clean the data - no need to run every time
   species_names_seperate=read.csv(file = "data/species name_seperate.csv",stringsAsFactors = F)
   t_pref=read.csv(file = "prosseced data/mean_temp_pref_cheung.csv",stringsAsFactors = F)
   
-  #----!!! net temp - need to work on!!!------#
-  #net_temp=read.csv(file = "prosseced data/net_temperatures_all.csv")
-  
-  
 
  
   #sort to alepahbeta order by sp_cod - the 'all_data' and 'scientific_names' are alrady sorted
@@ -90,7 +86,11 @@ clean the data - no need to run every time
  all_data = all_data %>% left_join(sst_date, by = "Date") %>% dplyr::select(X:Day,DateTime,Date:Season,SST,everything())
 all_data =all_data %>% dplyr::mutate(Season_num = ifelse(Season=="winter", 1, ifelse(Season=="spring", 2, ifelse(Season=="summer", 3, ifelse(Season=="autumn", 4, NA))))) %>% dplyr::select(X:Season, Season_num, everything())
 
- 
+
+#remove uncorrect depthes
+all_data = all_data %>% dplyr::mutate(depth_meter = replace(depth_meter,depth_meter < 10, NA)) %>% dplyr::mutate(depth_meter = replace(depth_meter, depth_meter > 1000, NA))
+
+
   #remove not fishes [alredy removed from 'speceis_names_seperate']
   all_data =all_data[ , !(names(all_data) %in% drops_no_fish)]
     write.csv(all_data,file = "prosseced data/all_data_fishes_only.csv")
@@ -294,15 +294,15 @@ end chunk
     year_temp = year_temp %>% mutate("SST_anom" = SST-yearly_mean_sst)
     
     #mean year depth
-    year_depth= dplyr:: select(all_data,Year,loc_DEPTH)
-    year_depth=year_depth[year_depth$loc_DEPTH!=0,] 
+    year_depth= dplyr:: select(all_data,Year,depth_meter)
+    year_depth=year_depth[year_depth$depth_meter!=0,] 
     year_depth=na.omit(year_depth) 
     year_depth=aggregate.data.frame(year_depth,list(year_depth$Year),FUN = mean,drop = F)
-    year_depth=dplyr:: select(year_depth,Year,loc_DEPTH)
+    year_depth=dplyr:: select(year_depth,Year,depth_meter)
     #start year depth in 1991
     year_depth=year_depth[year_depth$Year %in% 1991:2018,]
     #bind the temperature and depth
-   year_temp_depth=cbind(year_temp,"Depth"=year_depth$loc_DEPTH)
+   year_temp_depth=cbind(year_temp,"Depth"=year_depth$depth_meter)
   
      plot(year_depth)
     plot(year_temp)
@@ -312,16 +312,16 @@ end chunk
     
     
 #--mean month depth and temperature
-    month_depth=dplyr:: select(all_data,Year,Month,loc_DEPTH)
+    month_depth=dplyr:: select(all_data,Year,Month,depth_meter)
     
     
     #remove 0 and NA
     month_depth=na.omit(month_depth)
-    month_depth=month_depth[month_depth$loc_DEPTH!=0,]
+    month_depth=month_depth[month_depth$depth_meter!=0,]
     #aggregate by year by month
     month_depth=aggregate.data.frame(month_depth,list(month_depth$Year,month_depth$Month),FUN = mean,drop = F)
     month_depth=na.omit(month_depth)
-    month_depth=dplyr:: select(month_depth,Year=Group.1,Month=Group.2,Depth=loc_DEPTH)
+    month_depth=dplyr:: select(month_depth,Year=Group.1,Month=Group.2,Depth=depth_meter)
     month_depth=month_depth[month_depth$Year %in% c(1991:2018),]
     
     #mean month net temperature - same as month depth [seperate because the NA rows doesn't equal]
@@ -337,17 +337,17 @@ end chunk
      
     
 #---mean season depth and temperature
-     season_depth=dplyr:: select(all_data,Year,Season_num,loc_DEPTH)
+     season_depth=dplyr:: select(all_data,Year,Season_num,depth_meter)
     #remove 0 and NA
     season_depth=na.omit(season_depth)
-    season_depth=season_depth[season_depth$loc_DEPTH!=0,]
+    season_depth=season_depth[season_depth$depth_meter!=0,]
     #aggregate by year by season
     
-    #season_depth =season_depth %>% dplyr::mutate(Season_num = ifelse(Season=="winter", 1, ifelse(Season=="spring", 2, ifelse(Season=="summer", 3, ifelse(Season=="autumn", 4, NA))))) %>% dplyr::select(Year, Season_num, loc_DEPTH)
+   
     season_depth = aggregate.data.frame(season_depth,list(season_depth$Year,season_depth$Season_num),FUN = mean,drop = F)
      season_depth=season_depth[season_depth$Year %in% c(1991:2018),]
     season_depth=na.omit(season_depth)
-    season_depth=dplyr:: select(season_depth,Year,Season_num,Depth=loc_DEPTH)
+    season_depth=dplyr:: select(season_depth,Year,Season_num,Depth=depth_meter)
    
     
     #mean season net temperature - same as season depth [seperate because the NA rows doesn't equal]
@@ -422,14 +422,14 @@ annual_mtc=cbind("mtc"=annual_mtc$mtc,year_temp_depth)
 
 plot(annual_mtc,main="annual mtc")
 
-ggplot(annual_mtc, aes(x=loc_DEPTH,y=mtc,colour=Year, size=5))+
+ggplot(annual_mtc, aes(x=depth_meter,y=mtc,colour=Year, size=5))+
   geom_point()+scale_color_brewer(palette="
                                   Reds")+
   ggtitle("Annual Catch MTC by mean net temperature")
 
 
 
-ggplot(annual_mtc, aes(x=Year,y=mtc,colour=loc_DEPTH, size=3))+
+ggplot(annual_mtc, aes(x=Year,y=mtc,colour=depth_meter, size=3))+
   geom_point()+
   ggtitle("Annual catch MTC by year")
 
@@ -968,7 +968,7 @@ ggplot(season_red_mtc[season_red_mtc$Season=="autumn",], aes(x=Year ,y=mtc,colou
  # plot(net_all_data$Year,net_all_data$mtc)
   
  
- ggplot(net_all_data, aes(x=Year,y=mtc,colour=loc_DEPTH))+
+ ggplot(net_all_data, aes(x=Year,y=mtc,colour=depth_meter))+
    geom_point()+
    ggtitle("NET'S MTC by Year")+xlab("Year")  
 
@@ -1007,11 +1007,12 @@ ggplot(season_red_mtc[season_red_mtc$Season=="autumn",], aes(x=Year ,y=mtc,colou
 net_all_data = read.csv("prosseced data/net_mtc_data.CSV")
 
 
-#get out rows without mtc
-net_all_data = net_all_data %>%  dplyr:: filter(!is.na(mtc))
+#get out rows without mtc, and depth deeper then 160 n
+net_all_data = net_all_data %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter< 100)
+
 
 #gam model
-gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = net_all_data)
+gam_year = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter)+s(SST, bs = "gp") ,data = net_all_data)
 
 #plot(gam_year,select = 2,shade = TRUE):plot(fitted(gam_year),residuals(gam_year))
 
@@ -1025,19 +1026,15 @@ plot(gam_year,se=TRUE,col = "blue")
 net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
 net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 
-#get out rows without mtc
-  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc))
-  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc))
+#get out rows without mtc and depth deepre than 160 m
+  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter< 100)
+  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter< 100)
   
-  # #set the date to numeric date tipe
-  # net_mediter_mtc$Date = as_datetime(net_mediter_mtc$Date, origin = lubridate::origin, tz = "UTC")
-  # net_red_mtc$Date = as_datetime(net_red_mtc$Date, origin = lubridate::origin, tz = "UTC")
+    #create numeric columns frome the date-time "Date_num"
   
- #create columns, "Season_num" of numbers from the seasons, for the model. winter=1, etc...    
-  #ceate numeric columns frome the date-time "Date_num"
-  net_mediter_mtc = net_mediter_mtc %>% mutate(Season_num = ifelse(Season=="winter", 1, ifelse(Season=="spring", 2, ifelse(Season=="summer", 3, ifelse(Season=="autumn", 4, NA)))))%>% mutate(Date_num = as.numeric(Date)) %>% dplyr::select(X:Date,Date_num,Week:Season,Season_num ,everything())
+  net_mediter_mtc = net_mediter_mtc %>% mutate(Date_num = as.numeric(Date)) %>% dplyr::select(X:Date,Date_num,Week:Season,Season_num ,everything())
   
-  net_red_mtc = net_red_mtc %>% mutate(Season_num = ifelse(Season=="winter", 1, ifelse(Season=="spring", 2, ifelse(Season=="summer", 3, ifelse(Season=="autumn", 4, NA))))) %>% mutate(Date_num = as.numeric(Date)) %>% dplyr::select(X:Date,Date_num,Week:Season,Season_num ,everything())
+  net_red_mtc = net_red_mtc %>% mutate(Date_num = as.numeric(Date)) %>% dplyr::select(X:Date,Date_num,Week:Season,Season_num ,everything())
  
   #prepare data for joining: put origin column and delete catch columns
   split_mediter_mtc = net_mediter_mtc %>% mutate(Origin = "med") %>% dplyr::select(-(Aal:WHT))
@@ -1045,16 +1042,21 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
   
   split_all_mtc = rbind(split_mediter_mtc,split_red_mtc)
   
+  #start the invasive in 2000 [year]
+ net_red_mtc = net_red_mtc %>% filter(Year > 1999)
   
   #gam model
-mediter_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = net_mediter_mtc)
-red_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH, bs = "ad") ,data = net_red_mtc)
+mediter_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(SST, bs = "gp") ,data = net_mediter_mtc)
+
+red_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) +s(SST, bs = "gp") ,data = net_red_mtc) 
 
 #plots
 
 par(mfrow = c(2,2)) 
   plot(mediter_gam_year,se=TRUE,col = "blue")
   mtext("Mediterranean", side = 3, line = -2, outer = TRUE)
+  
+  par(mfrow = c(2,2)) 
   plot(red_gam_year,se=TRUE,col = "blue")
   mtext("Red Sea", side = 3, line = -13.5, outer = TRUE)
   
@@ -1064,10 +1066,10 @@ par(mfrow = c(2,2))
   gc()
 
   
-  mediter_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH) + s(Season_num, bs = "cc", k=4) ,data = net_mediter_mtc)
+  mediter_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Season_num, bs = "cc", k=4)+s(SST, bs = "gp") ,data = net_mediter_mtc)
    # +s(Date_num, bs = "gp")
   
-red_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH) + s(Season_num, bs = "cc", k=4) ,data = net_red_mtc)
+red_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Season_num, bs = "cc", k=4) +s(SST, bs = "gp") ,data = net_red_mtc)
 
 
 par(mfrow = c(2,2)) 
@@ -1079,9 +1081,9 @@ par(mfrow = c(2,2))
    title("Red Sea",line = -2, outer=TRUE)
   
   #---month model
-  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH) + s(Month, bs = "cc", k=12) ,data = net_mediter_mtc)
+  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Month, bs = "cc", k=12) +s(SST, bs = "gp") ,data = net_mediter_mtc)
   # 
-  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH) + s(Month, bs = "cc", k=12) ,data = net_red_mtc)
+  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Month, bs = "cc", k=12) +s(SST, bs = "gp") ,data = net_red_mtc)
 #
   
 par(mfrow = c(2,2)) 
@@ -1094,10 +1096,34 @@ par(mfrow = c(2,2))
 
   
   split_all_mtc$Origin =as.factor( split_all_mtc$Origin)
-    split_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(loc_DEPTH) + s(Month, bs = "cc", k=12) ,data = split_all_mtc,subset = origin)
-#
   
-par(mfrow = c(2,2)) 
+#year by origin  
+    split_gam_month = gam(mtc ~ s(Year, by = Origin) +Origin  ,data = split_all_mtc)
+#+ s(depth_meter) + s(Month, bs = "cc", k=12) +s(SST, bs = "gp")
+  
+par(mfrow = c(2,1)) 
+  plot(split_gam_month,se=TRUE,col = "blue")
+title("All split",line = -2, outer=TRUE)
+
+#year by origin with the whole covariates
+split_gam_month = gam(mtc ~offset(Duration) + s(Year, by = Origin) +Origin+ s(depth_meter, bs = "ts") + s(Month, bs = "cc", k=12) +s(SST, bs = "ts")  ,data = split_all_mtc)
+# 
+par(mfrow = c(3,2)) 
+  plot(split_gam_month,se=TRUE,col = "blue")
+  
+#year and SST by origin with the whole covariates
+split_gam_month = gam(mtc ~offset(Duration) + s(Year, by = Origin) +Origin+ s(depth_meter, bs = "ts") + s(Month, bs = "cc", k=12) +s(SST, by = Origin)  ,data = split_all_mtc)
+# 
+par(mfrow = c(3,2)) 
+  plot(split_gam_month,se=TRUE,col = "blue")
+
+  
+  
+#sst by origin
+ split_gam_month = gam(mtc ~ s(SST, by = Origin) +Origin  ,data = split_all_mtc)
+#+ s(depth_meter) + s(Month, bs = "cc", k=12) +s(SST, bs = "gp")
+  
+par(mfrow = c(2,1)) 
   plot(split_gam_month,se=TRUE,col = "blue")
 title("All split",line = -2, outer=TRUE)
 
