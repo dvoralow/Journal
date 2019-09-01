@@ -22,6 +22,7 @@ library(RColorBrewer)
 library(lubridate)
 library(mgcv)
 library(quantmod)
+library(viridis)
 
 ```
 end code
@@ -376,18 +377,6 @@ end chunk
     season_temp_depth=cbind(season_temp,Depth=season_depth$Depth)
 
           season_temp_depth =season_temp_depth %>% dplyr::mutate(Season = ifelse(Season_num==1,"winter", ifelse(Season_num==2, "spring", ifelse(Season_num==3, "summer", ifelse(Season_num==4, "autumn", NA))))) 
-   
-   
-    
-
-   
-    
-    
-    # #vectors with the seasons monthes numbers
-    # winter_vec=c(12,1,2)
-    # spring_vec=c(3:5)
-    # summer_vec=c(6:8)  
-    # autumn_vec=c(9:11)
     
     
 
@@ -433,7 +422,7 @@ ggplot(annual_mtc, aes(x=Year,y=mtc,colour=depth_meter, size=3))+
   geom_point()+
   ggtitle("Annual catch MTC by year")
 
-scale_color_brewer(palette="Dark2")
+#scale_color_brewer(palette="Dark2")
 
 ```
 
@@ -516,61 +505,52 @@ ggplot(mediter_annual_mtc, aes(x=Year,y=mtc,colour=Depth, size=3))+
 
 #-----Yearly graphs for paper
 
-formula <- y ~ poly(x, 2, raw = TRUE)
+
+#formula <- y ~ poly(x, 2, raw = TRUE)
 formula_l = y~x
 
 #mediterranian graph
-ggplot(mediter_annual_mtc, aes(x=Year ,y=mtc,colour=Depth, size=3))+
+p1 = ggplot(mediter_annual_mtc, aes(x=Year ,y=mtc,colour=Depth, size=3))+
   geom_point()+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
  scale_x_continuous (breaks=seq(1991,2018, by = 2))+ #x axis years apeared
-  scale_colour_gradientn(colours=topo.colors(7))+#color of the graph
-  geom_line(aes(y = SST_anom+20.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +
+  #geom_line(aes(y = SST_anom+20.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_y_continuous(sec.axis = sec_axis(~.-20.5, name = "SST Anomaly"))+#create second axes to SST
   ggtitle("Annual Mediterranian Species MTC By Year, Compare To SST Anomaly")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+20.5), #smooth to SST
-              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "blue",linetype = "twodash")+
-geom_text(data =mediter_annual_mtc[mediter_annual_mtc$Year =="2004", ], aes(label = "MTC"), hjust = 1,vjust = 1.5)+#label to lines - cheated
-geom_text(data =mediter_annual_mtc[mediter_annual_mtc$Year =="1993", ], aes(label = "SST_Anomaly"), hjust = -0.4,vjust = -3,color = "blue")
+              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")+
+geom_text(data =mediter_annual_mtc[mediter_annual_mtc$Year =="2004", ], aes(label = "MTC"), hjust = -1.5,vjust = -0.5)+#label to lines - cheated
+geom_text(data =mediter_annual_mtc[mediter_annual_mtc$Year =="1993", ], aes(label = "SST_Anomaly"), hjust = -0.4,vjust = -3,color = "red")
   
 
-
 #red sea graph
-ggplot(red_annual_mtc, aes(x=Year ,y=mtc,colour=Depth, size=3))+
+p2 =  ggplot(red_annual_mtc, aes(x=Year ,y=mtc,colour=Depth, size=3))+
   geom_point()+
+ scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(2000,2018))+ #x axis years apeared
-  scale_colour_gradientn(colours=topo.colors(7))+#color of the graph
-  geom_line(aes(y = SST_anom+26, colour = SST_anom,size = 1))+#pot SST in the MTC scale
+
+  #geom_line(aes(y = SST_anom+26, colour = SST_anom,size = 1))+#pot SST in the MTC scale
+  scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+#x axis years apeared
   scale_y_continuous(breaks=seq(24,27.5, by =0.5), limits = c(24,27.5),sec.axis = sec_axis(~.-26, name = "SST Anomaly"))+#create second axes to SST
   ggtitle("Annual Red Sea Species MTC By Year, Compare To SST Anomaly")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+26), #smooth to SST
-              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "blue",linetype = "twodash")+
-geom_text(data =red_annual_mtc[red_annual_mtc$Year =="2008", ], aes(label = "MTC"), hjust = 0.1,vjust = 1.5)+#label to lines - cheated
-geom_text(data =red_annual_mtc[red_annual_mtc$Year =="1999", ], aes(label = "SST_Anomaly"), hjust = 0.7,vjust = -3.5,color = "blue")
+              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")+
+geom_text(data =red_annual_mtc[red_annual_mtc$Year =="2008", ], aes(label = "MTC"), hjust = -0.5,vjust = -9)+#label to lines - cheated
+geom_text(data =red_annual_mtc[red_annual_mtc$Year =="1999", ], aes(label = "SST_Anomaly"), hjust = 0.7,vjust = 2.5,color = "red")
 
-#geom_smooth(method=lm,se=FALSE,colour="black",size = 1)+  
-    #geom_text(aes(x = Year, y = SST_anom, label = "SST_anom", color = "SST_anom"))
-  #geom_text(aes(x = Year, y = mtc, label = "mtc", color = "mtc")) 
-  #geom_text(data = legend, aes(x = x_pos, y = y_pos, label = label, color = label, hjust = -1, vjust = 1)) +
- #guides(color = F)+
-  #geom_text(aes(x = 1999, y = 21, label = "SST", color = "SST_anom")) + 
-#geom_text(aes(x = as.Date("2014-10-01"), y = 45, label = "FB", color = "FB"))
-
+ grid.arrange(p1,p2, ncol = 2)
 
   
 ```
-geom_line(aes(y = a + Temp*b), color = "red") +
-  scale_y_continuous("Precipitation", sec.axis = sec_axis(~ (. - a)/b, name = "Temperature")) +
-  heat.colors(3)
 
 
 #----- check years for start the red sea species graphs---
@@ -579,8 +559,14 @@ I think 2000 is good time for start
 
 red_years = red_annual_catch %>% mutate(Sum = rowSums(.[2:7]))
  
-ggplot(red_years, aes(x=Year,y=Sum, size=3))+
-   geom_point()
+ggplot(red_years, aes(x=Year,y=Sum, size=5))+
+  geom_point(colour = "blue", size = 5)+
+  scale_size(guide = 'none')+#no legend to the "size"
+   ggtitle("Invasive Speicies Biomass - Red Sea")+
+ labs(y ="Annual Biomass [kg]")+ #axis text
+    theme(plot.title = element_text(size = 20,hjust = 0.5))+
+scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+#x axis years apeared
+  scale_y_continuous(breaks=seq(0,20000, by =2000), limits = c(0,20000))
  
 ```
 
@@ -720,76 +706,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
  season_mediter_mtc=full_join(season_mediter_mtc,season_temp_depth,by=c("Year","Season"))
  season_red_mtc=full_join(season_red_mtc,season_temp_depth,by=c("Year","Season"))
  
-#mediter seasons graphs
- ggplot(season_mediter_mtc[season_mediter_mtc$Season=="winter",], aes(x=SST,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("Winter Mediterranian species MTC by mean net temperature")
- 
-    ggplot(season_mediter_mtc[season_mediter_mtc$Season=="winter",], aes(x=Year,y=mtc,colour=Depth))+
-      geom_point()+
-      ggtitle("Winter Mediterranian species MTC by mean net depth")
- 
- ggplot(season_mediter_mtc[season_mediter_mtc$Season=="spring",], aes(x=SST,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("spring Mediterranian species MTC by mean net temperature")
 
-    ggplot(season_mediter_mtc[season_mediter_mtc$Season=="spring",], aes(x=Year,y=mtc,colour=Depth))+
-      geom_point()+
-      ggtitle("spring Mediterranian species MTC by mean net depth")
-
- ggplot(season_mediter_mtc[season_mediter_mtc$Season=="summer",], aes(x=SST,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("summer Mediterranian species MTC by mean net temperature")
- 
-    ggplot(season_mediter_mtc[season_mediter_mtc$Season=="summer",], aes(x=Year,y=mtc,colour=Depth))+
-      geom_point()+
-      ggtitle("summer Mediterranian species MTC by mean net depth")
- 
- ggplot(season_mediter_mtc[season_mediter_mtc$Season=="autumn",], aes(x=SST,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("autumn Mediterranian species MTC by mean net temperature")
-
-    ggplot(season_mediter_mtc[season_mediter_mtc$Season=="autumn",], aes(x=Year,y=mtc,colour=Depth))+
-      geom_point()+
-      ggtitle("autumn Mediterranian species MTC by mean net depth")
- 
-
-#red sea seasons graphs
-
-     ggplot(season_red_mtc[season_red_mtc$Season=="winter",], aes(x=SST,y=mtc,colour=Year))+
-    geom_point()+
-    ggtitle("Winter red sea species MTC by mean net temperature")
-
-     ggplot(season_red_mtc[season_red_mtc$Season=="winter",], aes(x=Year,y=mtc,colour=Depth))+
-      geom_point()+
-      ggtitle("Winter red sea species MTC by mean net depth")
- 
- ggplot(season_red_mtc[season_red_mtc$Season=="spring",], aes(x=SST,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("spring red sea species MTC by mean net temperature")
-
-    ggplot(season_red_mtc[season_red_mtc$Season=="spring",], aes(x=Year,y=mtc,colour=Depth))+
-      geom_point()+
-      ggtitle("spring red sea species MTC by mean net depth")
- 
- ggplot(season_red_mtc[season_red_mtc$Season=="summer",], aes(x=SST,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("summer red sea species MTC by mean net temperature")
-
-    ggplot(season_red_mtc[season_red_mtc$Season=="summer",], aes(x=Year,y=mtc,colour=Depth))+
-      geom_point()+
-      ggtitle("summer red sea species MTC by mean net depth")
- 
- ggplot(season_red_mtc[season_red_mtc$Season=="autumn",], aes(x=SST,y=mtc,colour=Year))+
-   geom_point()+
-   ggtitle("autumn red sea species MTC by mean net temperature")
-
-    ggplot(season_red_mtc[season_red_mtc$Season=="autumn",], aes(x=Year,y=mtc,colour=Depth))+
-      geom_point()+
-      ggtitle("autumn red sea species MTC by mean net depth")
- 
-
-     
  
 ```
 
@@ -802,77 +719,80 @@ formula_l = y~x
 
 #mediterranian graph
 #winter
-ggplot(season_mediter_mtc[season_mediter_mtc$Season=="winter",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
+p1 = ggplot(season_mediter_mtc[season_mediter_mtc$Season=="winter",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
   geom_point()+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
  scale_x_continuous (breaks=seq(1991,2018, by = 2))+ #x axis years apeared
-  scale_colour_gradientn(colours=topo.colors(7))+#color of the graph
-  geom_line(aes(y = SST_anom+20.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +#color of the graph
+  #geom_line(aes(y = SST_anom+20.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_y_continuous(breaks=seq(18,23, by =0.5),sec.axis = sec_axis(~.-20.5, name = "SST Anomaly"))+#create second axes to SST
-  ggtitle("Winter Mediterranian Species MTC By Year, Compare To SST Anomaly")+
+  ggtitle("Winter")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+20.5), #smooth to SST
-              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "blue",linetype = "twodash")
+              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")
 #geom_text(data =season_mediter_mtc[season_mediter_mtc$Year =="2004", ], aes(label = "MTC"), hjust = 1,vjust = 1.5)+#label to lines - cheated
 #geom_text(data =season_mediter_mtc[season_mediter_mtc$Year =="1993", ], aes(label = "SST_Anomaly"), hjust = -0.4,vjust = -3,color = "blue")
+ #Mediterranian Species MTC By Year, Compare To SST Anomaly
  
 
 
 #spring
-ggplot(season_mediter_mtc[season_mediter_mtc$Season=="spring",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
+p2 = ggplot(season_mediter_mtc[season_mediter_mtc$Season=="spring",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
   geom_point()+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
  scale_x_continuous (breaks=seq(1991,2018, by = 2))+ #x axis years apeared
-  scale_colour_gradientn(colours=topo.colors(7))+#color of the graph
-  geom_line(aes(y = SST_anom+20.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +#color of the graph
+  #geom_line(aes(y = SST_anom+20.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_y_continuous(breaks=seq(18.5,23, by =0.5),sec.axis = sec_axis(~.-20.5, name = "SST Anomaly"))+#create second axes to SST
-  ggtitle("Spring Mediterranian Species MTC By Year, Compare To SST Anomaly")+
+  ggtitle("Spring")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+20.5), #smooth to SST
-              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "blue",linetype = "twodash")
-
+              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")
+# Mediterranian Species MTC By Year, Compare To SST Anomaly
 
 #autmn
-ggplot(season_mediter_mtc[season_mediter_mtc$Season=="autumn",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
+p3 = ggplot(season_mediter_mtc[season_mediter_mtc$Season=="autumn",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
   geom_point()+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
  scale_x_continuous (breaks=seq(1991,2018, by = 2))+ #x axis years apeared
-  scale_colour_gradientn(colours=topo.colors(7))+#color of the graph
-  geom_line(aes(y = SST_anom+21.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +#color of the graph
+  #geom_line(aes(y = SST_anom+21.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_y_continuous(breaks=seq(18,24.5, by =0.5),sec.axis = sec_axis(~.-21.5, name = "SST Anomaly"))+#create second axes to SST
-  ggtitle("Autumn Mediterranian Species MTC By Year, Compare To SST Anomaly")+
+  ggtitle("Autumn")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+21.5), #smooth to SST
-              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "blue",linetype = "twodash")
-
+              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")
+ #Mediterranian Species MTC By Year, Compare To SST Anomaly
  
 
 #summer
-ggplot(season_mediter_mtc[season_mediter_mtc$Season=="summer",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
+p4 = ggplot(season_mediter_mtc[season_mediter_mtc$Season=="summer",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
   geom_point()+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
  scale_x_continuous (breaks=seq(1991,2018, by = 2))+ #x axis years apeared
-  scale_colour_gradientn(colours=topo.colors(7))+#color of the graph
-  geom_line(aes(y = SST_anom+20.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
+ scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +#color of the graph
+  #geom_line(aes(y = SST_anom+20.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_y_continuous(breaks=seq(18,23, by =0.5),sec.axis = sec_axis(~.-20.5, name = "SST Anomaly"))+#create second axes to SST
-  ggtitle("Summer Mediterranian Species MTC By Year, Compare To SST Anomaly")+
+  ggtitle("Summer")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+20.5), #smooth to SST
-              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "blue",linetype = "twodash")
+              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")
+# Mediterranian Species MTC By Year, Compare To SST Anomaly
 
 
+grid.arrange(p1,p2,p3,p4, ncol = 2)
 
 
 
@@ -881,71 +801,79 @@ ggplot(season_mediter_mtc[season_mediter_mtc$Season=="summer",], aes(x=Year ,y=m
 
 #red sea graph
 #winter
-ggplot(season_red_mtc[season_red_mtc$Season=="winter",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
+p1 = ggplot(season_red_mtc[season_red_mtc$Season=="winter",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
   geom_point()+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(2000,2018))+ #x axis years apeared
-  scale_colour_gradientn(colours=topo.colors(7))+#color of the graph
-  geom_line(aes(y = SST_anom+25.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
+ scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+ #x axis years apeared
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +#color of the graph
+  #geom_line(aes(y = SST_anom+25.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_y_continuous(breaks=seq(23,28, by =0.5), limits = c(23,28),sec.axis = sec_axis(~.-25.5, name = "SST Anomaly"))+#create second axes to SST
-  ggtitle("Winter Red Sea Species MTC By Year, Compare To SST Anomaly")+
+  ggtitle("Winter")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+25.5), #smooth to SST
-              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "blue",linetype = "twodash")
+              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")
+# Red Sea Species MTC By Year, Compare To SST Anomaly
 
 
 
 #spring
-ggplot(season_red_mtc[season_red_mtc$Season=="spring",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
+p2 = ggplot(season_red_mtc[season_red_mtc$Season=="spring",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
   geom_point()+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(2000,2018))+ #x axis years apeared
-  scale_colour_gradientn(colours=topo.colors(7))+#color of the graph
-  geom_line(aes(y = SST_anom+25, colour = SST_anom,size = 1))+#pot SST in the MTC scale
+ scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+ #x axis years apeared
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +#color of the graph
+  #geom_line(aes(y = SST_anom+25, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_y_continuous(breaks=seq(23,27.5, by =0.5), limits = c(23,27.5),sec.axis = sec_axis(~.-25, name = "SST Anomaly"))+#create second axes to SST
-  ggtitle("Spring Red Sea Species MTC By Year, Compare To SST Anomaly")+
+  ggtitle("Spring")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+25), #smooth to SST
-              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "blue",linetype = "twodash")
+              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")
+# Red Sea Species MTC By Year, Compare To SST Anomaly
 
 
 #summer
-ggplot(season_red_mtc[season_red_mtc$Season=="summer",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
+p3 = ggplot(season_red_mtc[season_red_mtc$Season=="summer",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
   geom_point()+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(2000,2018))+ #x axis years apeared
-  scale_colour_gradientn(colours=topo.colors(7))+#color of the graph
-  geom_line(aes(y = SST_anom+25.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
+ scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+ #x axis years apeared
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +#color of the graph
+  #geom_line(aes(y = SST_anom+25.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_y_continuous(breaks=seq(23,28, by =0.5), limits = c(23,28),sec.axis = sec_axis(~.-25.5, name = "SST Anomaly"))+#create second axes to SST
-  ggtitle("Summer Red Sea Species MTC By Year, Compare To SST Anomaly")+
+  ggtitle("Summer")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+25.5), #smooth to SST
-              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "blue",linetype = "twodash")
+              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")
+# Red Sea Species MTC By Year, Compare To SST Anomaly
+
 
 #autmn
-ggplot(season_red_mtc[season_red_mtc$Season=="autumn",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
+p4 = ggplot(season_red_mtc[season_red_mtc$Season=="autumn",], aes(x=Year ,y=mtc,colour=Depth, size=3))+
   geom_point()+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(2000,2018))+ #x axis years apeared
-  scale_colour_gradientn(colours=topo.colors(7))+#color of the graph
-  geom_line(aes(y = SST_anom+26, colour = SST_anom,size = 1))+#pot SST in the MTC scale
+ scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+ #x axis years apeared
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +#color of the graph
+  #geom_line(aes(y = SST_anom+26, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_y_continuous(breaks=seq(24.5,27.5, by =0.5), limits = c(24.5,27.5),sec.axis = sec_axis(~.-26, name = "SST Anomaly"))+#create second axes to SST
-  ggtitle("Autumn Red Sea Species MTC By Year, Compare To SST Anomaly")+
+  ggtitle("Autumn")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+26), #smooth to SST
-              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "blue",linetype = "twodash")
+              method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")
+ #Red Sea Species MTC By Year, Compare To SST Anomaly
+
+
+grid.arrange(p1,p2,p3,p4, ncol = 2)
 
 ```
 
@@ -1081,9 +1009,9 @@ par(mfrow = c(2,2))
    title("Red Sea",line = -2, outer=TRUE)
   
   #---month model
-  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Month, bs = "cc", k=12) +s(SST, bs = "gp") ,data = net_mediter_mtc)
+  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Month, bs = "cc", k=12) ,data = net_mediter_mtc)
   # 
-  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Month, bs = "cc", k=12) +s(SST, bs = "gp") ,data = net_red_mtc)
+  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Month, bs = "cc", k=12) ,data = net_red_mtc)
 #
   
 par(mfrow = c(2,2)) 
