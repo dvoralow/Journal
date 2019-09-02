@@ -23,6 +23,7 @@ library(lubridate)
 library(mgcv)
 library(quantmod)
 library(viridis)
+library("reshape2")
 
 ```
 end code
@@ -628,6 +629,78 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
 
 ```
 
+
+#---create month sum without Year
+
+```{r}
+
+#take just the relevant column 
+  month_sum=dplyr:: select(all_data,Month,species_code)
+    #sum the cathc by month by year
+    month_sum=aggregate.data.frame(month_sum,list(month_sum$Month),FUN = sum,drop=F)
+    #rename the new column and drop sum of years and month   
+    month_sum=month_sum %>% dplyr:: select(Month=Group.1,species_code ) %>% filter(Month %in% c(1:12))
+    
+    scientific_names=read.csv(file = "prosseced data/sceintific_names_fishes_known_origin.csv", stringsAsFactors = F)
+#cerate species names vector
+ sp_code = scientific_names$Sp_code
+ scientific_code = scientific_names$scintific_name
+
+ #get out columns with catch sum small than 1000 KG
+   catch_sum = colSums(month_sum)
+   catch_logic= catch_sum>2000
+month_sum = month_sum[,catch_logic]
+month_sum = month_sum %>% mutate(Month = c(1:12))
+
+#separate to mediter and red sea
+mediter_month_sum=month_sum[,which(!(colnames(month_sum) %in% red_code))]
+red_month_sum=month_sum[,which(!(colnames(month_sum) %in% mediter_code))]
+
+mediter_month_sum_1 = mediter_month_sum %>%dplyr:: select(MUL,BAT,Bbo,Mme,WHT,Month)
+mediter_month_sum_2 = mediter_month_sum %>%dplyr:: select(Arg,EPI,Pca,SPI,Month)
+mediter_month_sum_3 = mediter_month_sum %>%dplyr:: select(Lmo,Sd,Bca,Per,Sja,Month)
+
+#covert to long format
+red_month_long <- melt(red_month_sum, id="Month")  # convert to long format
+mediter_month_long_1 <- melt(mediter_month_sum_1, id="Month")  # convert to long format
+mediter_month_long_2 <- melt(mediter_month_sum_2, id="Month")  # convert to long format
+mediter_month_long_3 <- melt(mediter_month_sum_3, id="Month")  # convert to long format
+
+ggplot(red_month_long , aes(x=Month,  y=value, colour=variable)) +
+    geom_line(size = 1)+
+    #scale_colour_gradientn(colours=rainbow(4))+
+    #ggtitle(paste (sp_code[i],scientific_code[i],"Preffrence Temperature" ,mean_tcode[i,1],sep =" - "))+
+    ylab("Sum of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)+
+    theme(text = element_text(size=20),axis.text.x = element_text( hjust=1))#size of text
+    
+ggplot(mediter_month_long_1 , aes(x=Month,  y=value, colour=variable)) +
+    geom_line(size = 1)+
+    #scale_colour_gradientn(colours=rainbow(4))+
+    #ggtitle(paste (sp_code[i],scientific_code[i],"Preffrence Temperature" ,mean_tcode[i,1],sep =" - "))+
+    ylab("Sum of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)+
+    theme(text = element_text(size=20),axis.text.x = element_text( hjust=1))#size of text
+
+ggplot(mediter_month_long_2 , aes(x=Month,  y=value, colour=variable)) +
+    geom_line(size = 1)+
+    #scale_colour_gradientn(colours=rainbow(4))+
+    #ggtitle(paste (sp_code[i],scientific_code[i],"Preffrence Temperature" ,mean_tcode[i,1],sep =" - "))+
+    ylab("Sum of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)+
+    theme(text = element_text(size=20),axis.text.x = element_text( hjust=1))#size of text
+
+ggplot(mediter_month_long_3 , aes(x=Month,  y=value, colour=variable)) +
+    geom_line(size = 1)+
+    #scale_colour_gradientn(colours=rainbow(4))+
+    #ggtitle(paste (sp_code[i],scientific_code[i],"Preffrence Temperature" ,mean_tcode[i,1],sep =" - "))+
+    ylab("Sum of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)+
+    theme(text = element_text(size=20),axis.text.x = element_text( hjust=1))#size of text
+
+species_table = cbind(sp_code,scientific_code,mean_tcode)
+mediter_table=species_table[which(rownames(species_table) %in% c("MUL","BAT","Bbo","Mme","WHT","Arg","EPI","Pca","SPI","Lmo","Sd","Bca","Per","Sja")),]
+red_table=species_table[which(!(rownames(species_table) %in% mediter_code)),]
+
+```
+
+
 #---seasonal mtc----
 ```{r}
  #call the season catch function
@@ -970,43 +1043,10 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
   
   split_all_mtc = rbind(split_mediter_mtc,split_red_mtc)
   
-  #start the invasive in 2000 [year]
- net_red_mtc = net_red_mtc %>% filter(Year > 1999)
+ # start the invasive in 1991 [year]
+ net_red_mtc = net_red_mtc %>% filter(Year > 2000)
+ net_mediter_mtc = net_mediter_mtc %>% filter(Year > 1990)
   
-  #gam model
-mediter_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(SST, bs = "gp") ,data = net_mediter_mtc)
-
-red_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) +s(SST, bs = "gp") ,data = net_red_mtc) 
-
-#plots
-
-par(mfrow = c(2,2)) 
-  plot(mediter_gam_year,se=TRUE,col = "blue")
-  mtext("Mediterranean", side = 3, line = -2, outer = TRUE)
-  
-  par(mfrow = c(2,2)) 
-  plot(red_gam_year,se=TRUE,col = "blue")
-  mtext("Red Sea", side = 3, line = -13.5, outer = TRUE)
-  
-  
-  #---seaon model
-  #clear memory
-  gc()
-
-  
-  mediter_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Season_num, bs = "cc", k=4)+s(SST, bs = "gp") ,data = net_mediter_mtc)
-   # +s(Date_num, bs = "gp")
-  
-red_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Season_num, bs = "cc", k=4) +s(SST, bs = "gp") ,data = net_red_mtc)
-
-
-par(mfrow = c(2,2)) 
-  plot(mediter_gam_season,se=TRUE,col = "blue")
-  title("Mediterranean",line = -2, outer=TRUE)
-  
-par(mfrow = c(2,2)) 
-  plot(red_gam_season,se=TRUE,col = "blue")
-   title("Red Sea",line = -2, outer=TRUE)
   
   #---month model
   mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Month, bs = "cc", k=12) ,data = net_mediter_mtc)
@@ -1016,11 +1056,11 @@ par(mfrow = c(2,2))
   
 par(mfrow = c(2,2)) 
   plot(mediter_gam_month,se=TRUE,col = "blue")
-title("Mediterranean",line = -2, outer=TRUE)
+title("Mediterranean Species",line = -2, outer=TRUE)
  
 par(mfrow = c(2,2)) 
   plot(red_gam_month,se=TRUE,col = "blue") 
-  title("Red Sea",line = -2, outer=TRUE)
+  title("Red Sea Species",line = -2, outer=TRUE)
 
  
   
@@ -1090,7 +1130,41 @@ sst_month_gam
 
 ```
 
+ #gam model
+mediter_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) ,data = net_mediter_mtc)
 
+red_gam_year = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter)  ,data = net_red_mtc) 
+
+#plots
+
+par(mfrow = c(2,2)) 
+  plot(mediter_gam_year,se=TRUE,col = "blue")
+  mtext("Mediterranean", side = 3, line = -2, outer = TRUE)
+  
+  par(mfrow = c(2,2)) 
+  plot(red_gam_year,se=TRUE,col = "blue")
+  mtext("Red Sea", side = 3, line = -13.5, outer = TRUE)
+  
+  
+  #---seaon model
+  #clear memory
+  gc()
+
+  
+  mediter_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Season_num, bs = "cc", k=4)+s(SST, bs = "gp") ,data = net_mediter_mtc)
+   # +s(Date_num, bs = "gp")
+  
+red_gam_season = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Season_num, bs = "cc", k=4) +s(SST, bs = "gp") ,data = net_red_mtc)
+
+
+par(mfrow = c(2,2)) 
+  plot(mediter_gam_season,se=TRUE,col = "blue")
+  title("Mediterranean",line = -2, outer=TRUE)
+  
+par(mfrow = c(2,2)) 
+  plot(red_gam_season,se=TRUE,col = "blue")
+   title("Red Sea",line = -2, outer=TRUE)
+ 
 
 
 #---------------------fenology-----------------------------------------------------------------------------
