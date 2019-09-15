@@ -547,11 +547,11 @@ p2 =  ggplot(red_annual_mtc, aes(x=Year ,y=mtc,colour=Depth, size=3))+
 
   #geom_line(aes(y = SST_anom+26, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+#x axis years apeared
-  scale_y_continuous(breaks=seq(24,27.5, by =0.5), limits = c(24,27.5),sec.axis = sec_axis(~.-26, name = "SST Anomaly"))+#create second axes to SST
+  scale_y_continuous(breaks=seq(25.5,28, by =0.5), limits = c(25.5,28),sec.axis = sec_axis(~.-26.75, name = "SST Anomaly"))+#create second axes to SST
   ggtitle("Annual Red Sea Species MTC By Year, Compare To SST Anomaly")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
-  stat_smooth(aes(y =  SST_anom+26), #smooth to SST
+  stat_smooth(aes(y =  SST_anom+26.75), #smooth to SST
               method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")+
 geom_text(data =red_annual_mtc[red_annual_mtc$Year =="2008", ], aes(label = "MTC"), hjust = -0.5,vjust = -9)+#label to lines - cheated
 geom_text(data =red_annual_mtc[red_annual_mtc$Year =="1999", ], aes(label = "SST_Anomaly"), hjust = 0.7,vjust = 2.5,color = "red")
