@@ -891,6 +891,8 @@ grid.arrange(p1,p2,p3,p4, ncol = 2)
 
 
 
+
+
 #----net mtc----
 ```{r}
  #drop the useless data for the mtc function
@@ -934,6 +936,37 @@ grid.arrange(p1,p2,p3,p4, ncol = 2)
 ```
 
 
+
+#---- graphs for the 4 season together [2 graphs]--
+```{r}
+
+#Mediterranian
+ggplot(net_mediter_mtc, aes(x=SST ,y=mtc,colour=Season, size=3))+
+  #geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+# scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+  ggtitle("Mediter")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+#red Sea
+ggplot(net_red_mtc, aes(x=SST ,y=mtc,colour=Season, size=3))+
+  #geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+# scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,30, by =0.5))+
+  ggtitle("Red Sea")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5)
+  
+
+```
 
 
 
