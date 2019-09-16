@@ -528,7 +528,7 @@ p1 = ggplot(mediter_annual_mtc, aes(x=Year ,y=mtc,colour=Depth, size=3))+
   scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +
   #geom_line(aes(y = SST_anom+20.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_y_continuous(sec.axis = sec_axis(~.-20.5, name = "SST Anomaly"))+#create second axes to SST
-  ggtitle("Annual Mediterranian Species MTC By Year, Compare To SST Anomaly")+
+  #ggtitle("Annual Mediterranian Species MTC By Year, Compare To SST Anomaly")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+20.5), #smooth to SST
@@ -538,7 +538,8 @@ geom_text(data =mediter_annual_mtc[mediter_annual_mtc$Year =="1993", ], aes(labe
   
 
 #red sea graph
-p2 =  ggplot(red_annual_mtc, aes(x=Year ,y=mtc,colour=Depth, size=3))+
+#p2 =  
+  ggplot(red_annual_mtc, aes(x=Year ,y=mtc,colour=Depth, size=3))+
   geom_point()+
  scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +
     scale_size(guide = 'none')+#no legend to the "size"
@@ -548,13 +549,13 @@ p2 =  ggplot(red_annual_mtc, aes(x=Year ,y=mtc,colour=Depth, size=3))+
   #geom_line(aes(y = SST_anom+26, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+#x axis years apeared
   scale_y_continuous(breaks=seq(25.5,28, by =0.5), limits = c(25.5,28),sec.axis = sec_axis(~.-26.75, name = "SST Anomaly"))+#create second axes to SST
-  ggtitle("Annual Red Sea Species MTC By Year, Compare To SST Anomaly")+
+  #ggtitle("Annual Red Sea Species MTC By Year, Compare To SST Anomaly")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+26.75), #smooth to SST
               method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")+
 geom_text(data =red_annual_mtc[red_annual_mtc$Year =="2008", ], aes(label = "MTC"), hjust = -0.5,vjust = -9)+#label to lines - cheated
-geom_text(data =red_annual_mtc[red_annual_mtc$Year =="1999", ], aes(label = "SST_Anomaly"), hjust = 0.7,vjust = 2.5,color = "red")
+geom_text(data =red_annual_mtc[red_annual_mtc$Year =="1999", ], aes(label = "SST_Anomaly"), hjust = 0.7,vjust = 18,color = "red")
 
  grid.arrange(p1,p2, ncol = 2)
 
@@ -941,32 +942,80 @@ grid.arrange(p1,p2,p3,p4, ncol = 2)
 ```{r}
 
 #Mediterranian
-ggplot(net_mediter_mtc, aes(x=SST ,y=mtc,colour=Season, size=3))+
+ggplot(net_mediter_data, aes(x=SST ,y=mtc,colour=Season, size=3))+
   #geom_point()+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
  scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
-# scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +#color of the graph
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
   scale_y_continuous(breaks=seq(16,28, by =0.5))+
-  ggtitle("Mediter")+
+ # ggtitle("Mediter")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+
 #red Sea
-ggplot(net_red_mtc, aes(x=SST ,y=mtc,colour=Season, size=3))+
+ggplot(net_red_data, aes(x=SST ,y=mtc,colour=Season, size=3))+
   #geom_point()+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
  scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
-# scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +#color of the graph
-  scale_y_continuous(breaks=seq(16,30, by =0.5))+
-  ggtitle("Red Sea")+
+ scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(23,28, by =0.25))+
+ # ggtitle("Red Sea")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5)
   
 
 ```
+
+
+#--mtc by SST graphs
+```{r}
+#get out rows without mtc and depth deepre than 100 m
+  net_mediter_data = net_mediter_data %>%  dplyr:: filter(!is.na(mtc)) %>% filter(Depth< 100)
+  net_red_data = net_red_data %>%  dplyr:: filter(!is.na(mtc)) %>% filter(Depth< 100)
+
+  library(ggpubr)
+  
+  #Mediter Sea ,
+ggplot(split_all_mtc, aes(x=SST ,y=mtc,colour=Origin, size=3))+
+  #geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(1991,2018, by = 2))+ #x axis years apeared
+  scale_color_viridis(begin = 0, end = 0.5 ,direction = 1,discrete = TRUE, option = "D") +
+  ggtitle("MTC by SST")+
+  #stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+   #           method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+#geom_smooth(method="lm", formula=y~x) +
+ # stat_poly_eq(parse=T, aes(label = ..eq.label..), formula=y~x)
+  stat_smooth(aes(y=mtc,color =Origin), method = "lm", formula = formula) +
+  stat_regline_equation(
+    aes(label =  paste(..eq.label.., ..adj.rr.label.., sep = "~~~~")),
+    formula = formula )
+#ggpar(p, palette = "jco")
+
+
+#red Sea ,
+ggplot(net_red_data, aes(x=SST ,y=mtc,colour=Depth, size=3))+
+  #geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(1991,2018, by = 2))+ #x axis years apeared
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Red species MTC by SST")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+
+
+```
+
 
 
 
@@ -990,8 +1039,9 @@ gam_year = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter)+s(SST, bs = "gp") ,data
 par(mfrow = c(2,2)) 
 plot(gam_year,se=TRUE,col = "blue")
 
-#depth by month and years model
 
+
+#depth by month and years model
 depth_gam = gam(depth_meter ~ s(Year, bs = "cr") +s(Month, bs = "cc", k = 12), data = net_all_data)
 
 par(mfrow = c(2,1)) 
@@ -1034,14 +1084,27 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 par(mfrow = c(2,2)) 
   plot(mediter_gam_month,se=TRUE,col = "blue")
 title("Mediterranean Species",line = -2, outer=TRUE)
+
  
 par(mfrow = c(2,2)) 
   plot(red_gam_month,se=TRUE,col = "blue") 
   title("Red Sea Species",line = -2, outer=TRUE)
 
- 
+#--month model with SST and without year
+  mediter_gam_sst = gam(mtc~s(depth_meter) + s(Month, bs = "cc", k=12)+s(SST, bs = "gp") ,data = net_mediter_mtc)
+ par(mfrow = c(2,2)) 
+  plot(  mediter_gam_sst,se=TRUE,col = "blue")
+  title("Mediter mtc by SST and Month",line = -2, outer=TRUE)
+  summary(mediter_gam_sst)
   
-  #convert month to factor
+   red_gam_sst = gam(mtc~s(depth_meter) + s(Month, bs = "cc", k=12)+s(SST, bs = "gp") ,data = net_red_mtc)
+ par(mfrow = c(2,2)) 
+  plot(  red_gam_sst,se=TRUE,col = "blue")
+  title("red mtc by SST and Month",line = -2, outer=TRUE)
+  summary(red_gam_sst)
+
+  
+  #-----convert month to factor abn do "by" model--
   med_mtc_mo_fa = net_mediter_mtc %>% dplyr::mutate(Month = as.factor(Month))
   red_mtc_mo_fa = net_red_mtc %>% dplyr::mutate(Month = as.factor(Month))
     
@@ -1172,16 +1235,80 @@ sst_month_gam
 ```{r}
 
 
-Nra_gam = gam(Nra ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_red_mtc)
-  par(mfrow = c(2,2)) 
-  plot( Nra_gam,se=TRUE,col = "blue")
-    title("Nra gam",line = -2, outer=TRUE)
-
-    #!!!need to order the mean tcode, and than bind!!!
     species_table = cbind(sp_code,scientific_code,mean_tcode)
 mediter_table=species_table[which(rownames(species_table) %in% c("MUL","BAT","Bbo","Mme","WHT","Arg","EPI","Pca","SPI","Lmo","Sd","Bca","Per","Sja")),]
 red_table=species_table[which(!(rownames(species_table) %in% mediter_code)),]
 
+
+#the abundance invasive species model
+Nra_gam = gam(Nra ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_red_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Nra_gam,se=TRUE,col = "blue")
+    title(paste( red_table[which(rownames(red_table)=="Nra"),2],"T pref =",red_table[which(rownames(red_table)=="Nra"),3],sep = " "),line = -2, outer=TRUE)
+    
+    Sco_gam = gam(Sco ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_red_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Sco_gam,se=TRUE,col = "blue")
+    title(paste( red_table[which(rownames(red_table)=="Sco"),2],"T pref =",red_table[which(rownames(red_table)=="Sco"),3],sep = " "),line = -2, outer=TRUE)
+    
+ Umo_gam = gam(Umo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_red_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Umo_gam,se=TRUE,col = "blue")
+    title(paste( red_table[which(rownames(red_table)=="Umo"),2],"T pref =",red_table[which(rownames(red_table)=="Umo"),3],sep = " "),line = -2, outer=TRUE)
+    
+  
+
+#the abundance Mediter species model "MUL" "BAT" "Bbo" "Mme" "WHT"
+    
+ MUL_model = gam(MUL ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( MUL_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="MUL"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="MUL"),3],sep = " "),line = -2, outer=TRUE)
+    
+     BAT_model = gam(BAT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( BAT_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="BAT"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="BAT"),3],sep = " "),line = -2, outer=TRUE)
+
+    
+     Bbo_model = gam(Bbo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Bbo_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="Bbo"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Bbo"),3],sep = " "),line = -2, outer=TRUE)
+
+    
+     Mme_model = gam(Mme ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Mme_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="Mme"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Mme"),3],sep = " "),line = -2, outer=TRUE)
+
+    
+     WHT_model = gam(WHT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( WHT_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="WHT"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="WHT"),3],sep = " "),line = -2, outer=TRUE)
+
+#the non abundance Mediter species model - high Tpref - Sd, EPI, Bca, Lmo
+
+    Sd_model = gam(Sd ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Sd_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="Sd"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Sd"),3],sep = " "),line = -2, outer=TRUE)
+    
+    EPI_model = gam(EPI ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( EPI_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="EPI"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="EPI"),3],sep = " "),line = -2, outer=TRUE)
+    
+    Bca_model = gam(Bca ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Bca_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="Bca"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Bca"),3],sep = " "),line = -2, outer=TRUE)
+    
+    Lmo_model = gam(Lmo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Lmo_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="Lmo"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Lmo"),3],sep = " "),line = -2, outer=TRUE)
 
 ```
 
