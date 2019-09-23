@@ -24,6 +24,7 @@ library(mgcv)
 library(quantmod)
 library(viridis)
 library("reshape2")
+library(mgcViz)
 
 ```
 end code
@@ -269,7 +270,7 @@ end chunk
     mean_tcode=rbind(mean_tcode,wht_temp)
     mean_tcode = mean_tcode[sort(rownames(mean_tcode)),,drop = F]
     
-    
+    write.csv(mean_tcode,file = "prosseced data/mean_tcode.CSV")
     #----!!!!!! need to do for siganus!! ---
     
 ```
@@ -523,18 +524,18 @@ p1 = ggplot(mediter_annual_mtc, aes(x=Year ,y=mtc,colour=Depth, size=3))+
   geom_point()+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
+  labs(y ="Temperature aphinity")+#axis text
  scale_x_continuous (breaks=seq(1991,2018, by = 2))+ #x axis years apeared
   scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +
   #geom_line(aes(y = SST_anom+20.5, colour = SST_anom,size = 1))+#pot SST in the MTC scale
-  scale_y_continuous(sec.axis = sec_axis(~.-20.5, name = "SST Anomaly"))+#create second axes to SST
+  scale_y_continuous(sec.axis = sec_axis(~.-20.5, name = "T anomaly"))+#create second axes to SST
   #ggtitle("Annual Mediterranian Species MTC By Year, Compare To SST Anomaly")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+20.5), #smooth to SST
               method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")+
-geom_text(data =mediter_annual_mtc[mediter_annual_mtc$Year =="2004", ], aes(label = "MTC"), hjust = -1.5,vjust = -0.5)+#label to lines - cheated
-geom_text(data =mediter_annual_mtc[mediter_annual_mtc$Year =="1993", ], aes(label = "SST_Anomaly"), hjust = -0.4,vjust = -3,color = "red")
+geom_text(data =mediter_annual_mtc[mediter_annual_mtc$Year =="2004", ], aes(label = "T aphinity"), hjust = -1.5,vjust = -0.5)+#label to lines - cheated
+geom_text(data =mediter_annual_mtc[mediter_annual_mtc$Year =="1993", ], aes(label = "T anomaly"), hjust = -0.4,vjust = -3,color = "red")
   
 
 #red sea graph
@@ -544,18 +545,18 @@ geom_text(data =mediter_annual_mtc[mediter_annual_mtc$Year =="1993", ], aes(labe
  scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = FALSE, option = "D") +
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
+  labs(y ="Temperature aphinity")+#axis text
 
   #geom_line(aes(y = SST_anom+26, colour = SST_anom,size = 1))+#pot SST in the MTC scale
   scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+#x axis years apeared
-  scale_y_continuous(breaks=seq(25.5,28, by =0.5), limits = c(25.5,28),sec.axis = sec_axis(~.-26.75, name = "SST Anomaly"))+#create second axes to SST
+  scale_y_continuous(breaks=seq(25.5,28, by =0.5), limits = c(25.5,28),sec.axis = sec_axis(~.-26.75, name = "T anomaly"))+#create second axes to SST
   #ggtitle("Annual Red Sea Species MTC By Year, Compare To SST Anomaly")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5, color = "green",linetype = "twodash") +
   stat_smooth(aes(y =  SST_anom+26.75), #smooth to SST
               method = "lm", formula = formula_l, se = FALSE, size = 1, color = "red")+
-geom_text(data =red_annual_mtc[red_annual_mtc$Year =="2008", ], aes(label = "MTC"), hjust = -0.5,vjust = -9)+#label to lines - cheated
-geom_text(data =red_annual_mtc[red_annual_mtc$Year =="1999", ], aes(label = "SST_Anomaly"), hjust = 0.7,vjust = 18,color = "red")
+geom_text(data =red_annual_mtc[red_annual_mtc$Year =="2008", ], aes(label = "T aphinity"), hjust = -0.5,vjust = -9)+#label to lines - cheated
+geom_text(data =red_annual_mtc[red_annual_mtc$Year =="1999", ], aes(label = "T anomaly"), hjust = 0.7,vjust = 18,color = "red")
 
  grid.arrange(p1,p2, ncol = 2)
 
@@ -1053,9 +1054,9 @@ plot(depth_gam,se=TRUE,col = "blue")
 net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
 net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 
-#get out rows without mtc and depth deepre than 100 m
-  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter< 100)
-  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter< 100)
+#get out rows without mtc and depth deepre than 100 m or shallower than 20 m
+  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(20:100) ) 
+  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(20:100))
   
     #create numeric columns frome the date-time "Date_num"
   
@@ -1079,8 +1080,32 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
   mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Month, bs = "cc", k=12) ,data = net_mediter_mtc)
   # 
   red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Month, bs = "cc", k=12) ,data = net_red_mtc)
-#
+
   
+  #nice graphs for thesis
+  
+mediter_gam_month <- getViz(mediter_gam_month)
+red_gam_month = getViz(red_gam_month)
+
+plot( sm(mediter_gam_month, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature aphinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) 
+
+plot( sm(mediter_gam_month, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature aphinity",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
+
+plot( sm(mediter_gam_month, 3) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature aphinity")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
+
+
+
+plot( sm(red_gam_month, 1) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature aphinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) 
+
+plot( sm(red_gam_month, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature aphinity",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,90)) 
+
+plot( sm(red_gam_month, 3) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature aphinity")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
+
+
+
+
+
+    
 par(mfrow = c(2,2)) 
   plot(mediter_gam_month,se=TRUE,col = "blue")
 title("Mediterranean Species",line = -2, outer=TRUE)
@@ -1233,11 +1258,34 @@ sst_month_gam
 
 #--- fishes model---
 ```{r}
+#upload codes, and mediter and red sea data.
+scientific_names=read.csv(file = "prosseced data/sceintific_names_fishes_known_origin.csv", stringsAsFactors = F)
+#cerate species names vector
+ sp_code = scientific_names$Sp_code
+ scientific_code = scientific_names$scintific_name
+  
+mean_tcode =read.csv( "prosseced data/mean_tcode.CSV")
 
+species_to_scientific_name=read.csv(file= "prosseced data/sceintific_names_fishes_known_origin.csv",stringsAsFactors = F)
 
+net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
+net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
+
+#sp_code of the mediterrinian and red sea origin 
+mediter_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Med"),"Sp_code"]
+red_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Red"),"Sp_code"]
+#get out rows without mtc and depth deepre than 100 m or shallower than 20 m
+  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(20:100) ) 
+  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(20:100))
+
+ 
+
+#table with namse of species and Tpref
     species_table = cbind(sp_code,scientific_code,mean_tcode)
 mediter_table=species_table[which(rownames(species_table) %in% c("MUL","BAT","Bbo","Mme","WHT","Arg","EPI","Pca","SPI","Lmo","Sd","Bca","Per","Sja")),]
 red_table=species_table[which(!(rownames(species_table) %in% mediter_code)),]
+
+
 
 
 #the abundance invasive species model
