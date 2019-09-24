@@ -1055,8 +1055,9 @@ net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
 net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 
 #get out rows without mtc and depth deepre than 100 m or shallower than 20 m
-  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(20:100) ) 
-  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(20:100))
+  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(0:100) ) 
+  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(0:100))
+  
   
     #create numeric columns frome the date-time "Date_num"
   
@@ -1259,24 +1260,24 @@ sst_month_gam
 #--- fishes model---
 ```{r}
 #upload codes, and mediter and red sea data.
-scientific_names=read.csv(file = "prosseced data/sceintific_names_fishes_known_origin.csv", stringsAsFactors = F)
-#cerate species names vector
- sp_code = scientific_names$Sp_code
- scientific_code = scientific_names$scintific_name
-  
-mean_tcode =read.csv( "prosseced data/mean_tcode.CSV")
-
-species_to_scientific_name=read.csv(file= "prosseced data/sceintific_names_fishes_known_origin.csv",stringsAsFactors = F)
-
-net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
-net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
-
-#sp_code of the mediterrinian and red sea origin 
-mediter_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Med"),"Sp_code"]
-red_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Red"),"Sp_code"]
+# scientific_names=read.csv(file = "prosseced data/sceintific_names_fishes_known_origin.csv", stringsAsFactors = F)
+# #cerate species names vector
+#  sp_code = scientific_names$Sp_code
+#  scientific_code = scientific_names$scintific_name
+#   
+# mean_tcode =read.csv( "prosseced data/mean_tcode.CSV")
+# 
+# species_to_scientific_name=read.csv(file= "prosseced data/sceintific_names_fishes_known_origin.csv",stringsAsFactors = F)
+# 
+# net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
+# net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
+# 
+# #sp_code of the mediterrinian and red sea origin 
+# mediter_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Med"),"Sp_code"]
+# red_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Red"),"Sp_code"]
 #get out rows without mtc and depth deepre than 100 m or shallower than 20 m
-  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(20:100) ) 
-  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(20:100))
+ # net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(20:100) ) 
+#  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(20:100))
 
  
 
@@ -1289,17 +1290,29 @@ red_table=species_table[which(!(rownames(species_table) %in% mediter_code)),]
 
 
 #the abundance invasive species model
-Nra_gam = gam(Nra ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_red_mtc)
+Nra_gam = gam(Nra ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_red_mtc)
   par(mfrow = c(2,2)) 
   plot( Nra_gam,se=TRUE,col = "blue")
     title(paste( red_table[which(rownames(red_table)=="Nra"),2],"T pref =",red_table[which(rownames(red_table)=="Nra"),3],sep = " "),line = -2, outer=TRUE)
     
-    Sco_gam = gam(Sco ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_red_mtc)
+    Sco_gam = gam(Sco ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_red_mtc)
   par(mfrow = c(2,2)) 
   plot( Sco_gam,se=TRUE,col = "blue")
     title(paste( red_table[which(rownames(red_table)=="Sco"),2],"T pref =",red_table[which(rownames(red_table)=="Sco"),3],sep = " "),line = -2, outer=TRUE)
     
- Umo_gam = gam(Umo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_red_mtc)
+    
+    
+    
+Sco_gam = getViz(Sco_gam)
+
+plot( sm(Sco_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature aphinity",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
+
+plot( sm(Sco_gam, 3) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature aphinity")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
+
+    
+    
+    
+ Umo_gam = gam(Umo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_red_mtc)
   par(mfrow = c(2,2)) 
   plot( Umo_gam,se=TRUE,col = "blue")
     title(paste( red_table[which(rownames(red_table)=="Umo"),2],"T pref =",red_table[which(rownames(red_table)=="Umo"),3],sep = " "),line = -2, outer=TRUE)
@@ -1308,52 +1321,52 @@ Nra_gam = gam(Nra ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter,
 
 #the abundance Mediter species model "MUL" "BAT" "Bbo" "Mme" "WHT"
     
- MUL_model = gam(MUL ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+ MUL_model = gam(MUL ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( MUL_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="MUL"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="MUL"),3],sep = " "),line = -2, outer=TRUE)
     
-     BAT_model = gam(BAT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+     BAT_model = gam(BAT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( BAT_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="BAT"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="BAT"),3],sep = " "),line = -2, outer=TRUE)
 
     
-     Bbo_model = gam(Bbo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+     Bbo_model = gam(Bbo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( Bbo_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="Bbo"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Bbo"),3],sep = " "),line = -2, outer=TRUE)
 
     
-     Mme_model = gam(Mme ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+     Mme_model = gam(Mme ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( Mme_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="Mme"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Mme"),3],sep = " "),line = -2, outer=TRUE)
 
     
-     WHT_model = gam(WHT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+     WHT_model = gam(WHT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( WHT_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="WHT"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="WHT"),3],sep = " "),line = -2, outer=TRUE)
 
 #the non abundance Mediter species model - high Tpref - Sd, EPI, Bca, Lmo
 
-    Sd_model = gam(Sd ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+    Sd_model = gam(Sd ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( Sd_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="Sd"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Sd"),3],sep = " "),line = -2, outer=TRUE)
     
-    EPI_model = gam(EPI ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+    EPI_model = gam(EPI ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( EPI_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="EPI"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="EPI"),3],sep = " "),line = -2, outer=TRUE)
     
-    Bca_model = gam(Bca ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+    Bca_model = gam(Bca ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( Bca_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="Bca"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Bca"),3],sep = " "),line = -2, outer=TRUE)
     
-    Lmo_model = gam(Lmo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs"), data = net_mediter_mtc)
+    Lmo_model = gam(Lmo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( Lmo_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="Lmo"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Lmo"),3],sep = " "),line = -2, outer=TRUE)
