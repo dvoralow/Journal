@@ -1307,7 +1307,7 @@ Sco_gam = getViz(Sco_gam)
 
 plot( sm(Sco_gam, 3) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5))+labs(y ="Catch [kg]",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
 
-plot( sm(Sco_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5))+labs(y ="Temperature aphinity")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
+plot( sm(Sco_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5))+labs(y ="Catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
 
     
     
@@ -1321,7 +1321,7 @@ plot( sm(Sco_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = ele
 
 plot( sm(Umo_gam, 3) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5))+labs(y ="Catch [kg]",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
 
-plot( sm(Umo_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5))+labs(y ="Temperature aphinity")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
+plot( sm(Umo_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5))+labs(y ="Catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
 
 
 #the abundance Mediter species model "MUL" "BAT" "Bbo" "Mme" "WHT"
@@ -1347,7 +1347,7 @@ plot( sm(Umo_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = ele
 
 plot( sm(Bbo_model, 3) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5))+labs(y ="Catch [kg]",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
 
-plot( sm(Bbo_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5))+labs(y ="Temperature aphinity")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
+plot( sm(Bbo_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5))+labs(y ="Catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
 
     
     
@@ -1373,7 +1373,7 @@ plot( sm(Bbo_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = 
 
 plot( sm(Sd_model, 3) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5))+labs(y ="Catch [kg]",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
 
-plot( sm(Sd_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5))+labs(y ="Temperature aphinity")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
+plot( sm(Sd_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5))+labs(y ="Catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
 
     
     
