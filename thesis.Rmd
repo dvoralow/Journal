@@ -1055,21 +1055,11 @@ net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
 net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 
 #get out rows without mtc and depth deepre than 100 m or shallower than 20 m
-  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(0:100) ) 
-  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(0:100))
+  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) 
+  #%>% filter(depth_meter %in% c(0:100) ) 
+  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) 
+  #%>% filter(depth_meter %in% c(0:100))
   
-  
-    #create numeric columns frome the date-time "Date_num"
-  
-  net_mediter_mtc = net_mediter_mtc %>% mutate(Date_num = as.numeric(Date)) %>% dplyr::select(X:Date,Date_num,Week:Season,Season_num ,everything())
-  
-  net_red_mtc = net_red_mtc %>% mutate(Date_num = as.numeric(Date)) %>% dplyr::select(X:Date,Date_num,Week:Season,Season_num ,everything())
- 
-  #prepare data for joining: put origin column and delete catch columns
-  split_mediter_mtc = net_mediter_mtc %>% mutate(Origin = "med") %>% dplyr::select(-(Aal:WHT))
-    split_red_mtc = net_red_mtc %>% mutate(Origin = "red") %>% dplyr::select(-(Nra:Upo))
-  
-  split_all_mtc = rbind(split_mediter_mtc,split_red_mtc)
   
  # start the invasive in 1991 [year]
  net_red_mtc = net_red_mtc %>% filter(Year > 1990)
@@ -1083,7 +1073,7 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
   red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Month, bs = "cc", k=12) ,data = net_red_mtc)
 
   
-  #nice graphs for thesis
+  #---------------nice graphs for thesis-------------
   
 mediter_gam_month <- getViz(mediter_gam_month)
 red_gam_month = getViz(red_gam_month)
@@ -1103,9 +1093,6 @@ plot( sm(red_gam_month, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text
 plot( sm(red_gam_month, 3) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
 
 
-
-
-
     
 par(mfrow = c(2,2)) 
   plot(mediter_gam_month,se=TRUE,col = "blue")
@@ -1116,7 +1103,12 @@ par(mfrow = c(2,2))
   plot(red_gam_month,se=TRUE,col = "blue") 
   title("Red Sea Species",line = -2, outer=TRUE)
 
-#--month model with SST and without year
+  
+  
+  
+#---------month model with SST and without year--------------
+  #TO DO! with montly anomaly for the SST
+  
   mediter_gam_sst = gam(mtc~s(depth_meter) + s(Month, bs = "cc", k=12)+s(SST, bs = "gp") ,data = net_mediter_mtc)
  par(mfrow = c(2,2)) 
   plot(  mediter_gam_sst,se=TRUE,col = "blue")
@@ -1130,76 +1122,86 @@ par(mfrow = c(2,2))
   summary(red_gam_sst)
 
   
-  #-----convert month to factor abn do "by" model--
-  med_mtc_mo_fa = net_mediter_mtc %>% dplyr::mutate(Month = as.factor(Month))
-  red_mtc_mo_fa = net_red_mtc %>% dplyr::mutate(Month = as.factor(Month))
-    
-  
-  mediter_gam_mo_fa = gam(mtc ~ s(SST, by = Month)   ,data = med_mtc_mo_fa)
-# + s(depth_meter, bs = "ts") offset(Duration) +s(Year, bs = "cr")  ++Month
-par(mfrow = c(2,2)) 
-  plot(  mediter_gam_mo_fa,se=TRUE,col = "blue")
-  summary(  mediter_gam_mo_fa)
-  
-   red_gam_mo_fa = gam(mtc ~ s(SST, by = Month)   ,data = red_mtc_mo_fa)
-# + s(depth_meter, bs = "ts") offset(Duration) +s(Year, bs = "cr")  ++Month
-par(mfrow = c(2,2)) 
-  plot(  red_gam_mo_fa,se=TRUE,col = "blue")
-  summary(  res_gam_mo_fa)
-  
- 
- 
-
-#---------- the split data [split by origin]------ 
-  #data with different column to "origin", any net in 2 rows, 1 for "med" and 1 for "red"    
-  
-  split_all_mtc$Origin =as.factor( split_all_mtc$Origin)
-  
-#year by origin  
-    split_gam_month = gam(mtc ~ s(Year, by = Origin) +Origin  ,data = split_all_mtc)
-#+ s(depth_meter) + s(Month, bs = "cc", k=12) +s(SST, bs = "gp")
-  
-par(mfrow = c(2,1)) 
-  plot(split_gam_month,se=TRUE,col = "blue")
-title("All split",line = -2, outer=TRUE)
-
-#year by origin with the whole covariates
-split_gam_month = gam(mtc ~offset(Duration) + s(Year, by = Origin) +Origin+ s(depth_meter, bs = "ts") + s(Month, bs = "cc", k=12) +s(SST, bs = "ts")  ,data = split_all_mtc)
-# 
-par(mfrow = c(3,2)) 
-  plot(split_gam_month,se=TRUE,col = "blue")
-   summary(split_gam_month)
-  
-#year and SST by origin with the whole covariates
-split_gam_month = gam(mtc ~offset(Duration) + s(Year, by = Origin) +Origin+ s(depth_meter, bs = "ts") + s(Month, bs = "cc", k=12) +s(SST, by = Origin)  ,data = split_all_mtc)
-# 
-par(mfrow = c(3,2)) 
-  plot(split_gam_month,se=TRUE,col = "blue")
-  summary(split_gam_mon)
-
-  
-  
-#sst by origin
- split_gam_month = gam(mtc ~ s(SST, by = Origin) +Origin  ,data = split_all_mtc)
-#+ s(depth_meter) + s(Month, bs = "cc", k=12) +s(SST, bs = "gp")
-  
-par(mfrow = c(2,1)) 
-  plot(split_gam_month,se=TRUE,col = "blue")
-title("All split",line = -2, outer=TRUE)
-
-#check of SST and month corrolation
-sst_month_gam <- gam(SST~s(Month, bs = "cc", k=12), data = split_all_mtc)
- summary(sst_month_gam)
-  plot(sst_month_gam,se=TRUE,col = "blue")
-
-  
-sst_month_gam
-
-
-
 
 
 ```
+
+#-------interactions GAM models-------
+
+```{r}
+#---upload data and seperate by origin
+
+#upload mediter and red sea data.
+net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
+net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
+
+
+#get out rows without mtc and depth deepre than 100 m or shallower than 20 m
+  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc))
+  #%>% filter(depth_meter>0) %>% filter(depth_meter<100)
+  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc))%>% filter((depth_meter<200) || (depth_meter = is.na(net_red_mtc$depth_meter)))
+  #%>% filter(depth_meter>0) 
+  x = net_red_mtc %>% dplyr:: filter(!is.na(depth_meter))
+  x = net_red_mtc %>% dplyr:: filter(is.na(depth_meter))
+  
+ # start the in 1991 [year]
+ net_red_mtc = net_red_mtc %>% filter(Year > 1990)
+ net_mediter_mtc = net_mediter_mtc %>% filter(Year > 1990)
+ 
+ 
+ #GAM models
+ #interactions between month and year
+ mediter_gam_Tint = gam(mtc ~ te(Month,Year, bs = c("cc","cr")) ,data = net_mediter_mtc)
+ 
+  red_gam_Tint = gam(mtc ~ te(Month,Year, bs = c("cc","cr"),k=12),data = net_red_mtc)
+ 
+  mediter_gam_Tint = getViz(mediter_gam_Tint)
+ red_gam_Tint = getViz(red_gam_Tint)
+ 
+plot(sm(mediter_gam_Tint, 1)) + l_fitRaster(pTrans = zto1(0.05, 2, 0.1), noiseup = TRUE) +
+  l_rug() + l_fitContour()
+
+plot(sm(red_gam_Tint, 1)) + l_fitRaster(pTrans = zto1(0.05, 2, 0.1), noiseup = TRUE) +
+  l_rug() + l_fitContour()
+
+
+#--nice and non-understanding 3 diamantios interactive graph
+
+ck <- check2D(red_gam_Tint, x1 = "Month", x2 = "Year", type = "tnormal")
+
+glyFun <- function(.d){
+  .r <- .d$z
+  .qq <- as.data.frame( density(.r)[c("x", "y")], n = 100 )
+  .qq$colour <- rep(ifelse(length(.r)>50, "black", "red"), nrow(.qq))
+  return( .qq )
+}
+
+ck + l_glyphs2D(glyFun = glyFun, ggLay = "geom_path", n = c(8, 8),
+                mapping = aes(x=gx, y=gy, group = gid, colour = I(colour)), 
+                height=1.5, width = 1)
+
+plotRGL(sm(red_gam_Tint, 1), fix = c("z" = 0), residuals = FALSE)
+
+
+#-------interactions between depth and year
+
+ 
+mediter_gam_Dint = gam(mtc ~ te(depth_meter,Year, bs = c("cr","cr"))+s(depth_meter) ,data = net_mediter_mtc)
+ 
+  red_gam_Dint = gam(mtc ~ te(depth_meter,Year, bs = c("cr","cr"),k=12),data = net_red_mtc)
+ 
+  mediter_gam_ = getViz(mediter_gam_Dint)
+ red_gam_ = getViz(red_gam_Dint)
+ 
+plot(sm(mediter_gam_, 1)) + l_fitRaster(pTrans = zto1(0.05, 2, 0.1), noiseup = TRUE) +
+  l_rug() + l_fitContour()
+
+plot(sm(red_gam_, 1)) + l_fitRaster(pTrans = zto1(0.05, 2, 0.1), noiseup = TRUE) +
+  l_rug() + l_fitContour()
+
+
+```
+
 
 
 
@@ -1254,10 +1256,11 @@ sst_month_gam
   title("Red species monthly catch by month and year",line = -2, outer=TRUE)
   
 
+  
 
 ```
 
-#--- fishes model---
+#---------- fish'es model------------------------
 ```{r}
 #upload codes, and mediter and red sea data.
 # scientific_names=read.csv(file = "prosseced data/sceintific_names_fishes_known_origin.csv", stringsAsFactors = F)
@@ -1736,7 +1739,7 @@ for (i in 1:length(species_b))
     
     
       
-      p=ggplot(tepm_b_species, aes(x=Month.XX., y=kg_b,color=Year.XXXX. )) +
+      p=ggplot(tepm_b_species, aes(x=Month.XX., y=kg_b,color=Year.XXXX.)) +
     geom_line()+
     scale_colour_gradientn(colours=rainbow(4))+
     facet_grid(Year.XXXX.~.)+ggtitle(species_b[i])+
@@ -1747,6 +1750,94 @@ for (i in 1:length(species_b))
   
 ```
 
+
+#-------------------------chnks I droped aside--------------------------------------
+
+
+GAm model
+
+```{r}
+#---------- the split data [split by origin]------ 
+  #data with different column to "origin", any net in 2 rows, 1 for "med" and 1 for "red"    
+  
+    #create numeric columns frome the date-time "Date_num"
+  
+  # net_mediter_mtc = net_mediter_mtc %>% mutate(Date_num = as.numeric(Date)) %>% dplyr::select(X:Date,Date_num,Week:Season,Season_num ,everything())
+  # 
+  # net_red_mtc = net_red_mtc %>% mutate(Date_num = as.numeric(Date)) %>% dplyr::select(X:Date,Date_num,Week:Season,Season_num ,everything())
+  # 
+  #prepare data for joining: put origin column and delete catch columns
+  #split_mediter_mtc = net_mediter_mtc %>% mutate(Origin = "med") %>% dplyr::select(-(Aal:WHT))
+   # split_red_mtc = net_red_mtc %>% mutate(Origin = "red") %>% dplyr::select(-(Nra:Upo))
+  #split_all_mtc = rbind(split_mediter_mtc,split_red_mtc)
+  
+
+  split_all_mtc$Origin =as.factor( split_all_mtc$Origin)
+  
+#year by origin  
+    split_gam_month = gam(mtc ~ s(Year, by = Origin) +Origin  ,data = split_all_mtc)
+#+ s(depth_meter) + s(Month, bs = "cc", k=12) +s(SST, bs = "gp")
+  
+par(mfrow = c(2,1)) 
+  plot(split_gam_month,se=TRUE,col = "blue")
+title("All split",line = -2, outer=TRUE)
+
+#year by origin with the whole covariates
+split_gam_month = gam(mtc ~offset(Duration) + s(Year, by = Origin) +Origin+ s(depth_meter, bs = "ts") + s(Month, bs = "cc", k=12) +s(SST, bs = "ts")  ,data = split_all_mtc)
+# 
+par(mfrow = c(3,2)) 
+  plot(split_gam_month,se=TRUE,col = "blue")
+   summary(split_gam_month)
+  
+#year and SST by origin with the whole covariates
+split_gam_month = gam(mtc ~offset(Duration) + s(Year, by = Origin) +Origin+ s(depth_meter, bs = "ts") + s(Month, bs = "cc", k=12) +s(SST, by = Origin)  ,data = split_all_mtc)
+# 
+par(mfrow = c(3,2)) 
+  plot(split_gam_month,se=TRUE,col = "blue")
+  summary(split_gam_mon)
+
+  
+  
+#sst by origin
+ split_gam_month = gam(mtc ~ s(SST, by = Origin) +Origin  ,data = split_all_mtc)
+#+ s(depth_meter) + s(Month, bs = "cc", k=12) +s(SST, bs = "gp")
+  
+par(mfrow = c(2,1)) 
+  plot(split_gam_month,se=TRUE,col = "blue")
+title("All split",line = -2, outer=TRUE)
+
+#check of SST and month corrolation
+sst_month_gam <- gam(SST~s(Month, bs = "cc", k=12), data = split_all_mtc)
+ summary(sst_month_gam)
+  plot(sst_month_gam,se=TRUE,col = "blue")
+
+  
+sst_month_gam
+
+
+
+  
+  
+   #-----convert month to factor abn do "by" model--
+  med_mtc_mo_fa = net_mediter_mtc %>% dplyr::mutate(Month = as.factor(Month))
+  red_mtc_mo_fa = net_red_mtc %>% dplyr::mutate(Month = as.factor(Month))
+    
+  
+  mediter_gam_mo_fa = gam(mtc ~ s(SST, by = Month)   ,data = med_mtc_mo_fa)
+# + s(depth_meter, bs = "ts") offset(Duration) +s(Year, bs = "cr")  ++Month
+par(mfrow = c(2,2)) 
+  plot(  mediter_gam_mo_fa,se=TRUE,col = "blue")
+  summary(  mediter_gam_mo_fa)
+  
+   red_gam_mo_fa = gam(mtc ~ s(SST, by = Month)   ,data = red_mtc_mo_fa)
+# + s(depth_meter, bs = "ts") offset(Duration) +s(Year, bs = "cr")  ++Month
+par(mfrow = c(2,2)) 
+  plot(  red_gam_mo_fa,se=TRUE,col = "blue")
+  summary(  res_gam_mo_fa)
+  
+ 
+
+```
 
 
 
