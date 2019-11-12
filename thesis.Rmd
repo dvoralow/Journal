@@ -1132,37 +1132,34 @@ par(mfrow = c(2,2))
 #---upload data and seperate by origin
 
 #upload mediter and red sea data.
-net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
+net_med_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
 net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 
 
-#get out rows without mtc and depth deepre than 100 m or shallower than 20 m
-  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc))
-  #%>% filter(depth_meter>0) %>% filter(depth_meter<100)
-  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc))%>% filter((depth_meter<200) || (depth_meter = is.na(net_red_mtc$depth_meter)))
-  #%>% filter(depth_meter>0) 
-  x = net_red_mtc %>% dplyr:: filter(!is.na(depth_meter))
-  x = net_red_mtc %>% dplyr:: filter(is.na(depth_meter))
+#get out rows without mtc and depth deeper than 100 m or shallower than 20 m
+  net_med_mtc = net_med_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(!is.na(depth_meter)) %>% filter(depth_meter<100)
+  
+  net_red_mtc = net_red_mtc %>% dplyr:: filter(!is.na(mtc)) %>% filter(!is.na(depth_meter)) %>% filter(depth_meter<100)
   
  # start the in 1991 [year]
  net_red_mtc = net_red_mtc %>% filter(Year > 1990)
- net_mediter_mtc = net_mediter_mtc %>% filter(Year > 1990)
+ net_med_mtc = net_med_mtc %>% filter(Year > 1990)
  
  
  #GAM models
  #interactions between month and year
- mediter_gam_Tint = gam(mtc ~ te(Month,Year, bs = c("cc","cr")) ,data = net_mediter_mtc)
+ med_gam_Tint = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(depth_meter) ,data = net_med_mtc)
  
-  red_gam_Tint = gam(mtc ~ te(Month,Year, bs = c("cc","cr"),k=12),data = net_red_mtc)
+  red_gam_Tint = gam(mtc ~ te(Month,Year, bs = c("cc","cr"),k=12)+s(depth_meter),data = net_red_mtc)
  
-  mediter_gam_Tint = getViz(mediter_gam_Tint)
+  med_gam_Tint = getViz(med_gam_Tint)
  red_gam_Tint = getViz(red_gam_Tint)
  
-plot(sm(mediter_gam_Tint, 1)) + l_fitRaster(pTrans = zto1(0.05, 2, 0.1), noiseup = TRUE) +
-  l_rug() + l_fitContour()
-
-plot(sm(red_gam_Tint, 1)) + l_fitRaster(pTrans = zto1(0.05, 2, 0.1), noiseup = TRUE) +
-  l_rug() + l_fitContour()
+  print(plot(sm(med_gam_Tint,3)), ask = FALSE)
+ print(plot(sm(red_gam_Tint,3)), ask = FALSE)
+ 
+#plot(sm(med_gam_Tint, 1)) + l_fitRaster(pTrans = zto1(0.05, 2, 0.1), noiseup = TRUE) +
+ # l_rug() + l_fitContour()
 
 
 #--nice and non-understanding 3 diamantios interactive graph
@@ -1186,18 +1183,16 @@ plotRGL(sm(red_gam_Tint, 1), fix = c("z" = 0), residuals = FALSE)
 #-------interactions between depth and year
 
  
-mediter_gam_Dint = gam(mtc ~ te(depth_meter,Year, bs = c("cr","cr"))+s(depth_meter) ,data = net_mediter_mtc)
- 
-  red_gam_Dint = gam(mtc ~ te(depth_meter,Year, bs = c("cr","cr"),k=12),data = net_red_mtc)
- 
-  mediter_gam_ = getViz(mediter_gam_Dint)
- red_gam_ = getViz(red_gam_Dint)
- 
-plot(sm(mediter_gam_, 1)) + l_fitRaster(pTrans = zto1(0.05, 2, 0.1), noiseup = TRUE) +
-  l_rug() + l_fitContour()
+med_gam_Dint = gam(mtc ~te(depth_meter)+te(Year, bs = "cr") + ti(depth_meter,Year, bs = c("cr","cr")) ,data = net_med_mtc)
 
-plot(sm(red_gam_, 1)) + l_fitRaster(pTrans = zto1(0.05, 2, 0.1), noiseup = TRUE) +
-  l_rug() + l_fitContour()
+ 
+  red_gam_Dint = gam(mtc ~ te(depth_meter)+te(Year, bs = "cr") + ti(depth_meter,Year, bs = c("cr","cr")),data = net_red_mtc)
+ 
+  med_gam_Dint = getViz(med_gam_Dint)
+ red_gam_Dint = getViz(red_gam_Dint)
+ 
+ print(plot(sm(med_gam_Dint,3)), ask = FALSE)
+ print(plot(sm(red_gam_Dint,3)), ask = FALSE)
 
 
 ```
@@ -1379,6 +1374,7 @@ plot( sm(Sd_model, 3) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = e
 plot( sm(Sd_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5, size = 25))+labs(y ="Relative catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
 
     
+
     
     EPI_model = gam(EPI ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
@@ -1397,6 +1393,13 @@ plot( sm(Sd_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = e
 
 ```
 
+#-----species phnology model - catch-date interactions
+
+```{r}
+
+
+
+```
 
 
 
