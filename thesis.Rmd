@@ -1500,7 +1500,7 @@ all_dataF = read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAs
  scientific_namesF = scientific_namesF %>% dplyr:: filter(Sp_code != "BOX") %>% dplyr::filter(Sp_code != "FIS")
  
  # set NA to FALSE and remove rows with gamberi nets, and the columns "fish (FIS)", "general box (BOX)"
-  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS)
+  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS) %>% filter(Year>1990)
   
  #cerate species names and code vectors
  sp_codeF=scientific_namesF$Sp_code
@@ -1669,6 +1669,7 @@ For runing this chunk, need to run the first chunk of "phnology part" - uploud t
 
 ```{r}
 
+#check on single species
 Aal_gam = gam(Aal ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(depth_meter) ,data = all_dataF)
 
 #I tried to put another family, and select, didn't change much
@@ -1677,9 +1678,14 @@ Aal_gam = gam(Aal ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month
 Aal_gam = getViz(Aal_gam)
 
 
-
 print(plot(Aal_gam) + labs(title = "Aal"), pages = 1)
 
+Aal_gam2 = gam(Aal ~ te(Month,Year, bs = c("cc","cr"))+s(depth_meter) ,data = all_dataF)
+
+Aal_gam2 = getViz(Aal_gam2)
+
+
+print(plot(sm(Aal_gam2,1)) + labs(title = "Aal"), pages = 1)
  
 
  
@@ -1695,6 +1701,14 @@ for (i in 1:length(sp_codeF))
    temp_gam = getViz( temp_gam)
 
 print(plot(temp_gam) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
+
+temp_gam2 = gam(temp[,4] ~ te(Month,Year, bs = c("cc","cr"))+s(depth_meter) ,data = temp)
+
+temp_gam2 = getViz(temp_gam2)
+
+
+print(plot(sm(temp_gam2,1)) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
+
   
 }#end for
 
