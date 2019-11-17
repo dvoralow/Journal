@@ -1497,10 +1497,10 @@ all_dataF = read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAs
  scientific_namesF = read.csv(file = "prosseced data/sceintific_names_fishes_only.csv", stringsAsFactors = F)
  
  #remove "box general" boxes, and "fish" boxes
- scientific_namesF = scientific_namesF %>% dplyr:: filter(Sp_code != "BOX") %>% dplyr::filter(Sp_code != "FIS")
+ scientific_namesF = scientific_namesF %>% dplyr:: filter(Sp_code != "BOX") %>% dplyr::filter(Sp_code != "FIS") %>% dplyr::filter(Sp_code != "SPL")
  
  # set NA to FALSE and remove rows with gamberi nets, and the columns "fish (FIS)", "general box (BOX)"
-  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS) %>% filter(Year>1990)
+  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL) %>% filter(Year>1990)
   
  #cerate species names and code vectors
  sp_codeF=scientific_namesF$Sp_code
@@ -1714,7 +1714,7 @@ print(plot(sm(temp_gam2,1)) + labs(title = paste(sp_codeF[i],scientific_codeF[i]
 
       
       
-    title(paste(sp_codeF[i], scientific_codeF[i],sep = " "),line = -2, outer=TRUE)
+   
   
 
 ```
