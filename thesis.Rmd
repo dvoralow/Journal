@@ -1702,13 +1702,6 @@ for (i in 1:length(sp_codeF))
 
 print(plot(temp_gam) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
 
-temp_gam2 = gam(temp[,4] ~ te(Month,Year, bs = c("cc","cr"))+s(depth_meter) ,data = temp)
-
-temp_gam2 = getViz(temp_gam2)
-
-
-print(plot(sm(temp_gam2,1)) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
-
   
 }#end for
 
