@@ -1056,9 +1056,9 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 
 #get out rows without mtc and depth deepre than 100 m or shallower than 20 m
   net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) 
-  #%>% filter(depth_meter %in% c(0:100) ) 
+ 
   net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) 
-  #%>% filter(depth_meter %in% c(0:100))
+
   
   
  # start the invasive in 1991 [year]
@@ -1496,15 +1496,24 @@ uploud the whole fish data
 all_dataF = read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAsFactors = F)
  scientific_namesF = read.csv(file = "prosseced data/sceintific_names_fishes_only.csv", stringsAsFactors = F)
  
- #remove "box general" boxes, and "fish" boxes
+ #remove "box general" boxes, "fish" boxes and "specieal fish boxes".
  scientific_namesF = scientific_namesF %>% dplyr:: filter(Sp_code != "BOX") %>% dplyr::filter(Sp_code != "FIS") %>% dplyr::filter(Sp_code != "SPL")
  
- # set NA to FALSE and remove rows with gamberi nets, and the columns "fish (FIS)", "general box (BOX)"
-  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL) %>% filter(Year>1990)
+ # set NA to FALSE and remove rows with gamberi nets, the columns "fish (FIS)", "general box (BOX)", Speciel fish boxes (SPL), start from 1991, remove depth deeper than 100 m, and stay with 1 depth column, called "Depth"
+  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL, -loc_DEPTH, -Depth) %>% filter(Year>1990) %>% filter(depth_meter<100) %>% rename(Depth = depth_meter)
+  
   
  #cerate species names and code vectors
  sp_codeF=scientific_namesF$Sp_code
  scientific_codeF=scientific_namesF$scintific_name
+ 
+ all_dataF = as_tibble(all_dataF)
+ #create "catch_ex"- exploration, table with number of nets with data for any species each year
+
+ catch_ex =  all_dataF %>% dplyr::group_by(Year) %>% dplyr::summarise_at(vars(Aal:WHT), list(N = ~ n()), drop = TRUE)
+ x = all_dataF
+ x[x==0]=NA
+ catch_ex =  x %>% dplyr::group_by(Year) %>%summarise(count = sum(!is.na(Aal:WHT)))
 
 
 ```
@@ -1670,7 +1679,7 @@ For runing this chunk, need to run the first chunk of "phnology part" - uploud t
 ```{r}
 
 #check on single species
-Aal_gam = gam(Aal ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(depth_meter) ,data = all_dataF)
+Aal_gam = gam(Aal ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = all_dataF)
 
 #I tried to put another family, and select, didn't change much
 #, select = T, family=Tweedie(1.25,power(.1))
@@ -1680,7 +1689,7 @@ Aal_gam = getViz(Aal_gam)
 
 print(plot(Aal_gam) + labs(title = "Aal"), pages = 1)
 
-Aal_gam2 = gam(Aal ~ te(Month,Year, bs = c("cc","cr"))+s(depth_meter) ,data = all_dataF)
+Aal_gam2 = gam(Aal ~ te(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = all_dataF)
 
 Aal_gam2 = getViz(Aal_gam2)
 
@@ -1693,10 +1702,10 @@ print(plot(sm(Aal_gam2,1)) + labs(title = "Aal"), pages = 1)
 for (i in 1:length(sp_codeF))
 {
 
-   temp = all_dataF %>% dplyr::select(Year, Month, depth_meter, sp_codeF[i])
+   temp = all_dataF %>% dplyr::select(Year, Month, Depth, sp_codeF[i])
   
 
-  temp_gam = gam(temp[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(depth_meter) ,data = temp)
+  temp_gam = gam(temp[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
   
    temp_gam = getViz( temp_gam)
 
