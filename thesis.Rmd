@@ -1508,13 +1508,24 @@ all_dataF = read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAs
  scientific_codeF=scientific_namesF$scintific_name
  
  all_dataF = as_tibble(all_dataF)
- #create "catch_ex"- exploration, table with number of nets with data for any species each year
+ 
+ #cerate DLS column - join Dipoldus species, Marmir species, and boxes with Diplodus and Marmir togother,
+ all_dataF = all_dataF %>% mutate(DLS = Lmo+WHT+DIP)
+ 
+ #----create "catch_ex"- exploration, table with number of nets with data for any species each year
 
- catch_ex =  all_dataF %>% dplyr::group_by(Year) %>% dplyr::summarise_at(vars(Aal:WHT), list(N = ~ n()), drop = TRUE)
- x = all_dataF
- x[x==0]=NA
- catch_ex =  x %>% dplyr::group_by(Year) %>%summarise(count = sum(!is.na(Aal:WHT)))
+ catch_ex =all_dataF %>% dplyr::select(Year, Aal:DLS) %>% group_by(Year) %>% 
+  summarize_all(.fun = function(x) sum(x>0,na.rm = T)) %>% gather(Species, Catch, Aal:DLS, factor_key=TRUE) %>% spread(Year, Catch)
+ 
+write.csv(catch_ex, file = "prosseced data/sum of nets for species for year.csv")
 
+#table of the species abondance enough for model
+catch_sum = read.csv("prosseced data/years for species.csv")
+
+#vector of the spceis in the model
+abondance_species = catch_sum$Spceis
+
+catch_ab_ex = catch_ex %>% filter(Species %in% abondance_species)
 
 ```
 
@@ -1696,20 +1707,21 @@ Aal_gam2 = getViz(Aal_gam2)
 
 print(plot(sm(Aal_gam2,1)) + labs(title = "Aal"), pages = 1)
  
-
+abondance_species = as.character(abondance_species)
  
 #--loop
-for (i in 1:length(sp_codeF))
+for (i in 1:length(abondance_species))
 {
 
-   temp = all_dataF %>% dplyr::select(Year, Month, Depth, sp_codeF[i])
+   temp = all_dataF %>% dplyr::select(Year, Month, Depth, abondance_species[i]) %>% filter(Year >= catch_sum$Year_S[i] )  %>% filter(Year <= catch_sum$Year_E[i] )
   
 
   temp_gam = gam(temp[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
   
    temp_gam = getViz( temp_gam)
 
-print(plot(temp_gam) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
+ print(plot(temp_gam) + labs(title = abondance_species[i]), pages = 1)
+   #print(plot(temp_gam) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
 
   
 }#end for
