@@ -26,6 +26,7 @@ library(viridis)
 library("reshape2")
 library(mgcViz)
 
+
 ```
 end code
 
@@ -1530,6 +1531,76 @@ catch_ab_ex = catch_ex %>% filter(Species %in% abondance_species)
 ```
 
 
+
+
+#---GAM model for phenology of spcies--
+For runing this chunk, need to run the first chunk of "phnology part" - uploud the data
+
+```{r}
+
+ 
+abondance_species = as.character(abondance_species)
+
+EPI_d = all_dataF %>% dplyr::select(Year, Month, Depth, EPI ) %>% filter(Year >= 1991 )  %>% filter(Year <= 2018 )
+  
+EPI_d = as.data.frame(EPI_d)
+  
+   EPI_gam = gam(EPI_d[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "tp", k=27)  + ti(Month,Year, bs = c("cc","tp"), k=c(12,27))+s(Depth) ,data = EPI_d, family = tw, knots = list(Month = c(0.5, 12.5)),select = TRUE)
+  
+  summary(EPI_gam)
+  gam.check(EPI_gam)
+  
+   EPI_gam = getViz( EPI_gam)
+
+ print(plot(EPI_gam) + labs(title = "EPI", pages = 1))
+ 
+ 
+#--loop
+for (i in 1:length(abondance_species))
+{
+
+   temp = all_dataF %>% dplyr::select(Year, Month, Depth, abondance_species[i] ) %>% filter(Year >= catch_sum$Year_S[i] )  %>% filter(Year <= catch_sum$Year_E[i] )
+  
+temp = as.data.frame(temp)
+  
+   temp_gam = gam(temp[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp, family = tw)
+  
+  print(abondance_species[i])
+  summary(temp_gam)
+  gam.check(temp_gam)
+  
+   temp_gam = getViz( temp_gam)
+
+ print(plot(temp_gam) + labs(title = abondance_species[i]), pages = 1)
+   #print(plot(temp_gam) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
+
+ 
+  
+}#end for
+
+      
+      
+   
+  
+
+```
+
+
+
+try the beuteaful graph
+```{r}
+
+theme_set(theme_bw())
+
+
+
+
+```
+
+
+
+
+
 catch graphs
 ```{r}
 
@@ -1683,55 +1754,6 @@ graphs of the ratio catch
 ```
 
 
-
-#---GAM model for phenology of spcies--
-For runing this chunk, need to run the first chunk of "phnology part" - uploud the data
-
-```{r}
-
-#check on single species
-Aal_gam = gam(Aal ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = all_dataF)
-
-#I tried to put another family, and select, didn't change much
-#, select = T, family=Tweedie(1.25,power(.1))
-
-Aal_gam = getViz(Aal_gam)
-
-
-print(plot(Aal_gam) + labs(title = "Aal"), pages = 1)
-
-Aal_gam2 = gam(Aal ~ te(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = all_dataF)
-
-Aal_gam2 = getViz(Aal_gam2)
-
-
-print(plot(sm(Aal_gam2,1)) + labs(title = "Aal"), pages = 1)
- 
-abondance_species = as.character(abondance_species)
- 
-#--loop
-for (i in 1:length(abondance_species))
-{
-
-   temp = all_dataF %>% dplyr::select(Year, Month, Depth, abondance_species[i]) %>% filter(Year >= catch_sum$Year_S[i] )  %>% filter(Year <= catch_sum$Year_E[i] )
-  
-
-  temp_gam = gam(temp[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
-  
-   temp_gam = getViz( temp_gam)
-
- print(plot(temp_gam) + labs(title = abondance_species[i]), pages = 1)
-   #print(plot(temp_gam) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
-
-  
-}#end for
-
-      
-      
-   
-  
-
-```
 
 #----------- b size ----------------- 
 
@@ -1900,4 +1922,24 @@ par(mfrow = c(2,2))
     facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
     ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
 
+
+#species GAM model on single species
+#check on single species
+Aal_gam = gam(Aal ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = all_dataF)
+
+
+#I tried to put another family, and select, didn't change much
+#, select = T, family=Tweedie(1.25,power(.1))
+
+Aal_gam = getViz(Aal_gam)
+
+
+print(plot(Aal_gam) + labs(title = "Aal"), pages = 1)
+
+Aal_gam2 = gam(Aal ~ te(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = all_dataF)
+
+Aal_gam2 = getViz(Aal_gam2)
+
+
+print(plot(sm(Aal_gam2,1)) + labs(title = "Aal"), pages = 1)
 
