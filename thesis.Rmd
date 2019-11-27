@@ -1545,7 +1545,7 @@ EPI_d = all_dataF %>% dplyr::select(Year, Month, Depth, EPI ) %>% filter(Year >=
   
 EPI_d = as.data.frame(EPI_d)
   
-   EPI_gam = gam(EPI_d[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "tp", k=27)  + ti(Month,Year, bs = c("cc","tp"), k=c(12,27))+s(Depth) ,data = EPI_d, family = tw, knots = list(Month = c(0.5, 12.5)),select = TRUE)
+   EPI_gam = gam(EPI_d[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "tp", k=27)  + ti(Month,Year, bs = c("cc","tp"), k=c(12,27))+s(Depth) ,data = EPI_d, family = tw,select = TRUE)
   
   summary(EPI_gam)
   gam.check(EPI_gam)
