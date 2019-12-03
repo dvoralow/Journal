@@ -25,6 +25,7 @@ library(quantmod)
 library(viridis)
 library("reshape2")
 library(mgcViz)
+library(curl)
 
 
 ```
@@ -1552,7 +1553,7 @@ EPI_d = as.data.frame(EPI_d)
   
    EPI_gam = getViz( EPI_gam)
 
- print(plot(EPI_gam) + labs(title = "EPI", pages = 1))
+ print(plot(EPI_gam) + labs(title = "Lokus", pages = 1))
  
  
 #--loop
@@ -1587,11 +1588,54 @@ temp = as.data.frame(temp)
 
 
 
-try the beuteaful graph
+try the beuteaful graph from gitHub
+https://gist.github.com/gavinsimpson/6d05af9186b9f9419cca5a4507af3aa0
+
 ```{r}
 
 theme_set(theme_bw())
 
+ EPI_gam = gam(EPI_d[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "tp", k=27)  + ti(Month,Year, bs = c("cc","tp"), k=c(12,27))+s(Depth) ,data = EPI_d, family = tw)
+ 
+
+  summary(EPI_gam)
+  gam.check(EPI_gam)
+  
+#  EPI_bam = bam(EPI_d[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "tp", k=27)  + ti(Month,Year, bs = c("cc","tp"), k=c(12,27))+s(Depth) ,data = EPI_d, family = tw,select = TRUE)
+ # summary(EPI_bam)
+  
+  
+  plot(EPI_gam, scheme = 2, n = 200, tran = family(EPI_gam)$linkinv)
+  
+  ## Look at the fitted model
+ilink <- family(EPI_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+pdata <- with(EPI_d, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(EPI_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year, group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = "Modelled change in monthly catch Lokus, 1991–2018",
+         subtitle = "Marked change in within-year distribution",
+        # caption = "Data: www.ncdc.noaa.gov/ghcnm/v2.php",
+         x = NULL,
+         y = "Estimated total catch (kg))") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
+
+p1
 
 
 
