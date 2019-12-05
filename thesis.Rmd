@@ -1823,14 +1823,22 @@ graphs of the ratio catch
 #It is just on 2013_2018 data, need to check what in Itay data
 
 #uploud data
-size_all_data = read.csv("data/kg_data_sizes.CSV")
+size_data_1976 = read.csv("data/kg_data_code_1976_2013.CSV")
+size_data_2018 = read.csv("data/kg_data_code_2013_2018.CSV")
+
+size_data_1976_se =size_data_1976 %>% dplyr::select(Net_index, Start_Time_hh:Distance_to_Shore,Net_Type,Site:kg_l)
+size_data_2018_se =size_data_2018 %>% dplyr::select(Net_index, Start_Time_hh:Distance_to_Shore,Net_Type,Site:kg_l)
+size_all_data = rbind(size_data_1976_se,size_data_2018_se)
+
+write.csv(size_all_data, "prosseced data/size all data.CSV")
 
 #take just row with b siz = "Zair" only
-b_size_all = size_all_data %>% dplyr::select(X:species,kg_b) %>% filter(!is.na(kg_b))
+b_size_all = size_all_data %>% filter(!is.na(kg_b))
 
 #list of the species has b size, and make it character
 species_b = unique(b_size_all$species)
 species_b = as.character(species_b)
+b_size_all$species = as.character(b_size_all$species)
 
 #loop of graphs for any specy
 for (i in 1:length(species_b))
