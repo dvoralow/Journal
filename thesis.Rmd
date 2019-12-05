@@ -1545,6 +1545,10 @@ abondance_species = as.character(abondance_species)
 EPI_d = all_dataF %>% dplyr::select(Year, Month, Depth, EPI ) %>% filter(Year >= 1991 )  %>% filter(Year <= 2018 )
   
 EPI_d = as.data.frame(EPI_d)
+
+Umo_d = all_dataF %>% dplyr::select(Year, Month, Depth, Umo ) %>% filter(Year >= 2000 )  %>% filter(Year <= 2018 )
+  
+Umo_d = as.data.frame(Umo_d)
   
    EPI_gam = gam(EPI_d[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "tp", k=27)  + ti(Month,Year, bs = c("cc","tp"), k=c(12,27))+s(Depth) ,data = EPI_d, family = tw,select = TRUE)
   
@@ -1595,27 +1599,30 @@ https://gist.github.com/gavinsimpson/6d05af9186b9f9419cca5a4507af3aa0
 
 theme_set(theme_bw())
 
- EPI_gam = gam(EPI_d[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "tp", k=27)  + ti(Month,Year, bs = c("cc","tp"), k=c(12,27))+s(Depth) ,data = EPI_d, family = tw)
+ Umo_gam = gam(Umo_d[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "tp", k=17)  + ti(Month,Year, bs = c("cc","tp"), k=c(12,17))+s(Depth) ,data = Umo_d, family = tw)
  
 
-  summary(EPI_gam)
-  gam.check(EPI_gam)
-  
-#  EPI_bam = bam(EPI_d[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "tp", k=27)  + ti(Month,Year, bs = c("cc","tp"), k=c(12,27))+s(Depth) ,data = EPI_d, family = tw,select = TRUE)
- # summary(EPI_bam)
+  summary(Umo_gam)
+  gam.check(Umo_gam)
   
   
-  plot(EPI_gam, scheme = 2, n = 200, tran = family(EPI_gam)$linkinv)
+  
+  plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
   
   ## Look at the fitted model
-ilink <- family(EPI_gam)$linkinv   # this is the inverse of the link function, as an R function
+ilink <- family(Umo_gam)$linkinv   # this is the inverse of the link function, as an R function
 
 ## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
-pdata <- with(EPI_d, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+
+
+pdata <- with(Umo_d, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
                                   Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
 
+#pdata = Umo_d %>% dplyr::select(Year,Month, Depth)
+#
+
 ## Add on the fitted values and SEs *on the log [link] scale*
-pdata <- cbind(pdata, as.data.frame(predict(EPI_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+pdata <- cbind(pdata, as.data.frame(predict(Umo_gam, newdata = pdata, type = "link", se.fit = TRUE)))
 
 ## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
 pdata <- transform(pdata,
@@ -1625,12 +1632,21 @@ pdata <- transform(pdata,
 
 
 
-p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year, group = factor(Year))) +
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
     geom_line() +
     scale_color_viridis(option = "plasma", end = 0.95) +
-    labs(title = "Modelled change in monthly catch Lokus, 1991–2018",
+    labs(title = "Modelled change in monthly catch 	Upeneus pori, 2001–2018",
          subtitle = "Marked change in within-year distribution",
-        # caption = "Data: www.ncdc.noaa.gov/ghcnm/v2.php",
+         x = NULL,
+         y = "Estimated total catch (kg))") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
+    
+    
+    p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = factor(Year),group = factor(Year))) +
+    geom_line(aes( colour = Year)) +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = "Modelled change in monthly catch 	Upeneus pori, 2001–2018",
+         subtitle = "Marked change in within-year distribution",
          x = NULL,
          y = "Estimated total catch (kg))") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
@@ -1836,7 +1852,7 @@ for (i in 1:length(species_b))
 ```
 
 
-#-------------------------chnks I droped aside--------------------------------------
+#-------------------------chunks I droped aside--------------------------------------
 
 
 GAm model
