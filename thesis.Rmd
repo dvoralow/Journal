@@ -1817,11 +1817,8 @@ graphs of the ratio catch
 
 #----------- b size ----------------- 
 
-
+order the two data to 1
 ```{r}
-
-#It is just on 2013_2018 data, need to check what in Itay data
-
 #uploud data
 size_data_1976 = read.csv("data/kg_data_code_1976_2013.CSV")
 size_data_2018 = read.csv("data/kg_data_code_2013_2018.CSV")
@@ -1831,6 +1828,15 @@ size_data_2018_se =size_data_2018 %>% dplyr::select(Net_index, Start_Time_hh:Dis
 size_all_data = rbind(size_data_1976_se,size_data_2018_se)
 
 write.csv(size_all_data, "prosseced data/size all data.CSV")
+
+
+```
+
+
+
+```{r}
+
+size_all_data = read.csv("prosseced data/size all data.CSV")
 
 #take just row with b siz = "Zair" only
 b_size_all = size_all_data %>% filter(!is.na(kg_b))
@@ -1855,8 +1861,67 @@ for (i in 1:length(species_b))
     ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
   
     grid.arrange(p)
-}  
+}
+
+#I choose just the relevant species
+#--!! I removed "Mme", Bakala, because it doesn't exist in species abondance model. to check it ---!!--#
+species_b = c("Sd", "MUL", "Per", "Nra", "Sud", "Sja", "SPH", "Ccr", "Umo")
+
+#uplaod relavant years of catch for each species
+#table of the species abondance enough for model
+catch_b_years = read.csv("prosseced data/years for species.csv")
+
+catch_b_years = catch_b_years %>% dplyr::filter(Species %in% species_b)
   
+```
+
+
+#clean speciefic b size graphs
+```{r}
+
+tepm_b_species = b_size_all %>% dplyr::select(Year.XXXX.,Month.XX.,species,kg_b) %>% filter(species == "EPI")
+
+    
+    for (i in 1:length(species_b))
+{
+
+   temp = b_size_all %>% dplyr::select(Year=Year.XXXX., Month=Month.XX., Depth, species,kg_b ) %>% filter(species==species_b[i]) %>% filter(Year >= catch_b_years$Year_S[i] )  %>% filter(Year <= catch_b_years$Year_E[i] )
+  
+temp = as.data.frame(temp)
+  
+   temp_gam = gam(temp[,5] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr")) ,data = temp, family = tw)
+  
+  print(species_b[i])
+  summary(temp_gam)
+  gam.check(temp_gam)
+  
+   temp_gam = getViz( temp_gam)
+
+ print(plot(temp_gam) + labs(title = species_b[i]), pages = 1)
+   #print(plot(temp_gam) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
+ 
+}#end for
+      
+      p=ggplot(tepm_b_species, aes(x=Month.XX., y=kg_b,color=Year.XXXX.)) +
+    geom_line()+
+    scale_colour_gradientn(colours=rainbow(4))+
+    facet_grid(Year.XXXX.~.)+ggtitle(species_b[i])+
+    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
+  
+    grid.arrange(p)
+    
+    
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = "Modelled change in monthly catch 	Upeneus pori, 2001–2018",
+         subtitle = "Marked change in within-year distribution",
+         x = NULL,
+         y = "Estimated total catch (kg))") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
+  
+
 ```
 
 
