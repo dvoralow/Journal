@@ -26,6 +26,7 @@ library(viridis)
 library("reshape2")
 library(mgcViz)
 library(curl)
+library(DataCombine)
 
 
 ```
@@ -1525,9 +1526,12 @@ write.csv(catch_ex, file = "prosseced data/sum of nets for species for year.csv"
 catch_sum = read.csv("prosseced data/years for species.csv")
 
 #vector of the spceis in the model
-abondance_species = catch_sum$Spceis
+abondance_species = catch_sum$Species
+abondance_species = as.character(abondance_species)
 
 catch_ab_ex = catch_ex %>% filter(Species %in% abondance_species)
+
+abondance_species_data = scientific_namesF %>% dplyr::select(Sp_code, Sceintific_names = scintific_name) %>% filter(Sp_code %in% abondance_species)
 
 ```
 
@@ -1574,55 +1578,20 @@ temp = as.data.frame(temp)
   summary(temp_gam)
   gam.check(temp_gam)
   
-   temp_gam = getViz( temp_gam)
-
- print(plot(temp_gam) + labs(title = abondance_species[i]), pages = 1)
-   #print(plot(temp_gam) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
-
- 
-  
-}#end for
-
-      
-      
-   
-  
-
-```
-
-
-
-try the beuteaful graph from gitHub
-https://gist.github.com/gavinsimpson/6d05af9186b9f9419cca5a4507af3aa0
-
-```{r}
-
-theme_set(theme_bw())
-
- Umo_gam = gam(Umo_d[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "tp", k=17)  + ti(Month,Year, bs = c("cc","tp"), k=c(12,17))+s(Depth) ,data = Umo_d, family = tw)
- 
-
-  summary(Umo_gam)
-  gam.check(Umo_gam)
-  
-  
-  
-  plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
+    
+  #plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
   
   ## Look at the fitted model
-ilink <- family(Umo_gam)$linkinv   # this is the inverse of the link function, as an R function
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
 
 ## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
 
 
-pdata <- with(Umo_d, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
                                   Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
 
-#pdata = Umo_d %>% dplyr::select(Year,Month, Depth)
-#
-
 ## Add on the fitted values and SEs *on the log [link] scale*
-pdata <- cbind(pdata, as.data.frame(predict(Umo_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
 
 ## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
 pdata <- transform(pdata,
@@ -1635,29 +1604,37 @@ pdata <- transform(pdata,
 p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
     geom_line() +
     scale_color_viridis(option = "plasma", end = 0.95) +
-    labs(title = "Modelled change in monthly catch 	Upeneus pori, 2001–2018",
+    labs(title = paste(  "Modelled change in monthly catch", abondance_species_data[i,2],catch_sum$Year_S[i],"-",catch_sum$Year_E[i],sep = " "),
          subtitle = "Marked change in within-year distribution",
          x = NULL,
          y = "Estimated total catch (kg))") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
     
     
-    p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = factor(Year),group = factor(Year))) +
-    geom_line(aes( colour = Year)) +
-    scale_color_viridis(option = "plasma", end = 0.95) +
-    labs(title = "Modelled change in monthly catch 	Upeneus pori, 2001–2018",
-         subtitle = "Marked change in within-year distribution",
-         x = NULL,
-         y = "Estimated total catch (kg))") +
-    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
 
-p1
+grid.arrange(p1)
 
 
+ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/phenology/",abondance_species[i],".png",sep = ""), p1, dpi = 100, width = 8.5, height = 5.5)
+  
+}#end for
+
+      
+      
+   
+  
 
 ```
 
+ temp_gam = getViz( temp_gam)
 
+ print(plot(temp_gam) + labs(title = abondance_species[i]), pages = 1)
+   #print(plot(temp_gam) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
+
+ 
+
+try the beuteaful graph from gitHub
+https://gist.github.com/gavinsimpson/6d05af9186b9f9419cca5a4507af3aa0
 
 
 
@@ -1817,7 +1794,7 @@ graphs of the ratio catch
 
 #----------- b size ----------------- 
 
-order the two data to 1
+order the two data (1976-2013 and 2013-2018) to 1
 ```{r}
 #uploud data
 size_data_1976 = read.csv("data/kg_data_code_1976_2013.CSV")
@@ -1833,6 +1810,8 @@ write.csv(size_all_data, "prosseced data/size all data.CSV")
 ```
 
 
+
+eate raw data of b size - plots of the b size species throughout the years, and choos just the relavant species, have enough b size data.
 
 ```{r}
 
@@ -1863,66 +1842,135 @@ for (i in 1:length(species_b))
     grid.arrange(p)
 }
 
+  
+```
+
+
+make the beutifule graph in a loop
+
+for now - without depth in the model. if it will be imprtant - need to create the depthes in the "diary" code, and join in. 
+
+#upload require datasets, and replace the dipoldus, Marmir, pijama (Lmo, WHT, DIP, Dce) speciseis with DLS - all of them together
+```{r}
+
+#species_names_seperate=species_names_seperate[order(species_names_seperate$Sp_code),]
 #I choose just the relevant species
 #--!! I removed "Mme", Bakala, because it doesn't exist in species abondance model. to check it ---!!--#
-species_b = c("Sd", "MUL", "Per", "Nra", "Sud", "Sja", "SPH", "Ccr", "Umo")
+species_b = c("Sd", "MUL", "Per", "Nra", "Sud", "Sja", "SPH", "Ccr", "Umo","DLS")
+species_b = sort(species_b)
 
 #uplaod relavant years of catch for each species
 #table of the species abondance enough for model
 catch_b_years = read.csv("prosseced data/years for species.csv")
-
 catch_b_years = catch_b_years %>% dplyr::filter(Species %in% species_b)
+catch_b_years = catch_b_years[order(catch_b_years$Species),]
+
+size_all_data = read.csv("prosseced data/size all data.CSV")
+#take just row with b siz = "Zair" only
+b_size_all = size_all_data %>% filter(!is.na(kg_b))
+b_size_all$species = as.character(b_size_all$species)
   
+# Create replacements data frame
+Replaces <- data.frame(from = c("Lmo", "WHT", "DIP", "Dce"), to = rep("DLS",4))
+
+# Replace Dipoludus and Marmir code to LDS
+b_size_all <- FindReplace(data = b_size_all, Var = "species", replaceData = Replaces,
+                     from = "from", to = "to", exact = FALSE)
+
+
+scientific_namesF = read.csv(file = "prosseced data/sceintific_names_fishes_only.csv", stringsAsFactors = F)
+species_b_data = scientific_namesF %>% dplyr::select(Sp_code, Common_name, Scientific_name = scintific_name) %>% filter(Sp_code %in% species_b)
+
+
 ```
 
 
-#clean speciefic b size graphs
 ```{r}
 
-tepm_b_species = b_size_all %>% dplyr::select(Year.XXXX.,Month.XX.,species,kg_b) %>% filter(species == "EPI")
+#----create "catch_ex"- exploration, table with number of nets with data for any species each year
 
+ catch_exB =b_size_all %>% filter(Year.XXXX.>1990)%>% 
+    spread(species, kg_b, fill = 0) %>%
+    dplyr::select(Year = Year.XXXX. ,Aal:vakvak) %>% group_by(Year) %>% 
+    summarize_all(.fun = function(x) sum(x>0,na.rm = T)) %>% 
+    gather(species, Catch, Aal:vakvak, factor_key=TRUE) %>% spread(Year, Catch) %>%
+  filter(species %in% species_b)
+ 
+write.csv(catch_exB, "prosseced data/num catch per year b size.CSV")
+
+
+```
+
+
+```{r}
+
+
+
+theme_set(theme_bw())
+
+  for (i in 1:length(species_b))
     
-    for (i in 1:length(species_b))
 {
 
-   temp = b_size_all %>% dplyr::select(Year=Year.XXXX., Month=Month.XX., Depth, species,kg_b ) %>% filter(species==species_b[i]) %>% filter(Year >= catch_b_years$Year_S[i] )  %>% filter(Year <= catch_b_years$Year_E[i] )
+   temp = b_size_all %>% dplyr::select(Year=Year.XXXX., Month=Month.XX., species,kg_b ) %>% filter(species==species_b[i]) %>% filter(Year >= catch_b_years$Year_S[i] )  %>% filter(Year <= catch_b_years$Year_E[i] ) 
   
 temp = as.data.frame(temp)
   
-   temp_gam = gam(temp[,5] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr")) ,data = temp, family = tw)
+   temp_gam = gam(temp[,4] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr")) ,data = temp, family = tw)
   
   print(species_b[i])
   summary(temp_gam)
-  gam.check(temp_gam)
+  #gam.check(temp_gam)
   
-   temp_gam = getViz( temp_gam)
+  
+  #  plot(temp_gam, scheme = 2, n = 200, tran = family(temp_gam)$linkinv)
+  
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
 
- print(plot(temp_gam) + labs(title = species_b[i]), pages = 1)
-   #print(plot(temp_gam) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
- 
-}#end for
-      
-      p=ggplot(tepm_b_species, aes(x=Month.XX., y=kg_b,color=Year.XXXX.)) +
-    geom_line()+
-    scale_colour_gradientn(colours=rainbow(4))+
-    facet_grid(Year.XXXX.~.)+ggtitle(species_b[i])+
-    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100)))  
   
-    grid.arrange(p)
-    
-    
+  
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
 
 p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
     geom_line() +
     scale_color_viridis(option = "plasma", end = 0.95) +
-    labs(title = "Modelled change in monthly catch 	Upeneus pori, 2001–2018",
+    labs(title = paste(  "Modelled change in monthly catch", species_b_data[i,3],catch_b_years$Year_S[i],"-",catch_b_years$Year_E[i],sep = " "),
          subtitle = "Marked change in within-year distribution",
          x = NULL,
          y = "Estimated total catch (kg))") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
-  
+    
+   
 
-```
+    grid.arrange(p1)
+
+
+ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/b size/",species_b[i],".png",sep = ""), p1, dpi = 100, width = 8.5, height = 5.5)
+
+}#end for
+
+
+
+``` 
+
+
+
+
+
+
+
 
 
 #-------------------------chunks I droped aside--------------------------------------
@@ -2076,3 +2124,29 @@ Aal_gam2 = getViz(Aal_gam2)
 
 print(plot(sm(Aal_gam2,1)) + labs(title = "Aal"), pages = 1)
 
+
+
+
+#gma model for speciefic b size graphs
+tepm_b_species = b_size_all %>% dplyr::select(Year.XXXX.,Month.XX.,species,kg_b) %>% filter(species == "EPI")
+
+    
+    for (i in 1:length(species_b))
+{
+
+   temp = b_size_all %>% dplyr::select(Year=Year.XXXX., Month=Month.XX., Depth, species,kg_b ) %>% filter(species==species_b[i]) %>% filter(Year >= catch_b_years$Year_S[i] )  %>% filter(Year <= catch_b_years$Year_E[i] )
+  
+temp = as.data.frame(temp)
+  
+   temp_gam = gam(temp[,5] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr")) ,data = temp, family = tw)
+  
+  print(species_b[i])
+  summary(temp_gam)
+  gam.check(temp_gam)
+  
+   temp_gam = getViz( temp_gam)
+
+ print(plot(temp_gam) + labs(title = species_b[i]), pages = 1)
+   #print(plot(temp_gam) + labs(title = paste(sp_codeF[i],scientific_codeF[i],sep = "-")), pages = 1)
+ 
+}#end for
