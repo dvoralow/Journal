@@ -265,6 +265,14 @@ end chunk
     sum_spi=sum(spi$Tpref_percent)
     mean_tcode["SPI",]=sum_spi
     
+    bat=t_pref[t_pref$sp_code=="BAT",]
+    sum_bat=sum(bat$Tpref_percent)
+    mean_tcode["BAT",]=sum_bat
+    
+    sig=t_pref[t_pref$sp_code=="Sig",]
+    sum_sig=sum(sig$Tpref_percent)
+    mean_tcode["Sig",]=sum_sig
+    
     #calculate the temperature of WHT code, and join it to mean_tcode data
     wht_temp=0.8*mean_tcode["DIP",]+0.2*mean_tcode["Lmo",]
     wht_temp=as.data.frame(wht_temp)

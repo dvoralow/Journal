@@ -1,10 +1,10 @@
 ,X.1,X,fisbase_temp,Tpref_my_code,Ch_Tpref50,sp_code,Origin,Ch_Tpref25,Ch_Tpref70,Tpref,Perecent,Tpref_percent
 1,1,Alectis alexandrinus ,24.4,26.7,24,Aal,Med,21,26,24,,
 2,2,Argyrosomus regius,15.3,20.5,19,Arg,Med,16,21,19,,
-3,3,raja clavata,10.7,13.2,17,BAT,Med,14,20,17,,
-4,4,Raja miraletus,17.6,23,,BAT,Med,,,22.96209921,,
-5,5,Torpedo torpedo,15.6,22.2,,BAT,Med,,,22.24704239,,
-6,6,dasyatis pastinaca,12.2,19.7,21,BAT,Med,17,25,21,,
+3,3,raja clavata,10.7,13.2,17,BAT,Med,14,20,17,0.265548282,4.514320794
+4,4,Raja miraletus,17.6,23,,BAT,Med,,,22.96209921,0.402641389,9.24549152
+5,5,Torpedo torpedo,15.6,22.2,,BAT,Med,,,22.24704239,0,0
+6,6,dasyatis pastinaca,12.2,19.7,21,BAT,Med,17,25,21,0.331810329,6.968016909
 7,7,Boops boops,17.8,20,20,Bbo,Med,16,24,20,,
 8,8,Balistes carolinensis,17.8,26.2,,Bca,Med,,,26.24302388,,
 9,9,Diplodus cervinus,14.9,19.8,21,Dce,Med,18,24,21,0.126599587,2.658591331
@@ -13,8 +13,8 @@
 12,12,Diplodus cervinus,14.9,19.8,21,DIP,Med,18,24,21,0.126599587,2.658591331
 13,13,Diplodus puntazoo,19.1,19.1,23,DIP,Med,20,25,23,0.066357618,1.526225216
 14,14,Epinephelus haifensis,15.6,23,,Eha,Med,,,23.04656475,,
-15,15,Epinephelus marginatus,19,21.2,25,EPI,Med,21,27,25,,
-16,16,Epinephelus aeneus,17.1,24.3,27,EPI,Med,25,28,27,,
+15,15,Epinephelus marginatus,19,21.2,25,EPI,Med,21,27,25,0,
+16,16,Epinephelus aeneus,17.1,24.3,27,EPI,Med,25,28,27,1,
 17,17,Lophius budegassa,11.1,19.3,25,Lbu,Med,23,28,25,,
 18,18,lithognathus mormyrus,24.4,20,24,Lmo,Med,20,27,24,,
 19,19,Liza aurata,11.9,18,16,Mce,Med,13,19,16,0.5,
@@ -38,5 +38,5 @@
 37,37,Upeneus pori, 25.6,23.1,,Upo,Red,,,23.09348636,,
 38,38,Pomadasys incisus,23.1,,27,Pin,Med,25,28,27,,
 39,39,Pomatomus saltatrix ,21.1,,27,Psa,Med,25,28,27,,
-40,40,Siganus rivulatus,27.3,24.3,,Sig,Red,,,24.32996917,,
-41,41,Siganus luridus,27,25.2,,Sig,Red,,,25.21862857,,
+40,40,Siganus rivulatus,27.3,24.3,,Sig,Red,,,24.32996917,0.95,23.11347071
+41,41,Siganus luridus,27,25.2,,Sig,Red,,,25.21862857,0.05,1.260931429
