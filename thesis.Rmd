@@ -952,10 +952,12 @@ grid.arrange(p1,p2,p3,p4, ncol = 2)
 
 #---- graphs for the 4 season together [2 graphs]--
 ```{r}
+ net_mediter_data = read.csv("prosseced data/mediter_net_mtc.CSV")
+    net_red_data = read.csv("prosseced data/red_net_mtc.CSV")
 
 #Mediterranian
 ggplot(net_mediter_data, aes(x=SST ,y=mtc,colour=Season, size=3))+
-  geom_point()+
+  geom_point(size = 0.5)+
     scale_size(guide = 'none')+#no legend to the "size"
   theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
   labs(y ="MTC")+#axis text
@@ -1028,6 +1030,56 @@ ggplot(net_mediter_data[net_mediter_data$Season=="summer",], aes(x=SST ,y=mtc, s
 scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
   scale_y_continuous(breaks=seq(16,28, by =0.5))+
   ggtitle("Mediter - summer")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+
+#red sea
+ggplot(net_red_data[net_red_data$Season=="winter",], aes(x=SST ,y=mtc, size=3 ))+
+  geom_point(color = "green", size = 1.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+  ggtitle("red - winter")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+ggplot(net_red_data[net_red_data$Season=="spring",], aes(x=SST ,y=mtc, size=3 ))+
+  geom_point(color = "green", size = 1.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+ ggtitle("red - spring")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+ggplot(net_red_data[net_red_data$Season=="autumn",], aes(x=SST ,y=mtc, size=3 ))+
+  geom_point(color = "green", size = 1.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+ ggtitle("red - autumn")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+ggplot(net_red_data[net_red_data$Season=="summer",], aes(x=SST ,y=mtc, size=3 ))+
+  geom_point(color = "green", size = 1.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+  ggtitle("red - summer")+
   stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
 
@@ -1308,14 +1360,16 @@ ggplot(lag_3_r, aes(x=SST_anom ,y=mtc_anom, size=3))+
 
 
 #----------GAM model ----------------------------#
-#uploud data
+
+#uploud data and edit
 ```{r}
 #----the whole data GAm model---
 net_all_data = read.csv("prosseced data/net_mtc_data.CSV")
 
 
 #get out rows without mtc, and depth deeper then 100 m or less than 20
-net_all_data = net_all_data %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter< 100) %>% filter(Year > 1990)
+net_all_data = net_all_data %>% filter(Year > 1990) %>% dplyr::select(-Depth) %>%
+   rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100) %>% filter(Gambari_net==FALSE)
 #---seperate by origin---
 
 #upload mediter and red sea data.
@@ -1323,23 +1377,37 @@ net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
 net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 
 #get out rows without mtc and depth deepre than 100 m 
-  net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100)
- 
-  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100)
-  
  # start the  in 1991 [year],
- net_red_mtc = net_red_mtc %>% filter(Year > 1990)
- net_mediter_mtc = net_mediter_mtc %>% filter(Year > 1990)
+
+ net_red_mtc = net_red_mtc %>% filter(Year > 1990) %>% dplyr::select(-Depth) %>%
+   rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100) %>% filter(Gambari_net==FALSE)
+ 
+ net_mediter_mtc = net_mediter_mtc %>% filter(Year > 1990)%>% dplyr::select(-Depth) %>%
+   rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100) %>% filter(Gambari_net==FALSE)
 
 
  
 ```
 
+a lot of gam models
+
+#----TODO---- remove night nets
+
 ```{r}
 
 
  #all data gam model
-gam_year = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter)+s(SST, bs = "gp") ,data = net_all_data)
+gam_year = gam(mtc ~ s(Year, bs = "cr") + s(Depth)+s(SST, bs = "gp") ,data = net_all_data)
+
+net_all_data = net_all_data %>% mutate(Date_num = as.numeric(Date))
+gam_all = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")  + 
+                          s(Date_num, bs = "gp") +  s(Month, bs = "cc", k=12),data =net_all_data)
+
+gam_all = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + 
+                            s(Month, bs = "cc", k=12),data =net_all_data)
+summary(gam_all)
+    par(mfrow = c(2,2))
+      gam.check(gam_all)
 
 #plot(gam_year,select = 2,shade = TRUE):plot(fitted(gam_year),residuals(gam_year))
 
@@ -1349,7 +1417,7 @@ plot(gam_year,se=TRUE,col = "blue")
 
 
 #depth by month and years model
-depth_gam = gam(depth_meter ~ s(Year, bs = "cr") +s(Month, bs = "cc", k = 12), data = net_all_data)
+depth_gam = gam(Depth ~ s(Year, bs = "cr") +s(Month, bs = "cc", k = 12), data = net_all_data)
 
 par(mfrow = c(2,1)) 
 plot(depth_gam,se=TRUE,col = "blue")
@@ -1359,17 +1427,38 @@ plot(depth_gam,se=TRUE,col = "blue")
  
   
   #---------month model---
-  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Month, bs = "cc", k=12) ,data = net_mediter_mtc)
-  # 
-  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(depth_meter) + s(Month, bs = "cc", k=12) ,data = net_red_mtc)
+ net_mediter_mtc = net_mediter_mtc %>% mutate(Date_num = as.numeric(Date))
+
+  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")  + 
+                          s(Date_num, bs = "gp") +  s(Month, bs = "cc", k=12),data =net_mediter_mtc)
+  
+  #+s(Date_num, bs = "gp")
+  
+  summary(mediter_gam_month)
+    par(mfrow = c(2,2))
+      gam.check(mediter_gam_month)
+  
+  net_red_mtc = net_red_mtc %>% mutate(Date_num = as.numeric(Date))
+    net_red_mtc = net_red_mtc %>% filter(Year>1999)
 
   
-  #---------------nice graphs for thesis-------------
+  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")+
+                          s(Date_num, bs = "gp")  + s(Month, bs = "cc", k=12) ,data = net_red_mtc)
+
+  summary(red_gam_month)
+    par(mfrow = c(2,2))
+      gam.check(red_gam_month)
   
+  #---------------nice graphs for thesis-------------
+  gam_all = getViz(gam_all)
 mediter_gam_month <- getViz(mediter_gam_month)
 red_gam_month = getViz(red_gam_month)
 
-plot( sm(mediter_gam_month, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) 
+plot( sm(gam_all, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole known origin species")
+
+
+
+plot( sm(mediter_gam_month, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("mediteranian species")
 
 plot( sm(mediter_gam_month, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
 
@@ -1377,7 +1466,7 @@ plot( sm(mediter_gam_month, 3) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme
 
 
 
-plot( sm(red_gam_month, 1) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 1))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) 
+plot( sm(red_gam_month, 1) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 1))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2))  +ggtitle("Red Sea species")
 
 plot( sm(red_gam_month, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,90)) 
 
@@ -1400,13 +1489,13 @@ par(mfrow = c(2,2))
 #---------month model with SST and without year--------------
   #TO DO! with montly anomaly for the SST
   
-  mediter_gam_sst = gam(mtc~s(depth_meter) + s(Month, bs = "cc", k=12)+s(SST, bs = "gp") ,data = net_mediter_mtc)
+  mediter_gam_sst = gam(mtc~s(Depth) + s(Month, bs = "cc", k=12)+s(SST, bs = "gp") ,data = net_mediter_mtc)
  par(mfrow = c(2,2)) 
   plot(  mediter_gam_sst,se=TRUE,col = "blue")
   title("Mediter mtc by SST and Month",line = -2, outer=TRUE)
   summary(mediter_gam_sst)
   
-   red_gam_sst = gam(mtc~s(depth_meter) + s(Month, bs = "cc", k=12)+s(SST, bs = "gp") ,data = net_red_mtc)
+   red_gam_sst = gam(mtc~s(Depth) + s(Month, bs = "cc", k=12)+s(SST, bs = "gp") ,data = net_red_mtc)
  par(mfrow = c(2,2)) 
   plot(  red_gam_sst,se=TRUE,col = "blue")
   title("red mtc by SST and Month",line = -2, outer=TRUE)
@@ -1428,9 +1517,9 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 
 
 #get out rows without mtc and depth deeper than 100 m or shallower than 20 m
-  net_med_mtc = net_med_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(!is.na(depth_meter)) %>% filter(depth_meter<100)
+  net_med_mtc = net_med_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(!is.na(Depth)) %>% filter(Depth<100)
   
-  net_red_mtc = net_red_mtc %>% dplyr:: filter(!is.na(mtc)) %>% filter(!is.na(depth_meter)) %>% filter(depth_meter<100)
+  net_red_mtc = net_red_mtc %>% dplyr:: filter(!is.na(mtc)) %>% filter(!is.na(Depth)) %>% filter(Depth<100)
   
  # start the in 1991 [year]
  net_red_mtc = net_red_mtc %>% filter(Year > 1990)
@@ -1439,9 +1528,9 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
  
  #GAM models
  #interactions between month and year
- med_gam_Tint = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(depth_meter) ,data = net_med_mtc)
+ med_gam_Tint = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = net_med_mtc)
  
-  red_gam_Tint = gam(mtc ~ te(Month,Year, bs = c("cc","cr"),k=12)+s(depth_meter),data = net_red_mtc)
+  red_gam_Tint = gam(mtc ~ te(Month,Year, bs = c("cc","cr"),k=12)+s(Depth),data = net_red_mtc)
  
   med_gam_Tint = 
     
@@ -1475,10 +1564,10 @@ plotRGL(sm(red_gam_Tint, 1), fix = c("z" = 0), residuals = FALSE)
 #-------interactions between depth and year
 
  
-med_gam_Dint = gam(mtc ~te(depth_meter)+te(Year, bs = "cr") + ti(depth_meter,Year, bs = c("cr","cr")) ,data = net_med_mtc)
+med_gam_Dint = gam(mtc ~te(Depth)+te(Year, bs = "cr") + ti(Depth,Year, bs = c("cr","cr")) ,data = net_med_mtc)
 
  
-  red_gam_Dint = gam(mtc ~ te(depth_meter)+te(Year, bs = "cr") + ti(depth_meter,Year, bs = c("cr","cr")),data = net_red_mtc)
+  red_gam_Dint = gam(mtc ~ te(Depth)+te(Year, bs = "cr") + ti(Depth,Year, bs = c("cr","cr")),data = net_red_mtc)
  
   med_gam_Dint = getViz(med_gam_Dint)
  red_gam_Dint = getViz(red_gam_Dint)
@@ -1492,7 +1581,7 @@ med_gam_Dint = gam(mtc ~te(depth_meter)+te(Year, bs = "cr") + ti(depth_meter,Yea
 
 
 
-#----biomass model - by net and by month-------
+#----biomass model - sum of catch and by month, yaer and depth-------
 ```{r}
 #create Sum columns - sum of the catch of any net
  tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT) 
@@ -1575,8 +1664,8 @@ There is problem in that chunk - work just if runing the whole code
 # mediter_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Med"),"Sp_code"]
 # red_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Red"),"Sp_code"]
 #get out rows without mtc and depth deepre than 100 m or shallower than 20 m
- # net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(20:100) ) 
-#  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(depth_meter %in% c(20:100))
+ # net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(Depth %in% c(20:100) ) 
+#  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(Depth %in% c(20:100))
 
  
 
@@ -1589,12 +1678,12 @@ red_table=species_table[which(!(rownames(species_table) %in% mediter_code)),]
 
 
 #the abundance invasive species model
-Nra_gam = gam(Nra ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_red_mtc)
+Nra_gam = gam(Nra ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_red_mtc)
   par(mfrow = c(2,2)) 
   plot( Nra_gam,se=TRUE,col = "blue")
     title(paste( red_table[which(rownames(red_table)=="Nra"),2],"T pref =",red_table[which(rownames(red_table)=="Nra"),3],sep = " "),line = -2, outer=TRUE)
     
-    Sco_gam = gam(Sco ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_red_mtc)
+    Sco_gam = gam(Sco ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_red_mtc)
   par(mfrow = c(2,2)) 
   plot( Sco_gam,se=TRUE,col = "blue")
     title(paste( red_table[which(rownames(red_table)=="Sco"),2],"T pref =",red_table[which(rownames(red_table)=="Sco"),3],sep = " "),line = -2, outer=TRUE)
@@ -1611,7 +1700,7 @@ plot( sm(Sco_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = ele
     
     
     
- Umo_gam = gam(Umo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_red_mtc)
+ Umo_gam = gam(Umo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_red_mtc)
   par(mfrow = c(2,2)) 
   plot( Umo_gam,se=TRUE,col = "blue")
     title(paste( red_table[which(rownames(red_table)=="Umo"),2],"T pref =",red_table[which(rownames(red_table)=="Umo"),3],sep = " "),line = -2, outer=TRUE)
@@ -1625,18 +1714,18 @@ plot( sm(Umo_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = ele
 
 #the abundance Mediter species model "MUL" "BAT" "Bbo" "Mme" "WHT"
     
- MUL_model = gam(MUL ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
+ MUL_model = gam(MUL ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( MUL_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="MUL"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="MUL"),3],sep = " "),line = -2, outer=TRUE)
     
-     BAT_model = gam(BAT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
+     BAT_model = gam(BAT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( BAT_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="BAT"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="BAT"),3],sep = " "),line = -2, outer=TRUE)
 
     
-     Bbo_model = gam(Bbo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
+     Bbo_model = gam(Bbo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( Bbo_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="Bbo"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Bbo"),3],sep = " "),line = -2, outer=TRUE)
@@ -1650,20 +1739,20 @@ plot( sm(Bbo_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = 
 
     
     
-     Mme_model = gam(Mme ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
+     Mme_model = gam(Mme ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( Mme_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="Mme"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Mme"),3],sep = " "),line = -2, outer=TRUE)
 
     
-     WHT_model = gam(WHT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
+     WHT_model = gam(WHT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( WHT_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="WHT"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="WHT"),3],sep = " "),line = -2, outer=TRUE)
 
 #the non abundance Mediter species model - high Tpref - Sd, EPI, Bca, Lmo
 
-    Sd_model = gam(Sd ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
+    Sd_model = gam(Sd ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( Sd_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="Sd"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Sd"),3],sep = " "),line = -2, outer=TRUE)
@@ -1677,18 +1766,18 @@ plot( sm(Sd_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = e
     
 
     
-    EPI_model = gam(EPI ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
+    EPI_model = gam(EPI ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
  
    plot( EPI_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="EPI"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="EPI"),3],sep = " "),line = -2, outer=TRUE)
     
-    Bca_model = gam(Bca ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
+    Bca_model = gam(Bca ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( Bca_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="Bca"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Bca"),3],sep = " "),line = -2, outer=TRUE)
     
-    Lmo_model = gam(Lmo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(depth_meter, bs = "cs",k=8), data = net_mediter_mtc)
+    Lmo_model = gam(Lmo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
   par(mfrow = c(2,2)) 
   plot( Lmo_model,se=TRUE,col = "blue")
     title(paste( mediter_table[which(rownames(mediter_table)=="Lmo"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Lmo"),3],sep = " "),line = -2, outer=TRUE)
@@ -1799,7 +1888,7 @@ all_dataF = read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAs
  scientific_namesF = scientific_namesF %>% dplyr:: filter(Sp_code != "BOX") %>% dplyr::filter(Sp_code != "FIS") %>% dplyr::filter(Sp_code != "SPL")
  
  # set NA to FALSE and remove rows with gamberi nets, the columns "fish (FIS)", "general box (BOX)", Speciel fish boxes (SPL), start from 1991, remove depth deeper than 100 m, and stay with 1 depth column, called "Depth"
-  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL, -loc_DEPTH, -Depth) %>% filter(Year>1990) %>% filter(depth_meter<100) %>% rename(Depth = depth_meter)
+  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL, -loc_DEPTH, -Depth) %>% filter(Year>1990) %>% filter(Depth<100) %>% rename(Depth = Depth)
   
   
  #cerate species names and code vectors
