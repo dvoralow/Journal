@@ -1635,11 +1635,11 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
 mediter_catch_gam <- getViz(mediter_catch_gam)
 red_catch_gam = getViz(red_catch_gam)
 
-plot( sm(all_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole known origin species")
+plot( sm(all_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole known origin species")
  
-plot( sm(mediter_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Mediterranean species")
+plot( sm(mediter_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Mediterranean species")
 
-plot( sm(red_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Red Sea species")
+plot( sm(red_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Red Sea species")
 
   
  
@@ -1892,7 +1892,7 @@ all_dataF = read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAs
  scientific_namesF = scientific_namesF %>% dplyr:: filter(Sp_code != "BOX") %>% dplyr::filter(Sp_code != "FIS") %>% dplyr::filter(Sp_code != "SPL")
  
  # set NA to FALSE and remove rows with gamberi nets, the columns "fish (FIS)", "general box (BOX)", Speciel fish boxes (SPL), start from 1991, remove depth deeper than 100 m, and stay with 1 depth column, called "Depth"
-  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL, -loc_DEPTH, -Depth) %>% filter(Year>1990) %>% filter(Depth<100) %>% rename(Depth = Depth)
+  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL, -loc_DEPTH, -Depth) %>% filter(Year>1990) %>% rename(Depth = depth_meter) %>% filter(Depth<100)
   
   
  #cerate species names and code vectors
@@ -1904,7 +1904,14 @@ all_dataF = read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAs
  #cerate DLS column - join Dipoldus species, Marmir species, and boxes with Diplodus and Marmir togother,
  all_dataF = all_dataF %>% mutate(DLS = Lmo+WHT+DIP)
  
- #----create "catch_ex"- exploration, table with number of nets with data for any species each year
+#create sum of catch column
+  tempor_sum = all_dataF %>% dplyr::select(Aal:DLS) 
+ catch_net_sum = rowSums(tempor_sum)
+ all_dataF = all_dataF %>% dplyr::mutate(Sum = cbind(catch_net_sum)) 
+
+  
+ 
+  #----create "catch_ex"- exploration, table with number of nets with data for any species each year
 
  catch_ex =all_dataF %>% dplyr::select(Year, Aal:DLS) %>% group_by(Year) %>% 
   summarize_all(.fun = function(x) sum(x>0,na.rm = T)) %>% gather(Species, Catch, Aal:DLS, factor_key=TRUE) %>% spread(Year, Catch)
@@ -1926,6 +1933,78 @@ abondance_species_data = scientific_namesF %>% dplyr::select(Sp_code, Sceintific
 
 ```
 
+
+#--gam model for the whole data cathc - regular gam graph, and phenology interaction graph
+
+```{r}
+all_dataF = all_dataF %>% filter(Year<2018)
+
+ all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = all_dataF)
+ summary(all_catch_gam)
+  gam.check(all_catch_gam)
+  
+  par(mfrow = c(2,2)) 
+  plot(  all_catch_gam,se=TRUE,col = "blue")
+    title("whole fish species catch by month and year",line = -2, outer=TRUE)
+
+    all_catch_gam = getViz(all_catch_gam)
+
+plot( sm(all_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole fish species")
+
+
+# interaction model and graph
+   temp = all_dataF %>% dplyr::select(Year, Month, Depth, Sum ) 
+  
+temp = as.data.frame(temp)
+  
+   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
+  
+ 
+  summary(temp_gam)
+  par(mfrow = c(2,2)) 
+  gam.check(temp_gam)
+  
+  par(mfrow(2,2))
+  plot(  temp_gam,se=TRUE,col = "blue")  
+  #plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
+  
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+
+
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = "Whole fish data catch",
+         subtitle = "Marked change in within-year distribution",
+         x = NULL,
+         y = "Estimated total catch (kg))") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
+    
+    p1
+
+grid.arrange(p1)
+
+
+
+
+```
 
 
 
