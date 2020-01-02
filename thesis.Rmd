@@ -579,9 +579,11 @@ I think 2000 is good time for start
 ```{r}
 
 red_years = red_annual_catch %>% mutate(Sum = rowSums(.[2:7]))
+
+mediter_years = mediter_annual_catch %>% mutate(Sum = rowSums(.[2:26]))
  
 ggplot(red_years, aes(x=Year,y=Sum, size=5))+
-  geom_point(colour = "blue", size = 7)+
+  geom_point(colour = "red", size = 7)+
   scale_size(guide = 'none')+#no legend to the "size"
    ggtitle("Invasive speicies biomass")+
  labs(y ="Annual Biomass [kg]")+ #axis text
@@ -589,6 +591,16 @@ ggplot(red_years, aes(x=Year,y=Sum, size=5))+
 scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+#x axis years apeared
   scale_y_continuous(breaks=seq(0,20000, by =2000), limits = c(0,20000))
  
+
+ggplot(mediter_years, aes(x=Year,y=Sum, size=5))+
+  geom_point(colour = "blue", size = 7)+
+  scale_size(guide = 'none')+#no legend to the "size"
+   ggtitle("Mediterranean speicies biomass")+
+ labs(y ="Annual Biomass [kg]")+ #axis text
+    theme(plot.title = element_text(size = 20,hjust = 0.5), axis.text.x = element_text(size = 15, angle=90, hjust=1), axis.text.y = element_text(size = 15, hjust=1), axis.title=element_text(size=14,face="bold"))+
+scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+#x axis years apeared
+  scale_y_continuous(breaks=seq(0,20000, by =2000), limits = c(0,20000))
+
 ```
 
 
@@ -1583,6 +1595,7 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
  net_red_mtc = net_red_mtc %>% dplyr::mutate(Sum = cbind(catch_net_sum)) 
  
   #net cath model
+ net_all_data = net_all_data %>% filter(Year<2018)
  all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_all_data)
  summary(all_catch_gam)
   gam.check(all_catch_gam)
@@ -1591,7 +1604,7 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
   plot(  all_catch_gam,se=TRUE,col = "blue")
     title("whole known origin species catch by month and year",line = -2, outer=TRUE)
 
- 
+ net_mediter_mtc = net_mediter_mtc %>% filter(Year<2018)
   mediter_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_mediter_mtc)
   
   #better without them:
@@ -1600,11 +1613,12 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
   summary(mediter_catch_gam)
   gam.check(mediter_catch_gam)
   
+  
   par(mfrow = c(2,2)) 
   plot(  mediter_catch_gam,se=TRUE,col = "blue")
     title("Mediteranean species catch by month And year",line = -2, outer=TRUE)
 
-    
+    net_red_mtc = net_red_mtc %>% filter(Year<2018)
     red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_red_mtc)
     
      summary(red_catch_gam)
@@ -2160,6 +2174,7 @@ order the two data (1976-2013 and 2013-2018) to 1
 size_data_1976 = read.csv("data/kg_data_code_1976_2013.CSV")
 size_data_2018 = read.csv("data/kg_data_code_2013_2018.CSV")
 
+
 size_data_1976_se =size_data_1976 %>% dplyr::select(Net_index, Start_Time_hh:Distance_to_Shore,Net_Type,Site:kg_l)
 size_data_2018_se =size_data_2018 %>% dplyr::select(Net_index, Start_Time_hh:Distance_to_Shore,Net_Type,Site:kg_l)
 size_all_data = rbind(size_data_1976_se,size_data_2018_se)
@@ -2171,7 +2186,7 @@ write.csv(size_all_data, "prosseced data/size all data.CSV")
 
 
 
-eate raw data of b size - plots of the b size species throughout the years, and choos just the relavant species, have enough b size data.
+create raw data of b size - plots of the b size species throughout the years, and choos just the relavant species, have enough b size data.
 
 ```{r}
 
@@ -2221,8 +2236,8 @@ species_b = sort(species_b)
 
 #uplaod relavant years of catch for each species
 #table of the species abondance enough for model
-catch_b_years = read.csv("prosseced data/years for species.csv")
-catch_b_years = catch_b_years %>% dplyr::filter(Species %in% species_b)
+catch_b_years = read.csv("prosseced data/years for b size.csv")
+catch_b_years = catch_b_years %>% dplyr::select(Species, Year_S, Year_E, Year_sum, Haul_sum)
 catch_b_years = catch_b_years[order(catch_b_years$Species),]
 
 size_all_data = read.csv("prosseced data/size all data.CSV")
@@ -2245,10 +2260,8 @@ species_b_data = scientific_namesF %>% dplyr::select(Sp_code, Common_name, Scien
 ```
 
 
-```{r}
-
 #----create "catch_ex"- exploration, table with number of nets with data for any species each year
-
+```{r}
  catch_exB =b_size_all %>% filter(Year.XXXX.>1990)%>% 
     spread(species, kg_b, fill = 0) %>%
     dplyr::select(Year = Year.XXXX. ,Aal:vakvak) %>% group_by(Year) %>% 
