@@ -1369,7 +1369,7 @@ net_all_data = read.csv("prosseced data/net_mtc_data.CSV")
 
 #get out rows without mtc, and depth deeper then 100 m or less than 20
 net_all_data = net_all_data %>% filter(Year > 1990) %>% dplyr::select(-Depth) %>%
-   rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100) %>% filter(Gambari_net==FALSE)
+   rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% mutate(Date_num = as.numeric(Date))
 #---seperate by origin---
 
 #upload mediter and red sea data.
@@ -1377,21 +1377,17 @@ net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
 net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 
 #get out rows without mtc and depth deepre than 100 m 
- # start the  in 1991 [year],
+ # start the  in 1991 [year],no gamberi net,, put date_num column
 
- net_red_mtc = net_red_mtc %>% filter(Year > 1990) %>% dplyr::select(-Depth) %>%
-   rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100) %>% filter(Gambari_net==FALSE)
+ net_red_mtc = net_red_mtc %>% filter(Year > 1990)  %>% dplyr::select(-Depth) %>% rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc)) %>% dplyr::filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% mutate(Date_num = as.numeric(Date))%>% filter(Year>1999)
  
  net_mediter_mtc = net_mediter_mtc %>% filter(Year > 1990)%>% dplyr::select(-Depth) %>%
-   rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100) %>% filter(Gambari_net==FALSE)
+   rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% mutate(Date_num = as.numeric(Date))
 
 
- 
 ```
 
 a lot of gam models
-
-#----TODO---- remove night nets
 
 ```{r}
 
@@ -1399,12 +1395,11 @@ a lot of gam models
  #all data gam model
 gam_year = gam(mtc ~ s(Year, bs = "cr") + s(Depth)+s(SST, bs = "gp") ,data = net_all_data)
 
-net_all_data = net_all_data %>% mutate(Date_num = as.numeric(Date))
-gam_all = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")  + 
-                          s(Date_num, bs = "gp") +  s(Month, bs = "cc", k=12),data =net_all_data)
 
-gam_all = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + 
-                            s(Month, bs = "cc", k=12),data =net_all_data)
+gam_all = gam(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+                             s(Month, bs = "cc", k=12),data =net_all_data)
+#+ (Fisherman)+ s(Start_hh, bs = "cr")+s(Date_num, bs = "gp")
+
 summary(gam_all)
     par(mfrow = c(2,2))
       gam.check(gam_all)
@@ -1412,42 +1407,33 @@ summary(gam_all)
 #plot(gam_year,select = 2,shade = TRUE):plot(fitted(gam_year),residuals(gam_year))
 
 par(mfrow = c(2,2)) 
-plot(gam_year,se=TRUE,col = "blue")
+plot(gam_all,se=TRUE,col = "blue")
 
 
-
-#depth by month and years model
-depth_gam = gam(Depth ~ s(Year, bs = "cr") +s(Month, bs = "cc", k = 12), data = net_all_data)
-
-par(mfrow = c(2,1)) 
-plot(depth_gam,se=TRUE,col = "blue")
-
-
+  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")   +s(Month, bs = "cc", k=12),data =net_mediter_mtc)
   
- 
-  
-  #---------month model---
- net_mediter_mtc = net_mediter_mtc %>% mutate(Date_num = as.numeric(Date))
-
-  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")  + 
-                          s(Date_num, bs = "gp") +  s(Month, bs = "cc", k=12),data =net_mediter_mtc)
-  
-  #+s(Date_num, bs = "gp")
+  # + (Fisherman)+ s(Start_hh, bs = "cr")  +   s(Date_num, bs = "gp")  
+                        
   
   summary(mediter_gam_month)
     par(mfrow = c(2,2))
       gam.check(mediter_gam_month)
   
-  net_red_mtc = net_red_mtc %>% mutate(Date_num = as.numeric(Date))
-    net_red_mtc = net_red_mtc %>% filter(Year>1999)
+par(mfrow = c(2,2)) 
+plot(mediter_gam_month,se=TRUE,col = "blue")
+   # net_red_mtc = net_red_mtc %>% filter(Year>1999)
 
   
-  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")+
-                          s(Date_num, bs = "gp")  + s(Month, bs = "cc", k=12) ,data = net_red_mtc)
-
+  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth)+(Fisherman)+ s(Start_hh, bs = "cr") + s(Month, bs = "cc", k=12) ,data = net_red_mtc)
+  
+#(Fisherman)+ s(Start_hh, bs = "cr")+s(Date_num, bs = "gp")  + 
+  
   summary(red_gam_month)
     par(mfrow = c(2,2))
       gam.check(red_gam_month)
+      
+      par(mfrow = c(2,2)) 
+plot(red_gam_month,se=TRUE,col = "blue")
   
   #---------------nice graphs for thesis-------------
   gam_all = getViz(gam_all)
@@ -1487,7 +1473,7 @@ par(mfrow = c(2,2))
   
   
 #---------month model with SST and without year--------------
-  #TO DO! with montly anomaly for the SST
+  
   
   mediter_gam_sst = gam(mtc~s(Depth) + s(Month, bs = "cc", k=12)+s(SST, bs = "gp") ,data = net_mediter_mtc)
  par(mfrow = c(2,2)) 
@@ -1584,16 +1570,32 @@ med_gam_Dint = gam(mtc ~te(Depth)+te(Year, bs = "cr") + ti(Depth,Year, bs = c("c
 #----biomass model - sum of catch and by month, yaer and depth-------
 ```{r}
 #create Sum columns - sum of the catch of any net
- tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT) 
+tempor_sum = net_all_data %>% dplyr::select(Aal:WHT) 
  catch_net_sum = rowSums(tempor_sum)
- net_medietr_mtc = net_mediter_mtc %>% dplyr::mutate(Sum = cbind(catch_net_sum))
+ net_all_data = net_all_data %>% dplyr::mutate(Sum = cbind(catch_net_sum)) 
+
+tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT) 
+ catch_net_sum = rowSums(tempor_sum)
+ net_mediter_mtc = net_mediter_mtc %>% dplyr::mutate(Sum = cbind(catch_net_sum))
  
  tempor_sum = net_red_mtc %>% dplyr::select(Nra:Upo) 
  catch_net_sum = rowSums(tempor_sum)
  net_red_mtc = net_red_mtc %>% dplyr::mutate(Sum = cbind(catch_net_sum)) 
  
   #net cath model
-  mediter_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_medietr_mtc)
+ all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_all_data)
+ summary(all_catch_gam)
+  gam.check(all_catch_gam)
+  
+  par(mfrow = c(2,2)) 
+  plot(  all_catch_gam,se=TRUE,col = "blue")
+    title("whole known origin species catch by month and year",line = -2, outer=TRUE)
+
+ 
+  mediter_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_mediter_mtc)
+  
+  #better without them:
+  # +(Fisherman)+ s(Start_hh, bs = "cr")  + s(Date_num, bs = "gp")
   
   summary(mediter_catch_gam)
   gam.check(mediter_catch_gam)
@@ -1606,46 +1608,34 @@ med_gam_Dint = gam(mtc ~te(Depth)+te(Year, bs = "cr") + ti(Depth,Year, bs = c("c
     red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_red_mtc)
     
      summary(red_catch_gam)
+     par(mfrow = c(2,2)) 
   gam.check(red_catch_gam)
   
-  par(mfrow = c(2,1)) 
+  par(mfrow = c(2,2)) 
   plot(  red_catch_gam,se=TRUE,col = "blue")
   title("Red species catch by month and year",line = -2, outer=TRUE)
   
-  
-  
-  #start in 1991, drop NA, create Sum column
-  month_red_catch = na.omit(month_red_catch)
-  month_red_catch = month_red_catch %>% filter(Year >1990)
-  tempor_sum = month_red_catch %>%  dplyr::select(Nra:Upo)
-  catch_month_sum = rowSums(tempor_sum)
- month_red_catch = month_red_catch  %>% dplyr::mutate(Sum = cbind(catch_month_sum))
- 
- month_mediter_catch = na.omit(month_mediter_catch)
-  month_mediter_catch = month_mediter_catch %>% filter(Year >1990)
-  tempor_sum = month_mediter_catch %>%  dplyr::select(Aal:WHT)
-  catch_month_sum = rowSums(tempor_sum)
- month_mediter_catch = cbind(month_mediter_catch,catch_month_sum)
- month_mediter_catch = month_mediter_catch %>% dplyr::select(Year:WHT,Sum = catch_month_sum)
- 
-  
-  month_mediter_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12), data = month_mediter_catch)
-  par(mfrow = c(2,1)) 
-  plot(  mediter_catch_gam,se=TRUE,col = "blue")
-    title("Mediteranean species monthly catch by month And year",line = -2, outer=TRUE)
-  
-    red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12), data = month_red_catch)
-  par(mfrow = c(2,1)) 
-  plot(  red_catch_gam,se=TRUE,col = "blue")
-  title("Red species monthly catch by month and year",line = -2, outer=TRUE)
-  
+#nice plots  
 
+  all_catch_gam = getViz(all_catch_gam)
+mediter_catch_gam <- getViz(mediter_catch_gam)
+red_catch_gam = getViz(red_catch_gam)
+
+plot( sm(all_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole known origin species")
+ 
+plot( sm(mediter_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Mediterranean species")
+
+plot( sm(red_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Red Sea species")
+
+  
+ 
   
 
 ```
 
 #---------- mtc spcies model------------------------
-There is problem in that chunk - work just if runing the whole code
+
+There is problem in that chunk - work just if running the whole code
 ```{r}
 #upload codes, and mediter and red sea data.
 # scientific_names=read.csv(file = "prosseced data/sceintific_names_fishes_known_origin.csv", stringsAsFactors = F)
@@ -2553,3 +2543,57 @@ ggplot(anom_red, aes(x=SST ,y=mtc, size=3))+
     aes(label =  paste(..eq.label.., ..adj.rr.label.., sep = "~~~~")),
     formula = formula )
 
+
+
+#---mtc by nomthly sst anomaly---
+#try to do monthly SST anomaly, and it is't in correlation to mtc also, not in linear correlation and not in gam model
+  x = net_mediter_mtc %>% dplyr::select(Month, SST, mtc, Depth) %>% group_by(Month) %>% 
+    summarise_all(.funs = mean) %>% filter(!is.na(Month)) %>% mutate(SST_anom = SST-mean(SST)) %>% 
+    mutate(mtc_anom = mtc-mean(mtc))
+  x= x %>% dplyr::select(Month, SST_anom)
+  
+  y = net_mediter_mtc %>% left_join(x)
+  
+  plot(x)
+  
+  mediter_gam_sst = gam(mtc ~ s(Depth) + s(Month, bs = "cc", k=12)+s(SST_anom, bs = "cr") ,data = y)
+ par(mfrow = c(2,2)) 
+  plot(  mediter_gam_sst,se=TRUE,col = "blue")
+  title("Mediter mtc by SST and Month",line = -2, outer=TRUE)
+  summary(mediter_gam_sst)
+  
+  
+#---monthly catch gam
+  
+   
+  #start in 1991, drop NA, create Sum column
+  month_red_catch = na.omit(month_red_catch)
+  month_red_catch = month_red_catch %>% filter(Year >1990)
+  tempor_sum = month_red_catch %>%  dplyr::select(Nra:Upo)
+  catch_month_sum = rowSums(tempor_sum)
+ month_red_catch = month_red_catch  %>% dplyr::mutate(Sum = cbind(catch_month_sum))
+ 
+ month_mediter_catch = na.omit(month_mediter_catch)
+  month_mediter_catch = month_mediter_catch %>% filter(Year >1990)
+  tempor_sum = month_mediter_catch %>%  dplyr::select(Aal:WHT)
+  catch_month_sum = rowSums(tempor_sum)
+ month_mediter_catch = cbind(month_mediter_catch,catch_month_sum)
+ month_mediter_catch = month_mediter_catch %>% dplyr::select(Year:WHT,Sum = catch_month_sum)
+ 
+  
+  month_mediter_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12), data = month_mediter_catch)
+  par(mfrow = c(2,1)) 
+  plot(  mediter_catch_gam,se=TRUE,col = "blue")
+    title("Mediteranean species monthly catch by month And year",line = -2, outer=TRUE)
+  
+    red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12), data = month_red_catch)
+  par(mfrow = c(2,1)) 
+  plot(  red_catch_gam,se=TRUE,col = "blue")
+  title("Red species monthly catch by month and year",line = -2, outer=TRUE)
+  
+
+  #depth by month and years model
+depth_gam = gam(Depth ~ s(Year, bs = "cr") +s(Month, bs = "cc", k = 12), data = net_all_data)
+
+par(mfrow = c(2,1)) 
+plot(depth_gam,se=TRUE,col = "blue")
