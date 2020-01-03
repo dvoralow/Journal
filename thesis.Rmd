@@ -1399,7 +1399,8 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 
 ```
 
-a lot of gam models
+
+#---a lot of gam models - plots of mtc gam models
 
 ```{r}
 
@@ -1504,74 +1505,169 @@ par(mfrow = c(2,2))
 
 ```
 
-#-------interactions GAM models-------
+#-------interactions mtc GAM models-------
 
 ```{r}
-#---upload data and seperate by origin
 
-#upload mediter and red sea data.
-net_med_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
-net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
+# The data is from the "upload data" chunk, just above
 
-
-#get out rows without mtc and depth deeper than 100 m or shallower than 20 m
-  net_med_mtc = net_med_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(!is.na(Depth)) %>% filter(Depth<100)
+#whole konon origin species togother
+temp = net_all_data %>% dplyr::select(Year, Month, Depth, mtc ) 
   
-  net_red_mtc = net_red_mtc %>% dplyr:: filter(!is.na(mtc)) %>% filter(!is.na(Depth)) %>% filter(Depth<100)
+temp = as.data.frame(temp)
   
- # start the in 1991 [year]
- net_red_mtc = net_red_mtc %>% filter(Year > 1990)
- net_med_mtc = net_med_mtc %>% filter(Year > 1990)
+   temp_gam = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
+  
  
- 
- #GAM models
- #interactions between month and year
- med_gam_Tint = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = net_med_mtc)
- 
-  red_gam_Tint = gam(mtc ~ te(Month,Year, bs = c("cc","cr"),k=12)+s(Depth),data = net_red_mtc)
- 
-  med_gam_Tint = 
+  summary(temp_gam)
+  par(mfrow = c(2,2)) 
+  gam.check(temp_gam)
+  
+  par(mfrow(2,2))
+  plot(  temp_gam,se=TRUE,col = "blue")  
+  #plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
+  
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+
+
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = "Known origin species mtc interaction model",
+         subtitle = "Marked change in within-year distribution",
+         x = NULL,
+         y = "Temperature affinity") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
     
- red_gam_Tint = getViz(red_gam_Tint)
+    p1
+
+grid.arrange(p1)
+
+
+
+
+
+#Medeterranean species interaction model
+temp = net_mediter_mtc %>% dplyr::select(Year, Month, Depth, mtc ) 
+  
+temp = as.data.frame(temp)
+  
+   temp_gam = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
+  
  
-  print(plot(sm(med_gam_Tint,3)), ask = FALSE)
- print(plot(sm(red_gam_Tint,3)), ask = FALSE)
+  summary(temp_gam)
+  par(mfrow = c(2,2)) 
+  gam.check(temp_gam)
+  
+  par(mfrow(2,2))
+  plot(  temp_gam,se=TRUE,col = "blue")  
+  #plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
+  
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+
+
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = "Mediterranean species mtc interaction model",
+         subtitle = "Marked change in within-year distribution",
+         x = NULL,
+         y = "Temperature affinity") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
+    
+    p1
+
+grid.arrange(p1)
+
+
+
+
+
+#red sea interaction
+temp = net_red_mtc %>% dplyr::select(Year, Month, Depth, mtc ) 
+  
+temp = as.data.frame(temp)
+  
+   temp_gam = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
+  
  
-#plot(sm(med_gam_Tint, 1)) + l_fitRaster(pTrans = zto1(0.05, 2, 0.1), noiseup = TRUE) +
- # l_rug() + l_fitContour()
+  summary(temp_gam)
+  par(mfrow = c(2,2)) 
+  gam.check(temp_gam)
+  
+  par(mfrow(2,2))
+  plot(  temp_gam,se=TRUE,col = "blue")  
+  #plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
+  
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
 
 
-#--nice and non-understanding 3 diamantios interactive graph
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
 
-ck <- check2D(red_gam_Tint, x1 = "Month", x2 = "Year", type = "tnormal")
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
 
-glyFun <- function(.d){
-  .r <- .d$z
-  .qq <- as.data.frame( density(.r)[c("x", "y")], n = 100 )
-  .qq$colour <- rep(ifelse(length(.r)>50, "black", "red"), nrow(.qq))
-  return( .qq )
-}
-
-ck + l_glyphs2D(glyFun = glyFun, ggLay = "geom_path", n = c(8, 8),
-                mapping = aes(x=gx, y=gy, group = gid, colour = I(colour)), 
-                height=1.5, width = 1)
-
-plotRGL(sm(red_gam_Tint, 1), fix = c("z" = 0), residuals = FALSE)
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
 
 
-#-------interactions between depth and year
 
- 
-med_gam_Dint = gam(mtc ~te(Depth)+te(Year, bs = "cr") + ti(Depth,Year, bs = c("cr","cr")) ,data = net_med_mtc)
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = "Red Sea species mtc interaction model",
+         subtitle = "Marked change in within-year distribution",
+         x = NULL,
+         y = "Temperature affinity") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
+    
+    p1
 
- 
-  red_gam_Dint = gam(mtc ~ te(Depth)+te(Year, bs = "cr") + ti(Depth,Year, bs = c("cr","cr")),data = net_red_mtc)
- 
-  med_gam_Dint = getViz(med_gam_Dint)
- red_gam_Dint = getViz(red_gam_Dint)
- 
- print(plot(sm(med_gam_Dint,3)), ask = FALSE)
- print(plot(sm(red_gam_Dint,3)), ask = FALSE)
+grid.arrange(p1)
+
+
+
 
 
 ```
@@ -1642,8 +1738,161 @@ plot( sm(mediter_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme
 plot( sm(red_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Red Sea species")
 
   
- 
+ #-----interaction medels and graphs-----
+
+# catch interaction model and graph
+   temp = net_all_data %>% dplyr::select(Year, Month, Depth, Sum ) 
   
+temp = as.data.frame(temp)
+  
+   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
+  
+ 
+  summary(temp_gam)
+  par(mfrow = c(2,2)) 
+  gam.check(temp_gam)
+  
+  par(mfrow(2,2))
+  plot(  temp_gam,se=TRUE,col = "blue")  
+  #plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
+  
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+
+
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = "Whole known origin catch",
+         subtitle = "Marked change in within-year distribution",
+         x = NULL,
+         y = "Estimated total catch (kg))") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
+    
+    p1
+
+grid.arrange(p1)
+
+
+
+
+#mediter interaction model
+ temp = net_mediter_mtc %>% dplyr::select(Year, Month, Depth, Sum ) 
+  
+temp = as.data.frame(temp)
+  
+   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
+  
+ 
+  summary(temp_gam)
+  par(mfrow = c(2,2)) 
+  gam.check(temp_gam)
+  
+  par(mfrow(2,2))
+  plot(  temp_gam,se=TRUE,col = "blue")  
+  #plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
+  
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+
+
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = "Mediter species catch",
+         subtitle = "Marked change in within-year distribution",
+         x = NULL,
+         y = "Estimated total catch (kg))") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
+    
+    p1
+
+grid.arrange(p1)
+  
+
+
+
+
+#red sea interaction
+temp = net_red_mtc %>% dplyr::select(Year, Month, Depth, Sum ) 
+  
+temp = as.data.frame(temp)
+  
+   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
+  
+ 
+  summary(temp_gam)
+  par(mfrow = c(2,2)) 
+  gam.check(temp_gam)
+  
+  par(mfrow(2,2))
+  plot(  temp_gam,se=TRUE,col = "blue")  
+  #plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
+  
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+
+
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = "Red Sea species catch",
+         subtitle = "Marked change in within-year distribution",
+         x = NULL,
+         y = "Estimated total catch (kg))") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
+    
+    p1
+
+grid.arrange(p1)
 
 ```
 
@@ -1892,7 +2141,7 @@ all_dataF = read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAs
  scientific_namesF = scientific_namesF %>% dplyr:: filter(Sp_code != "BOX") %>% dplyr::filter(Sp_code != "FIS") %>% dplyr::filter(Sp_code != "SPL")
  
  # set NA to FALSE and remove rows with gamberi nets, the columns "fish (FIS)", "general box (BOX)", Speciel fish boxes (SPL), start from 1991, remove depth deeper than 100 m, and stay with 1 depth column, called "Depth"
-  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL, -loc_DEPTH, -Depth) %>% filter(Year>1990) %>% rename(Depth = depth_meter) %>% filter(Depth<100)
+  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL, -loc_DEPTH, -Depth) %>% filter(Year>1990) %>% rename(Depth = depth_meter) %>% filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE)
   
   
  #cerate species names and code vectors
@@ -2003,7 +2252,6 @@ grid.arrange(p1)
 
 
 
-
 ```
 
 
@@ -2012,12 +2260,9 @@ grid.arrange(p1)
 For runing this chunk, need to run the first chunk of "phenology part" - uploud the data
 
 ```{r}
+ 
+#--loop - create graphs for the whole species
 
- 
-
- 
- 
-#--loop
 for (i in 1:length(abondance_species))
 {
 
@@ -2072,10 +2317,6 @@ ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/phe
   
 }#end for
 
-      
-      
-   
-  
 
 ```
 
@@ -2689,3 +2930,71 @@ depth_gam = gam(Depth ~ s(Year, bs = "cr") +s(Month, bs = "cc", k = 12), data = 
 
 par(mfrow = c(2,1)) 
 plot(depth_gam,se=TRUE,col = "blue")
+
+
+
+#--interaction gam model
+#upload mediter and red sea data.
+net_med_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
+net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
+
+
+#get out rows without mtc and depth deeper than 100 m or shallower than 20 m
+  net_med_mtc = net_med_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(!is.na(Depth)) %>% filter(Depth<100)
+  
+  net_red_mtc = net_red_mtc %>% dplyr:: filter(!is.na(mtc)) %>% filter(!is.na(Depth)) %>% filter(Depth<100)
+  
+ # start the in 1991 [year]
+ net_red_mtc = net_red_mtc %>% filter(Year > 1990)
+ net_med_mtc = net_med_mtc %>% filter(Year > 1990)
+ 
+ 
+ #GAM models
+ #interactions between month and year
+ med_gam_Tint = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = net_med_mtc)
+ 
+  red_gam_Tint = gam(mtc ~ te(Month,Year, bs = c("cc","cr"),k=12)+s(Depth),data = net_red_mtc)
+ 
+  med_gam_Tint = 
+    
+ red_gam_Tint = getViz(red_gam_Tint)
+ 
+  print(plot(sm(med_gam_Tint,3)), ask = FALSE)
+ print(plot(sm(red_gam_Tint,3)), ask = FALSE)
+ 
+#plot(sm(med_gam_Tint, 1)) + l_fitRaster(pTrans = zto1(0.05, 2, 0.1), noiseup = TRUE) +
+ # l_rug() + l_fitContour()
+
+
+#--nice and non-understanding 3 diamantios interactive graph
+
+ck <- check2D(red_gam_Tint, x1 = "Month", x2 = "Year", type = "tnormal")
+
+glyFun <- function(.d){
+  .r <- .d$z
+  .qq <- as.data.frame( density(.r)[c("x", "y")], n = 100 )
+  .qq$colour <- rep(ifelse(length(.r)>50, "black", "red"), nrow(.qq))
+  return( .qq )
+}
+
+ck + l_glyphs2D(glyFun = glyFun, ggLay = "geom_path", n = c(8, 8),
+                mapping = aes(x=gx, y=gy, group = gid, colour = I(colour)), 
+                height=1.5, width = 1)
+
+plotRGL(sm(red_gam_Tint, 1), fix = c("z" = 0), residuals = FALSE)
+
+
+#-------interactions between depth and year
+
+ 
+med_gam_Dint = gam(mtc ~te(Depth)+te(Year, bs = "cr") + ti(Depth,Year, bs = c("cr","cr")) ,data = net_med_mtc)
+
+ 
+  red_gam_Dint = gam(mtc ~ te(Depth)+te(Year, bs = "cr") + ti(Depth,Year, bs = c("cr","cr")),data = net_red_mtc)
+ 
+  med_gam_Dint = getViz(med_gam_Dint)
+ red_gam_Dint = getViz(red_gam_Dint)
+ 
+ print(plot(sm(med_gam_Dint,3)), ask = FALSE)
+ print(plot(sm(red_gam_Dint,3)), ask = FALSE)
+
