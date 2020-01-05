@@ -1404,9 +1404,7 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 
 ```{r}
 
-
  #all data gam model
-gam_year = gam(mtc ~ s(Year, bs = "cr") + s(Depth)+s(SST, bs = "gp") ,data = net_all_data)
 
 
 gam_all = gam(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
@@ -1504,6 +1502,30 @@ par(mfrow = c(2,2))
 
 
 ```
+
+#--autocorolation on gamm model
+
+```{r}
+#sort by date and time and create "Net_num" - number of net after filtering, represent the net order
+net_all_data = net_all_data %>% arrange(DateTime) %>% mutate(Net_num = c(1:nrow(net_all_data)))
+
+
+gamm_all = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+                             s(Month, bs = "cc", k=12),correlation=corAR1(form = ~Net_num),data =net_all_data)
+
+
+#+ (Fisherman)+ s(Start_hh, bs = "cr")+s(Date_num, bs = "gp")
+
+summary(gam_all)
+    par(mfrow = c(2,2))
+      gam.check(gam_all)
+
+      
+par(mfrow = c(2,2)) 
+plot(gam_all,se=TRUE,col = "blue")
+
+```
+
 
 #-------interactions mtc GAM models-------
 
