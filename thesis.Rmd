@@ -1511,19 +1511,58 @@ par(mfrow = c(2,2))
 net_red_mtc = net_red_mtc %>% arrange(DateTime) %>% mutate(Net_num = c(1:nrow(net_red_mtc)))
 
 
+all_data$DateTime<-paste(all_data$Year,all_data$Month,all_data$Day,all_data$Start_hh,sep = "-")
+
+
+    all_data$DateTime<-ymd_h(all_data$DateTime)
+    
+net_red_mtc = net_red_mtc %>% dplyr::mutate(YearMonth = paste(Year, Month, sep = "/"))
+x = net_red_mtc$YearMonth
+x = as.Date(as.yearmon(x,"%Y/%m"))
+
+
+net_red_mtc$YearMonth = as.Date(as.yearmon(net_red_mtc$YearMonth,"%Y/%m"))
+
+#gamm with autocorrolation within day - ARM1
 gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
-                             s(Month, bs = "cc", k=12),correlation=corAR1(form = ~Net_num),data =net_red_mtc)
+                             s(Month, bs = "cc", k=12),correlation=corAR1(form = ~Net_num|Date_num), data =net_red_mtc)
 
 
-#+ (Fisherman)+ s(Start_hh, bs = "cr")+s(Date_num, bs = "gp")
+plot(gamm_red$gam,se=TRUE,col = "blue")
+title("mtc red sea gam - autocorrolation within day")
 
-summary(gamm_red)
+
+#gamm with autocorrolation within month - ARM1
+gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+                             s(Month, bs = "cc", k=12),correlation=corAR1(form = ~Net_num|YearMonth), data =net_red_mtc)
+
+
+summary(gamm_red$gam)
     par(mfrow = c(2,2))
       gam.check(gamm_red)
 
       
 par(mfrow = c(2,2)) 
-plot(gamm_red,se=TRUE,col = "blue")
+plot(gamm_red$gam,se=TRUE,col = "blue")
+title("mtc red sea gam - autocorrolation within month")
+
+
+#gamm with autocorrolation within day - ARMA
+gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+                             s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|Date_num,p=3), data =net_red_mtc)
+
+
+plot(gamm_red$gam,se=TRUE,col = "blue")
+title("mtc red sea gam - autocorrolation within day")
+
+#gamm with autocorrolation within day - ARMA
+gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+                             s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data =net_red_mtc)
+
+
+plot(gamm_red$gam,se=TRUE,col = "blue")
+title("mtc red sea gam - autocorrolation within MOnt")
+
 
 ```
 
@@ -1715,7 +1754,7 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
  
   #net cath model
  net_all_data = net_all_data %>% filter(Year<2018)
- all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_all_data, family = tw)
+ all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_all_data,family = Tw)
  
  summary(all_catch_gam)
   gam.check(all_catch_gam)
@@ -2618,7 +2657,7 @@ write.csv(catch_exB, "prosseced data/num catch per year b size.CSV")
 
 ```
 
-
+#create interaction gam model graphs for any b size species
 ```{r}
 
 
