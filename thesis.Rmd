@@ -1754,7 +1754,7 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
  
   #net cath model
  net_all_data = net_all_data %>% filter(Year<2018)
- all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_all_data,family = Tw)
+ all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_all_data)
  
  summary(all_catch_gam)
   gam.check(all_catch_gam)
@@ -1764,7 +1764,7 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
     title("whole known origin species catch by month and year",line = -2, outer=TRUE)
 
  net_mediter_mtc = net_mediter_mtc %>% filter(Year<2018)
-  mediter_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_mediter_mtc, family = tw)
+  mediter_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_mediter_mtc )
   
   #better without them:
   # +(Fisherman)+ s(Start_hh, bs = "cr")  + s(Date_num, bs = "gp")
@@ -1778,7 +1778,7 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
     title("Mediteranean species catch by month And year",line = -2, outer=TRUE)
 
     net_red_mtc = net_red_mtc %>% filter(Year<2018)
-    red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_red_mtc, family = tw)
+    red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_red_mtc )
     
      summary(red_catch_gam)
      par(mfrow = c(2,2)) 
@@ -1808,7 +1808,7 @@ plot( sm(red_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text
   
 temp = as.data.frame(temp)
   
-   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp, family = tw)
+   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp )
   
  
   summary(temp_gam)
@@ -1860,7 +1860,7 @@ grid.arrange(p1)
   
 temp = as.data.frame(temp)
   
-   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp, family = tw)
+   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp )
   
  
   summary(temp_gam)
@@ -1913,7 +1913,7 @@ temp = net_red_mtc %>% dplyr::select(Year, Month, Depth, Sum )
   
 temp = as.data.frame(temp)
   
-   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp, family = tw)
+   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp )
   
  
   summary(temp_gam)
@@ -2251,7 +2251,7 @@ abondance_species_data = scientific_namesF %>% dplyr::select(Sp_code, Sceintific
 ```{r}
 all_dataF = all_dataF %>% filter(Year<2018)
 
- all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = all_dataF, family = tw)
+ all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = all_dataF )
  summary(all_catch_gam)
   gam.check(all_catch_gam)
   
@@ -2269,7 +2269,7 @@ plot( sm(all_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(tex
   
 temp = as.data.frame(temp)
   
-   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp, family = tw)
+   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp )
   
  
   summary(temp_gam)
