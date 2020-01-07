@@ -27,6 +27,7 @@ library("reshape2")
 library(mgcViz)
 library(curl)
 library(DataCombine)
+library(nlme)
 
 
 ```
@@ -574,32 +575,35 @@ geom_text(data =red_annual_mtc[red_annual_mtc$Year =="1999", ], aes(label = "T a
 ```
 
 
-#----- check the increase of biomass of the red sea species - graphs---
-I think 2000 is good time for start
+#----- Annual biomass per net - graphs---
+I think 2000 is good time for start for the invasive
 ```{r}
+#create data frame with number of nets for any year
+ annual_years =mediter_all_data  %>% group_by(Year) %>% summarise(count=n())
 
-red_years = red_annual_catch %>% mutate(Sum = rowSums(.[2:7]))
+#create sum of the year catch, and devide with the number of nets
+red_years = red_annual_catch %>% mutate(Sum = rowSums(.[2:7])) %>% left_join(annual_years) %>% mutate(Per_net = Sum/count)
 
-mediter_years = mediter_annual_catch %>% mutate(Sum = rowSums(.[2:26]))
+mediter_years = mediter_annual_catch %>% mutate(Sum = rowSums(.[2:26]))%>% left_join(annual_years)%>% mutate(Per_net = Sum/count)
  
-ggplot(red_years, aes(x=Year,y=Sum, size=5))+
+ggplot(red_years, aes(x=Year,y=Per_net, size=5))+
   geom_point(colour = "red", size = 7)+
   scale_size(guide = 'none')+#no legend to the "size"
-   ggtitle("Invasive speicies biomass")+
- labs(y ="Annual Biomass [kg]")+ #axis text
+   ggtitle("Invasive speicies biomass per net")+
+ labs(y ="Annual Biomass  per net [kg]")+ #axis text
     theme(plot.title = element_text(size = 20,hjust = 0.5), axis.text.x = element_text(size = 15, angle=90, hjust=1), axis.text.y = element_text(size = 15, hjust=1), axis.title=element_text(size=14,face="bold"))+
-scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+#x axis years apeared
-  scale_y_continuous(breaks=seq(0,20000, by =2000), limits = c(0,20000))
+scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))#x axis years apeared
+ # scale_y_continuous(breaks=seq(0,20000, by =2000), limits = c(0,20000))
  
 
-ggplot(mediter_years, aes(x=Year,y=Sum, size=5))+
+ggplot(mediter_years, aes(x=Year,y=Per_net, size=5))+
   geom_point(colour = "blue", size = 7)+
   scale_size(guide = 'none')+#no legend to the "size"
-   ggtitle("Mediterranean speicies biomass")+
- labs(y ="Annual Biomass [kg]")+ #axis text
+   ggtitle("Mediterranean speicies biomass per net")+
+ labs(y ="Annual Biomass per net [kg]")+ #axis text
     theme(plot.title = element_text(size = 20,hjust = 0.5), axis.text.x = element_text(size = 15, angle=90, hjust=1), axis.text.y = element_text(size = 15, hjust=1), axis.title=element_text(size=14,face="bold"))+
-scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))+#x axis years apeared
-  scale_y_continuous(breaks=seq(0,20000, by =2000), limits = c(0,20000))
+scale_x_continuous (breaks=seq(1991,2018, by = 2),limits = c(1991,2018))#x axis years apeared
+  #scale_y_continuous(breaks=seq(0,20000, by =2000), limits = c(0,20000))
 
 ```
 
@@ -1373,6 +1377,99 @@ ggplot(lag_3_r, aes(x=SST_anom ,y=mtc_anom, size=3))+
 
 #----------GAM model ----------------------------#
 
+#---gam functions
+1. GAM_models_mtc_sum: create list of gam models, with and without interactions
+
+input:
+  1. data_in = the data to make gam on
+  2. y_par - y axis paramater - mtc, Sum or species name, as character
+  3. tw_family - TRUE if I want the gam model to by in tweedie family
+  
+  output:
+  gam list with 4 gam models:
+    1.simp - by Year, Depth and Month
+    2.co - with Fisherman and hour of start also
+    3.simp_int - as 1 with interactions
+    4. co_int - as 2 with interactions
+    
+2. AIC_GAM_F - create table of AIC for the model get inside
+  
+  input:
+    gam list, the output of gam function
+    
+  output:
+    table with models names and AIC values
+    
+3. AIC_GAM_auto - create table of AIC for the autocorelation model get inside
+  
+  input:
+    gamm list, the output of gamm function, 
+    
+  output:
+    table with models names and AIC values
+
+
+
+```{r}
+#1
+GAM_models_mtc_sum=function(data_in,y_par){
+  
+  temp = data_in %>% dplyr::select(y_par,Year, Month, Depth,Fisherman,Start_hh )
+  temp = as.data.frame(temp)
+  
+  
+    #simple model - by Year Depth and Month
+    simp <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12), data = temp)
+  
+  print(simp)
+  
+  co <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+  
+  print(co)
+  
+  simp_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth), data = temp)
+  
+  print(simp_int)
+  
+  co_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+
+  print(co_int)
+  
+  #create list of model outputs
+  gam_list=list(simp, co, simp_int, co_int)
+  
+  names(gam_list)=c("simp","co","simp_int","co_int")
+  
+  return(gam_list)
+  }#end GAM_models_list function
+
+#2
+AIC_GAM_F=function(gam_fun_out){
+  AIC_df=data.frame(model_name=names(gam_fun_out))
+  AIC_v=c()
+  for(i in 1:length(gam_fun_out)){
+  AIC_df_n=AIC(gam_fun_out[[i]])
+  AIC_v=c(AIC_v,AIC_df_n)
+  }
+  AIC_df$AIC=AIC_v
+  return(AIC_df)
+}
+
+#3
+AIC_GAM_auto=function(gam_fun_out){
+  AIC_df=data.frame(model_name=names(gam_fun_out))
+  AIC_v=c()
+  for(i in 1:length(gam_fun_out)){
+  AIC_df_n=AIC(gam_fun_out[[i]]$lme)
+  AIC_v=c(AIC_v,AIC_df_n)
+  }
+  AIC_df$AIC=AIC_v
+  return(AIC_df)
+}
+```
+
+
+
 #uploud data and edit
 ```{r}
 #----the whole data GAm model---
@@ -1400,7 +1497,46 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 ```
 
 
-#---a lot of gam models - plots of mtc gam models
+#call to gam function and AIC on mtc gams
+
+```{r}
+
+
+#call the function on mtc red sea gams
+red_mtc_gam = GAM_models_mtc_sum(net_red_mtc,"mtc")
+aic_red_mtc = AIC_GAM_F(red_mtc_gam)
+
+ par(mfrow = c(2,2))
+  plot(  red_mtc_gam[[4]],se=TRUE,col = "blue") 
+ 
+
+med_mtc_gam = GAM_models_mtc_sum(net_mediter_mtc,"mtc")
+aic_med_mtc = AIC_GAM_F(med_mtc_gam)
+
+ par(mfrow = c(2,2))
+  plot(  med_mtc_gam[[4]],se=TRUE,col = "blue") 
+
+all_mtc_gam = GAM_models_mtc_sum(net_all_data,"mtc")
+aic_red_mtc = AIC_GAM_F(all_mtc_gam)
+    
+
+```
+  m_t_AR1 <- gamm(sp_dens ~ s(depth_meter) + s(Month, bs = "cc", k = 10) + s(Time),
+                    correlation = corARMA(form = ~ 1|year_mont, p = 1),
+                    data = data_in_sp,family=Tweedie(2),knots = list(Month = c(0.5, 12.5)),niterPQL=100)
+ 
+  #p=3
+  
+    m_t_AR3 <- gamm(sp_dens ~ s(depth_meter) + s(Month, bs = "cc", k = 10) + s(Time), correlation = corARMA(form = ~ 1|year_mont, p = 3),data = data_in_sp,family=Tweedie(2),knots = list(Month = c(0.5, 12.5)),niterPQL=100)
+ 
+  #p=5
+  
+    m_t_AR5 <- gamm(sp_dens ~ s(depth_meter) + s(Month, bs = "cc", k = 10) + s(Time), correlation = corARMA(form = ~ 1|year_mont, p = 5),data = data_in_sp,family=Tweedie(2),knots = list(Month = c(0.5, 12.5)),niterPQL=100)
+ 
+
+
+
+#--- mtc gam models and plots
 
 ```{r}
 
@@ -1435,8 +1571,11 @@ plot(mediter_gam_month,se=TRUE,col = "blue")
    # net_red_mtc = net_red_mtc %>% filter(Year>1999)
 
   
-  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth)+(Fisherman)+ s(Start_hh, bs = "cr") + s(Month, bs = "cc", k=12) ,data = net_red_mtc)
+  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")   +s(Month, bs = "cc", k=12) ,data = net_red_mtc,method = "REML")
+
   
+  #autocorrelation model
+    #red_gam_month =  gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth), correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp) 
 #(Fisherman)+ s(Start_hh, bs = "cr")+s(Date_num, bs = "gp")  + 
   
   summary(red_gam_month)
@@ -1450,12 +1589,20 @@ plot(red_gam_month,se=TRUE,col = "blue")
   gam_all = getViz(gam_all)
 mediter_gam_month <- getViz(mediter_gam_month)
 red_gam_month = getViz(red_gam_month)
+#red_gam_month = getViz(red_gam_month$gam)
 
-plot( sm(gam_all, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole known origin species")
+plot( sm(red_gam_month, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 1))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2))  +ggtitle("Red Sea species")
+
+
+plot( sm(gam_all, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole known origin species")
 
 
 
-plot( sm(mediter_gam_month, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("mediteranian species")
+plot( sm(mediter_gam_month, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("mediteranian species")
+
+
+
+
 
 plot( sm(mediter_gam_month, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
 
@@ -1463,42 +1610,14 @@ plot( sm(mediter_gam_month, 3) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme
 
 
 
-plot( sm(red_gam_month, 1) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 1))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2))  +ggtitle("Red Sea species")
-
 plot( sm(red_gam_month, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,90)) 
 
 plot( sm(red_gam_month, 3) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
 
 
-    
-par(mfrow = c(2,2)) 
-  plot(mediter_gam_month,se=TRUE,col = "blue")
-title("Mediterranean Species",line = -2, outer=TRUE)
+  
+  
 
- 
-par(mfrow = c(2,2)) 
-  plot(red_gam_month,se=TRUE,col = "blue") 
-  title("Red Sea Species",line = -2, outer=TRUE)
-
-  
-  
-  
-#---------month model with SST and without year--------------
-  
-  
-  mediter_gam_sst = gam(mtc~s(Depth) + s(Month, bs = "cc", k=12)+s(SST, bs = "gp") ,data = net_mediter_mtc)
- par(mfrow = c(2,2)) 
-  plot(  mediter_gam_sst,se=TRUE,col = "blue")
-  title("Mediter mtc by SST and Month",line = -2, outer=TRUE)
-  summary(mediter_gam_sst)
-  
-   red_gam_sst = gam(mtc~s(Depth) + s(Month, bs = "cc", k=12)+s(SST, bs = "gp") ,data = net_red_mtc)
- par(mfrow = c(2,2)) 
-  plot(  red_gam_sst,se=TRUE,col = "blue")
-  title("red mtc by SST and Month",line = -2, outer=TRUE)
-  summary(red_gam_sst)
-
-  
 
 
 ```
@@ -1510,18 +1629,10 @@ par(mfrow = c(2,2))
 
 net_red_mtc = net_red_mtc %>% arrange(DateTime) %>% mutate(Net_num = c(1:nrow(net_red_mtc)))
 
-
-all_data$DateTime<-paste(all_data$Year,all_data$Month,all_data$Day,all_data$Start_hh,sep = "-")
-
-
-    all_data$DateTime<-ymd_h(all_data$DateTime)
-    
 net_red_mtc = net_red_mtc %>% dplyr::mutate(YearMonth = paste(Year, Month, sep = "/"))
-x = net_red_mtc$YearMonth
-x = as.Date(as.yearmon(x,"%Y/%m"))
-
 
 net_red_mtc$YearMonth = as.Date(as.yearmon(net_red_mtc$YearMonth,"%Y/%m"))
+
 
 #gamm with autocorrolation within day - ARM1
 gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
@@ -1567,7 +1678,7 @@ title("mtc red sea gam - autocorrolation within MOnt")
 ```
 
 
-#-------interactions mtc GAM models-------
+#-------interactions MTC GAM models-------
 
 ```{r}
 
@@ -1596,7 +1707,7 @@ ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, 
 
 
 pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
-                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+                                  Month = seq(1, 12, length.out = 100), Depth =30))
 
 ## Add on the fitted values and SEs *on the log [link] scale*
 pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
@@ -1620,7 +1731,6 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
     
     p1
 
-grid.arrange(p1)
 
 
 
@@ -1649,7 +1759,7 @@ ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, 
 
 
 pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
-                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+                                  Month = seq(1, 12, length.out = 100), Depth =30))
 
 ## Add on the fitted values and SEs *on the log [link] scale*
 pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
@@ -1673,20 +1783,18 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
     
     p1
 
-grid.arrange(p1)
 
 
 
 
 
 #red sea interaction
-temp = net_red_mtc %>% dplyr::select(Year, Month, Depth, mtc ) 
-  
+temp = net_red_mtc %>% dplyr::select(Year, Month, Depth, mtc )
 temp = as.data.frame(temp)
   
    temp_gam = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
-  
- 
+   
+   
   summary(temp_gam)
   par(mfrow = c(2,2)) 
   gam.check(temp_gam)
@@ -1702,7 +1810,7 @@ ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, 
 
 
 pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
-                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+                                  Month = seq(1, 12, length.out = 100), Depth =30))
 
 ## Add on the fitted values and SEs *on the log [link] scale*
 pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
@@ -1726,7 +1834,6 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
     
     p1
 
-grid.arrange(p1)
 
 
 
@@ -1752,8 +1859,38 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
  catch_net_sum = rowSums(tempor_sum)
  net_red_mtc = net_red_mtc %>% dplyr::mutate(Sum = cbind(catch_net_sum)) 
  
-  #net cath model
+  #the chatch of 2018 is problematic - half a year, effecting the model
  net_all_data = net_all_data %>% filter(Year<2018)
+net_mediter_mtc = net_mediter_mtc %>% filter(Year<2018)
+ net_red_mtc = net_red_mtc %>% filter(Year<2018)
+ 
+
+ 
+ 
+  #call the function on Sum  gams
+red_catch_gam = GAM_models_mtc_sum(net_red_mtc,"Sum")
+aic_red_catch = AIC_GAM_F(red_catch_gam)
+
+ par(mfrow = c(2,2))
+  plot(  red_catch_gam[[1]],se=TRUE,col = "blue") 
+ 
+
+med_catch_gam = GAM_models_mtc_sum(net_mediter_mtc,"Sum")
+aic_med_catch = AIC_GAM_F(med_catch_gam)
+
+ par(mfrow = c(2,2))
+  plot(  med_catch_gam[[1]],se=TRUE,col = "blue") 
+
+all_catch_gam = GAM_models_mtc_sum(net_all_data,"Sum")
+aic_all_catch = AIC_GAM_F(all_catch_gam)
+    
+ par(mfrow = c(2,2))
+  plot(  all_catch_gam[[1]],se=TRUE,col = "blue") 
+ 
+
+
+
+ #net cath model
  all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_all_data)
  
  summary(all_catch_gam)
@@ -1763,7 +1900,6 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
   plot(  all_catch_gam,se=TRUE,col = "blue")
     title("whole known origin species catch by month and year",line = -2, outer=TRUE)
 
- net_mediter_mtc = net_mediter_mtc %>% filter(Year<2018)
   mediter_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_mediter_mtc )
   
   #better without them:
@@ -1777,8 +1913,8 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
   plot(  mediter_catch_gam,se=TRUE,col = "blue")
     title("Mediteranean species catch by month And year",line = -2, outer=TRUE)
 
-    net_red_mtc = net_red_mtc %>% filter(Year<2018)
-    red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_red_mtc )
+   
+    red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_red_mtc)
     
      summary(red_catch_gam)
      par(mfrow = c(2,2)) 
@@ -1794,11 +1930,11 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
 mediter_catch_gam <- getViz(mediter_catch_gam)
 red_catch_gam = getViz(red_catch_gam)
 
-plot( sm(all_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole known origin species")
+plot( sm(all_catch_gam, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole known origin species")
  
-plot( sm(mediter_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Mediterranean species")
+plot( sm(mediter_catch_gam, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Mediterranean species")
 
-plot( sm(red_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Red Sea species")
+plot( sm(red_catch_gam, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Red Sea species")
 
   
  #-----interaction medels and graphs-----
@@ -1826,7 +1962,8 @@ ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, 
 
 
 pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
-                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+                                  Month = seq(1, 12, length.out = 100), Depth =30 ))
+#seq(min(Depth), max(Depth), length.out = 100)
 
 ## Add on the fitted values and SEs *on the log [link] scale*
 pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
@@ -1878,7 +2015,7 @@ ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, 
 
 
 pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
-                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+                                  Month = seq(1, 12, length.out = 100), Depth =30))
 
 ## Add on the fitted values and SEs *on the log [link] scale*
 pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
@@ -1931,7 +2068,7 @@ ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, 
 
 
 pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
-                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+                                  Month = seq(1, 12, length.out = 100), Depth =30))
 
 ## Add on the fitted values and SEs *on the log [link] scale*
 pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
@@ -1959,146 +2096,7 @@ grid.arrange(p1)
 
 ```
 
-#---------- mtc spcies model------------------------
 
-There is problem in that chunk - work just if running the whole code
-```{r}
-#upload codes, and mediter and red sea data.
-# scientific_names=read.csv(file = "prosseced data/sceintific_names_fishes_known_origin.csv", stringsAsFactors = F)
-# #cerate species names vector
-#  sp_code = scientific_names$Sp_code
-#  scientific_code = scientific_names$scintific_name
-#   
-# mean_tcode =read.csv( "prosseced data/mean_tcode.CSV")
-# 
-# species_to_scientific_name=read.csv(file= "prosseced data/sceintific_names_fishes_known_origin.csv",stringsAsFactors = F)
-# 
-# net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
-# net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
-# 
-# #sp_code of the mediterrinian and red sea origin 
-# mediter_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Med"),"Sp_code"]
-# red_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Red"),"Sp_code"]
-#get out rows without mtc and depth deepre than 100 m or shallower than 20 m
- # net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(Depth %in% c(20:100) ) 
-#  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(Depth %in% c(20:100))
-
- 
-
-#table with namse of species and Tpref
-    species_table = cbind(sp_code,scientific_code,mean_tcode)
-mediter_table=species_table[which(rownames(species_table) %in% c("MUL","BAT","Bbo","Mme","WHT","Arg","EPI","Pca","SPI","Lmo","Sd","Bca","Per","Sja")),]
-red_table=species_table[which(!(rownames(species_table) %in% mediter_code)),]
-
-
-
-
-#the abundance invasive species model
-Nra_gam = gam(Nra ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_red_mtc)
-  par(mfrow = c(2,2)) 
-  plot( Nra_gam,se=TRUE,col = "blue")
-    title(paste( red_table[which(rownames(red_table)=="Nra"),2],"T pref =",red_table[which(rownames(red_table)=="Nra"),3],sep = " "),line = -2, outer=TRUE)
-    
-    Sco_gam = gam(Sco ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_red_mtc)
-  par(mfrow = c(2,2)) 
-  plot( Sco_gam,se=TRUE,col = "blue")
-    title(paste( red_table[which(rownames(red_table)=="Sco"),2],"T pref =",red_table[which(rownames(red_table)=="Sco"),3],sep = " "),line = -2, outer=TRUE)
-    
-    
-    
-    
-Sco_gam = getViz(Sco_gam)
-
-plot( sm(Sco_gam, 3) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5,size = 25))+labs(y ="Relative catch [kg]",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
-
-plot( sm(Sco_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5,size = 25))+labs(y ="Relative catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
-
-    
-    
-    
- Umo_gam = gam(Umo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_red_mtc)
-  par(mfrow = c(2,2)) 
-  plot( Umo_gam,se=TRUE,col = "blue")
-    title(paste( red_table[which(rownames(red_table)=="Umo"),2],"T pref =",red_table[which(rownames(red_table)=="Umo"),3],sep = " "),line = -2, outer=TRUE)
-    
-  Umo_gam = getViz(Umo_gam)
-
-plot( sm(Umo_gam, 3) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5,size = 25))+labs(y ="Relative catch [kg]",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
-
-plot( sm(Umo_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5,size = 25))+labs(y ="Relative catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
-
-
-#the abundance Mediter species model "MUL" "BAT" "Bbo" "Mme" "WHT"
-    
- MUL_model = gam(MUL ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
-  par(mfrow = c(2,2)) 
-  plot( MUL_model,se=TRUE,col = "blue")
-    title(paste( mediter_table[which(rownames(mediter_table)=="MUL"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="MUL"),3],sep = " "),line = -2, outer=TRUE)
-    
-     BAT_model = gam(BAT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
-  par(mfrow = c(2,2)) 
-  plot( BAT_model,se=TRUE,col = "blue")
-    title(paste( mediter_table[which(rownames(mediter_table)=="BAT"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="BAT"),3],sep = " "),line = -2, outer=TRUE)
-
-    
-     Bbo_model = gam(Bbo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
-  par(mfrow = c(2,2)) 
-  plot( Bbo_model,se=TRUE,col = "blue")
-    title(paste( mediter_table[which(rownames(mediter_table)=="Bbo"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Bbo"),3],sep = " "),line = -2, outer=TRUE)
-
-    
-    Bbo_model = getViz(Bbo_model)
-
-plot( sm(Bbo_model, 3) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5, size = 25))+labs(y ="Relative catch [kg]",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
-
-plot( sm(Bbo_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5, size = 25))+labs(y ="Relative catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
-
-    
-    
-     Mme_model = gam(Mme ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
-  par(mfrow = c(2,2)) 
-  plot( Mme_model,se=TRUE,col = "blue")
-    title(paste( mediter_table[which(rownames(mediter_table)=="Mme"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Mme"),3],sep = " "),line = -2, outer=TRUE)
-
-    
-     WHT_model = gam(WHT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
-  par(mfrow = c(2,2)) 
-  plot( WHT_model,se=TRUE,col = "blue")
-    title(paste( mediter_table[which(rownames(mediter_table)=="WHT"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="WHT"),3],sep = " "),line = -2, outer=TRUE)
-
-#the non abundance Mediter species model - high Tpref - Sd, EPI, Bca, Lmo
-
-    Sd_model = gam(Sd ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
-  par(mfrow = c(2,2)) 
-  plot( Sd_model,se=TRUE,col = "blue")
-    title(paste( mediter_table[which(rownames(mediter_table)=="Sd"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Sd"),3],sep = " "),line = -2, outer=TRUE)
-    
-     Sd_model = getViz(Sd_model)
-
-plot( sm(Sd_model, 3) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5, size = 25))+labs(y ="Relative catch [kg]",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
-
-plot( sm(Sd_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5, size = 25))+labs(y ="Relative catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
-
-    
-
-    
-    EPI_model = gam(EPI ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
-  par(mfrow = c(2,2)) 
- 
-   plot( EPI_model,se=TRUE,col = "blue")
-    title(paste( mediter_table[which(rownames(mediter_table)=="EPI"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="EPI"),3],sep = " "),line = -2, outer=TRUE)
-    
-    Bca_model = gam(Bca ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
-  par(mfrow = c(2,2)) 
-  plot( Bca_model,se=TRUE,col = "blue")
-    title(paste( mediter_table[which(rownames(mediter_table)=="Bca"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Bca"),3],sep = " "),line = -2, outer=TRUE)
-    
-    Lmo_model = gam(Lmo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
-  par(mfrow = c(2,2)) 
-  plot( Lmo_model,se=TRUE,col = "blue")
-    title(paste( mediter_table[which(rownames(mediter_table)=="Lmo"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Lmo"),3],sep = " "),line = -2, outer=TRUE)
-
-```
 
 
 
@@ -2251,6 +2249,17 @@ abondance_species_data = scientific_namesF %>% dplyr::select(Sp_code, Sceintific
 ```{r}
 all_dataF = all_dataF %>% filter(Year<2018)
 
+
+#call to gam and AIC functions
+all_catchF_gam = GAM_models_mtc_sum(all_dataF,"Sum")
+aic_all_catchF = AIC_GAM_F(all_catchF_gam)
+    
+ par(mfrow = c(2,2))
+  plot(  all_catchF_gam[[1]],se=TRUE,col = "blue")
+  
+  
+
+
  all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = all_dataF )
  summary(all_catch_gam)
   gam.check(all_catch_gam)
@@ -2261,7 +2270,7 @@ all_dataF = all_dataF %>% filter(Year<2018)
 
     all_catch_gam = getViz(all_catch_gam)
 
-plot( sm(all_catch_gam, 1) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole fish species")
+plot( sm(all_catch_gam, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole fish species")
 
 
 # interaction model and graph
@@ -2276,7 +2285,7 @@ temp = as.data.frame(temp)
   par(mfrow = c(2,2)) 
   gam.check(temp_gam)
   
-  par(mfrow(2,2))
+  par(mfrow = c(2,2))
   plot(  temp_gam,se=TRUE,col = "blue")  
   #plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
   
@@ -2287,7 +2296,7 @@ ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, 
 
 
 pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
-                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+                                  Month = seq(1, 12, length.out = 100), Depth =30))
 
 ## Add on the fitted values and SEs *on the log [link] scale*
 pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
@@ -2349,7 +2358,7 @@ ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, 
 
 
 pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
-                                  Month = seq(1, 12, length.out = 100), Depth = seq(min(Depth), max(Depth), length.out = 100)))
+                                  Month = seq(1, 12, length.out = 100), Depth =30))
 
 ## Add on the fitted values and SEs *on the log [link] scale*
 pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
@@ -2375,8 +2384,9 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
 
 grid.arrange(p1)
 
+ggsave(paste("C:/Users/dvora/Google Drive/second degree/thesis/data/R/graphs/phenology/",abondance_species[i],".png",sep = ""), p1, dpi = 100, width = 8.5, height = 5.5)
 
-ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/phenology/",abondance_species[i],".png",sep = ""), p1, dpi = 100, width = 8.5, height = 5.5)
+#ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/phenology/",abondance_species[i],".png",sep = ""), p1, dpi = 100, width = 8.5, height = 5.5)
   
 }#end for
 
@@ -2395,157 +2405,7 @@ https://gist.github.com/gavinsimpson/6d05af9186b9f9419cca5a4507af3aa0
 
 
 
-catch graphs
-```{r}
 
-#call the monthly catch function
- month_catchF=month_catch(all_dataF,sp_codeF)
-#begen in 1987
- month_catchF=month_catchF[month_catchF$Year %in% c(1987:2018),] 
- 
-#create data frame for any quart of the years
-month_catchF_a=  month_catchF[month_catchF$Year %in% c(1987:1994),]
-month_catchF_b=  month_catchF[month_catchF$Year %in% c(1995:2002),]
-month_catchF_c=  month_catchF[month_catchF$Year %in% c(2003:2010),]
-month_catchF_d=  month_catchF[month_catchF$Year %in% c(2011:2018),]
- 
-#
-for (i in 1:length(sp_codeF)) {
-  
-#make a single graph for any quart of the years
-  p1= ggplot(month_catchF_a, aes(x=Month, y=month_catchF_a[,sp_codeF[i]],color=Year )) +
-    geom_line()+
-    scale_colour_gradientn(colours=rainbow(4))+
-    facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
-    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
-  
-  
-  p2=ggplot(month_catchF_b, aes(x=Month, y=month_catchF_b[,sp_codeF[i]],color=Year )) +
-    geom_line()+
-    scale_colour_gradientn(colours=rainbow(4))+
-    facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
-    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
-  
-  p3=ggplot(month_catchF_c, aes(x=Month, y=month_catchF_c[,sp_codeF[i]],color=Year )) +
-    geom_line()+
-    scale_colour_gradientn(colours=rainbow(4))+
-    facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
-    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
-  
-  p4=ggplot(month_catchF_d, aes(x=Month, y=month_catchF_d[,sp_codeF[i]],color=Year )) +
-    geom_line()+
-    scale_colour_gradientn(colours=rainbow(4))+
-    facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
-    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
-  
- #ceate one graph included 4 graphs for any species
-  #grid.arrange(p1, p3, p2, p4,ncol=2)
-  grid.arrange(p4)
-  
-  #if saving without the "g" part, save just 1 of the 4, but in high resolution
-  #so it's better for papars. [could order them by nyself after]
-  #order for saving
-  #g <- arrangeGrob(p1, p3, p2, p4, nrow=2) #generates g
-  #ggsave(file = paste (sp_codeF[i],"png",sep ="."),g)
-
-  }#end for
- 
-
-```
-
-
-weekly normalization
-```{r}
- 
-      #create week ID coulmn wich I can count - year/month/week
-      all_dataF$Week_ID = with(all_dataF,paste(Year,Month,Week,sep = "/"))
-      #count how many nets in every week [count Week ID]
-      week_count=all_dataF %>% group_by(Week_ID) %>% summarise(count=n()) 
-
-      
- 
-    #take the week_ID and species
-    week_data= dplyr:: select(all_dataF,Week_ID,Aal:WHT)
-    #sum of weekly catch of each speceis: aggergate by ID
-   week_data=week_data %>% group_by(Week_ID) %>% summarise_all(funs(sum))
-
-    #create weekly mean catch:diviate the weekly sum of catch of each species in the 
-    #sum of nets in the week
-    week_data=week_data %>% dplyr:: select(Aal:WHT)   
-    week_data=week_data/week_count$count  
-    
-    #seperate the Id string to Year and Week and bind to "week data"
-    week_id_sep=week_count %>% separate(Week_ID,c("Year","Month","Week"))
-    week_data=cbind("Week_ID"= week_count$Week_ID,"Year"=week_id_sep$Year,"Week"=week_id_sep$Week ,week_data)
-
-    week_data$Week=as.numeric(as.character(week_data$Week))  
-    week_data$Year=as.numeric(as.character(week_data$Year))
-   
-  
-   
-    
-        
-    #begen in 1987
-    week_data=week_data[week_data$Year %in% c(1987:2018),] 
-    
-    #create data frame for any quart of the years
-    week_data_a=  week_data[week_data$Year %in% c(1987:1994),]
-    week_data_b=  week_data[week_data$Year %in% c(1994:2002),]
-    week_data_c=  week_data[week_data$Year %in% c(2001:2010),]
-    week_data_d=  week_data[week_data$Year %in% c(2007:2018),]
-    
-
-
-```
-
-graphs of the ratio catch
-
-```{r}
- 
-    
-    for (i in 1:length(sp_codeF)) {
-      
-      #make a single graph for any quart of the years
-      p1= ggplot(week_data_a, aes(x=Week, y=week_data_a[,sp_codeF[i]],color=Year )) +
-        geom_line()+
-        scale_colour_gradientn(colours=rainbow(4))+
-        facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
-        ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4))
-      
-      
-      p2=ggplot(week_data_b, aes(x=Week, y=week_data_b[,sp_codeF[i]],color=Year )) +
-        geom_line()+
-        scale_colour_gradientn(colours=rainbow(4))+
-        facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
-        ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4))
-      
-      p3=ggplot(week_data_c, aes(x=Week, y=week_data_c[,sp_codeF[i]],color=Year )) +
-        geom_line()+
-        scale_colour_gradientn(colours=rainbow(4))+
-        facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
-        ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4))
-      
-      p4=ggplot(week_data_d, aes(x=Week, y=week_data_d[,sp_codeF[i]],color=Year )) +
-        geom_line()+
-        scale_colour_gradientn(colours=rainbow(4))+
-        facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
-        ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4))
-      
-      
-      #ceate one graph included 4 graphs for any species
-  grid.arrange(p1, p3, p2, p4,ncol=2)
-      
-      #save the graphs - !!set the directory before use!!
-      #if saving without the "g" part, save just 1 of the 4, but in high resolution
-      #so it's better for papars. [could order them by myself after]
-        #order for saving
-        #g <- arrangeGrob(p1, p3, p2, p4, nrow=2) #generates g
-        g <- arrangeGrob( p4) #generates g
-        ggsave(file = paste (sp_codeF[i],"png",sep ="."),g)
-      
-    }#end for
-
-```
 
 
 
@@ -3061,3 +2921,310 @@ med_gam_Dint = gam(mtc ~te(Depth)+te(Year, bs = "cr") + ti(Depth,Year, bs = c("c
  print(plot(sm(med_gam_Dint,3)), ask = FALSE)
  print(plot(sm(red_gam_Dint,3)), ask = FALSE)
 
+
+
+#---------- mtc spcies model------------------------
+
+There is problem in that chunk - work just if running the whole code
+
+#upload codes, and mediter and red sea data.
+# scientific_names=read.csv(file = "prosseced data/sceintific_names_fishes_known_origin.csv", stringsAsFactors = F)
+# #cerate species names vector
+#  sp_code = scientific_names$Sp_code
+#  scientific_code = scientific_names$scintific_name
+#   
+# mean_tcode =read.csv( "prosseced data/mean_tcode.CSV")
+# 
+# species_to_scientific_name=read.csv(file= "prosseced data/sceintific_names_fishes_known_origin.csv",stringsAsFactors = F)
+# 
+# net_mediter_mtc = read.csv("prosseced data/mediter_net_mtc.CSV")
+# net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
+# 
+# #sp_code of the mediterrinian and red sea origin 
+# mediter_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Med"),"Sp_code"]
+# red_code=species_to_scientific_name[which(species_to_scientific_name$Origin=="Red"),"Sp_code"]
+#get out rows without mtc and depth deepre than 100 m or shallower than 20 m
+ # net_mediter_mtc = net_mediter_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(Depth %in% c(20:100) ) 
+#  net_red_mtc = net_red_mtc %>%  dplyr:: filter(!is.na(mtc)) %>% filter(Depth %in% c(20:100))
+
+ 
+
+#table with namse of species and Tpref
+    species_table = cbind(sp_code,scientific_code,mean_tcode)
+mediter_table=species_table[which(rownames(species_table) %in% c("MUL","BAT","Bbo","Mme","WHT","Arg","EPI","Pca","SPI","Lmo","Sd","Bca","Per","Sja")),]
+red_table=species_table[which(!(rownames(species_table) %in% mediter_code)),]
+
+
+
+
+#the abundance invasive species model
+Nra_gam = gam(Nra ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_red_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Nra_gam,se=TRUE,col = "blue")
+    title(paste( red_table[which(rownames(red_table)=="Nra"),2],"T pref =",red_table[which(rownames(red_table)=="Nra"),3],sep = " "),line = -2, outer=TRUE)
+    
+    Sco_gam = gam(Sco ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_red_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Sco_gam,se=TRUE,col = "blue")
+    title(paste( red_table[which(rownames(red_table)=="Sco"),2],"T pref =",red_table[which(rownames(red_table)=="Sco"),3],sep = " "),line = -2, outer=TRUE)
+    
+    
+    
+    
+Sco_gam = getViz(Sco_gam)
+
+plot( sm(Sco_gam, 3) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5,size = 25))+labs(y ="Relative catch [kg]",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
+
+plot( sm(Sco_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5,size = 25))+labs(y ="Relative catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
+
+    
+    
+    
+ Umo_gam = gam(Umo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_red_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Umo_gam,se=TRUE,col = "blue")
+    title(paste( red_table[which(rownames(red_table)=="Umo"),2],"T pref =",red_table[which(rownames(red_table)=="Umo"),3],sep = " "),line = -2, outer=TRUE)
+    
+  Umo_gam = getViz(Umo_gam)
+
+plot( sm(Umo_gam, 3) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5,size = 25))+labs(y ="Relative catch [kg]",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
+
+plot( sm(Umo_gam, 2) )+ l_ciPoly()+l_fitLine(colour = "red")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5,size = 25))+labs(y ="Relative catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
+
+
+#the abundance Mediter species model "MUL" "BAT" "Bbo" "Mme" "WHT"
+    
+ MUL_model = gam(MUL ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( MUL_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="MUL"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="MUL"),3],sep = " "),line = -2, outer=TRUE)
+    
+     BAT_model = gam(BAT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( BAT_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="BAT"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="BAT"),3],sep = " "),line = -2, outer=TRUE)
+
+    
+     Bbo_model = gam(Bbo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Bbo_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="Bbo"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Bbo"),3],sep = " "),line = -2, outer=TRUE)
+
+    
+    Bbo_model = getViz(Bbo_model)
+
+plot( sm(Bbo_model, 3) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5, size = 25))+labs(y ="Relative catch [kg]",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
+
+plot( sm(Bbo_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5, size = 25))+labs(y ="Relative catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
+
+    
+    
+     Mme_model = gam(Mme ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Mme_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="Mme"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Mme"),3],sep = " "),line = -2, outer=TRUE)
+
+    
+     WHT_model = gam(WHT ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( WHT_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="WHT"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="WHT"),3],sep = " "),line = -2, outer=TRUE)
+
+#the non abundance Mediter species model - high Tpref - Sd, EPI, Bca, Lmo
+
+    Sd_model = gam(Sd ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Sd_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="Sd"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Sd"),3],sep = " "),line = -2, outer=TRUE)
+    
+     Sd_model = getViz(Sd_model)
+
+plot( sm(Sd_model, 3) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5, size = 25))+labs(y ="Relative catch [kg]",x="Depth [m]")+scale_x_continuous (breaks=seq(20,100, by = 10),limits = c(20,100)) 
+
+plot( sm(Sd_model, 2) )+ l_ciPoly()+l_fitLine(colour = "blue")  + theme(text = element_text(size=30),axis.text.x = element_text(angle=0, hjust=1),axis.title.x = element_text(vjust = -0.5),axis.title.y = element_text(vjust = 0.5, size = 25))+labs(y ="Relative catch [kg]")+scale_x_continuous (breaks=seq(1,12, by = 1)) 
+
+    
+
+    
+    EPI_model = gam(EPI ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+ 
+   plot( EPI_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="EPI"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="EPI"),3],sep = " "),line = -2, outer=TRUE)
+    
+    Bca_model = gam(Bca ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Bca_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="Bca"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Bca"),3],sep = " "),line = -2, outer=TRUE)
+    
+    Lmo_model = gam(Lmo ~ s(Year, bs = "cs") +s(Month, bs = "cc", k=12)+s(Depth, bs = "cs",k=8), data = net_mediter_mtc)
+  par(mfrow = c(2,2)) 
+  plot( Lmo_model,se=TRUE,col = "blue")
+    title(paste( mediter_table[which(rownames(mediter_table)=="Lmo"),2],"T pref =",mediter_table[which(rownames(mediter_table)=="Lmo"),3],sep = " "),line = -2, outer=TRUE)
+    
+    #---------month model with SST and without year--------------
+  
+  
+  mediter_gam_sst = gam(mtc~s(Depth) + s(Month, bs = "cc", k=12)+s(SST, bs = "gp") ,data = net_mediter_mtc)
+ par(mfrow = c(2,2)) 
+  plot(  mediter_gam_sst,se=TRUE,col = "blue")
+  title("Mediter mtc by SST and Month",line = -2, outer=TRUE)
+  summary(mediter_gam_sst)
+  
+   red_gam_sst = gam(mtc~s(Depth) + s(Month, bs = "cc", k=12)+s(SST, bs = "gp") ,data = net_red_mtc)
+ par(mfrow = c(2,2)) 
+  plot(  red_gam_sst,se=TRUE,col = "blue")
+  title("red mtc by SST and Month",line = -2, outer=TRUE)
+  summary(red_gam_sst)
+
+catch graphs
+```{r}
+
+#call the monthly catch function
+ month_catchF=month_catch(all_dataF,sp_codeF)
+#begen in 1987
+ month_catchF=month_catchF[month_catchF$Year %in% c(1987:2018),] 
+ 
+#create data frame for any quart of the years
+month_catchF_a=  month_catchF[month_catchF$Year %in% c(1987:1994),]
+month_catchF_b=  month_catchF[month_catchF$Year %in% c(1995:2002),]
+month_catchF_c=  month_catchF[month_catchF$Year %in% c(2003:2010),]
+month_catchF_d=  month_catchF[month_catchF$Year %in% c(2011:2018),]
+ 
+#
+for (i in 1:length(sp_codeF)) {
+  
+#make a single graph for any quart of the years
+  p1= ggplot(month_catchF_a, aes(x=Month, y=month_catchF_a[,sp_codeF[i]],color=Year )) +
+    geom_line()+
+    scale_colour_gradientn(colours=rainbow(4))+
+    facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
+    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
+  
+  
+  p2=ggplot(month_catchF_b, aes(x=Month, y=month_catchF_b[,sp_codeF[i]],color=Year )) +
+    geom_line()+
+    scale_colour_gradientn(colours=rainbow(4))+
+    facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
+    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
+  
+  p3=ggplot(month_catchF_c, aes(x=Month, y=month_catchF_c[,sp_codeF[i]],color=Year )) +
+    geom_line()+
+    scale_colour_gradientn(colours=rainbow(4))+
+    facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
+    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
+  
+  p4=ggplot(month_catchF_d, aes(x=Month, y=month_catchF_d[,sp_codeF[i]],color=Year )) +
+    geom_line()+
+    scale_colour_gradientn(colours=rainbow(4))+
+    facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
+    ylab("Number of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)
+  
+ #ceate one graph included 4 graphs for any species
+  #grid.arrange(p1, p3, p2, p4,ncol=2)
+  grid.arrange(p4)
+  
+  #if saving without the "g" part, save just 1 of the 4, but in high resolution
+  #so it's better for papars. [could order them by nyself after]
+  #order for saving
+  #g <- arrangeGrob(p1, p3, p2, p4, nrow=2) #generates g
+  #ggsave(file = paste (sp_codeF[i],"png",sep ="."),g)
+
+  }#end for
+ 
+
+```
+
+
+weekly normalization
+```{r}
+ 
+      #create week ID coulmn wich I can count - year/month/week
+      all_dataF$Week_ID = with(all_dataF,paste(Year,Month,Week,sep = "/"))
+      #count how many nets in every week [count Week ID]
+      week_count=all_dataF %>% group_by(Week_ID) %>% summarise(count=n()) 
+
+      
+ 
+    #take the week_ID and species
+    week_data= dplyr:: select(all_dataF,Week_ID,Aal:WHT)
+    #sum of weekly catch of each speceis: aggergate by ID
+   week_data=week_data %>% group_by(Week_ID) %>% summarise_all(funs(sum))
+
+    #create weekly mean catch:diviate the weekly sum of catch of each species in the 
+    #sum of nets in the week
+    week_data=week_data %>% dplyr:: select(Aal:WHT)   
+    week_data=week_data/week_count$count  
+    
+    #seperate the Id string to Year and Week and bind to "week data"
+    week_id_sep=week_count %>% separate(Week_ID,c("Year","Month","Week"))
+    week_data=cbind("Week_ID"= week_count$Week_ID,"Year"=week_id_sep$Year,"Week"=week_id_sep$Week ,week_data)
+
+    week_data$Week=as.numeric(as.character(week_data$Week))  
+    week_data$Year=as.numeric(as.character(week_data$Year))
+   
+  
+   
+    
+        
+    #begen in 1987
+    week_data=week_data[week_data$Year %in% c(1987:2018),] 
+    
+    #create data frame for any quart of the years
+    week_data_a=  week_data[week_data$Year %in% c(1987:1994),]
+    week_data_b=  week_data[week_data$Year %in% c(1994:2002),]
+    week_data_c=  week_data[week_data$Year %in% c(2001:2010),]
+    week_data_d=  week_data[week_data$Year %in% c(2007:2018),]
+    
+
+
+```
+
+graphs of the ratio catch
+
+```{r}
+ 
+    
+    for (i in 1:length(sp_codeF)) {
+      
+      #make a single graph for any quart of the years
+      p1= ggplot(week_data_a, aes(x=Week, y=week_data_a[,sp_codeF[i]],color=Year )) +
+        geom_line()+
+        scale_colour_gradientn(colours=rainbow(4))+
+        facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
+        ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4))
+      
+      
+      p2=ggplot(week_data_b, aes(x=Week, y=week_data_b[,sp_codeF[i]],color=Year )) +
+        geom_line()+
+        scale_colour_gradientn(colours=rainbow(4))+
+        facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
+        ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4))
+      
+      p3=ggplot(week_data_c, aes(x=Week, y=week_data_c[,sp_codeF[i]],color=Year )) +
+        geom_line()+
+        scale_colour_gradientn(colours=rainbow(4))+
+        facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
+        ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4))
+      
+      p4=ggplot(week_data_d, aes(x=Week, y=week_data_d[,sp_codeF[i]],color=Year )) +
+        geom_line()+
+        scale_colour_gradientn(colours=rainbow(4))+
+        facet_grid(Year~.)+ggtitle(paste (sp_codeF[i],scientific_codeF[i],sep =" - "))+
+        ylab("Mean Catches Per Net")+scale_x_continuous(breaks = seq(1,53,by=4))
+      
+      
+      #ceate one graph included 4 graphs for any species
+  grid.arrange(p1, p3, p2, p4,ncol=2)
+      
+      #save the graphs - !!set the directory before use!!
+      #if saving without the "g" part, save just 1 of the 4, but in high resolution
+      #so it's better for papars. [could order them by myself after]
+        #order for saving
+        #g <- arrangeGrob(p1, p3, p2, p4, nrow=2) #generates g
+        g <- arrangeGrob( p4) #generates g
+        ggsave(file = paste (sp_codeF[i],"png",sep ="."),g)
+      
+    }#end for
+
+```
