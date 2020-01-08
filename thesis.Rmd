@@ -2256,10 +2256,7 @@ all_dataF = all_dataF %>% filter(Year<2018)
 #call to gam and AIC functions
 all_catchF_gam = GAM_models_mtc_sum(all_dataF,"Sum")
 aic_all_catchF = AIC_GAM_F(all_catchF_gam)
-y = aic_all_catchF %>% arrange(AIC)
-y = aic_all_catchF %>% lapply( function(x){
-  arrange(x,AIC)
-})
+
     
  par(mfrow = c(2,2))
   plot(  all_catchF_gam[[1]],se=TRUE,col = "blue")
@@ -2335,7 +2332,7 @@ grid.arrange(p1)
 
 
 
-#---GAM model for phenology of spcies--
+#---GAM models and AIC for phenology of spcies--
 For runing this chunk, need to run the first chunk of "phenology part" - uploud the data
 
 ```{r}
@@ -2379,7 +2376,8 @@ print(abondance_species[i])
 
 names(aic_species_list) = abondance_species
 aic_species_list = aic_species_list %>% lapply(function(x){
-  arrange(x,AIC)
+  arrange(x,AIC)%>% 
+  mutate(delta = AIC - first(AIC))
 })
 
 
@@ -2580,8 +2578,8 @@ write.csv(catch_exB, "prosseced data/num catch per year b size.CSV")
 #gam and AIC function
 ```{r}
 #remove "Sud" and "Sd", wich has just 6 years, not enough for modeling
-species_b = species_b[!species_b%in% c("Sud","Sja","SPH","Sd")]
-b_size_all = b_size_all %>%dplyr::filter(!species %in% c("Sud","Sja","SPH","Sd"))
+species_b = species_b[!species_b%in% c("Sud","Sja","SPH","Sd","Umo")]
+b_size_all = b_size_all %>%dplyr::filter(!species %in% c("Sud","Sja","SPH","Sd","Umo"))
 
 aic_bsize_list = list()
 
@@ -2623,20 +2621,14 @@ print(species_b[i])
  
 }#end for
 
-temp_species_b = species_b[!species_b %in% "Umo"]
+#temp_species_b = species_b[!species_b %in% "Umo"]
 names(aic_bsize_list) = temp_species_b
 
 aic_bsize_list = aic_bsize_list %>% lapply(function(x){
-  arrange(x,AIC)
+  arrange(x,AIC) %>% 
+  mutate(delta = AIC - first(AIC))
 })
   
-
-co_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+ s(Start_Time_hh, bs = "cr"), data = temp, family = tw)
-
- 
-   
-  
-   
 
 
 
@@ -2706,6 +2698,12 @@ ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/b s
 
 
 ``` 
+
+
+
+
+
+
 
 
 
