@@ -1126,7 +1126,7 @@ net_red_data = net_red_data %>%  dplyr:: filter(!is.na(mtc)) %>%
     group_by(Year) %>% summarise_all(.funs=mean) %>%
       dplyr::mutate("SST_anom" = SST - mean(SST)) %>%   dplyr::mutate("mtc_anom" = mtc - mean(mtc))
 
-  
+  library(ggpubr)
  
 
 #Corolation of SST by MTc -  mean yearly values,
@@ -1381,9 +1381,10 @@ ggplot(lag_3_r, aes(x=SST_anom ,y=mtc_anom, size=3))+
 1. GAM_models_mtc_sum: create list of gam models, with and without interactions
 
 input:
-  1. data_in = the data to make gam on
+  1. data_in = the data to make gam on, whith the columns:
+  Year, Month, Depth,Fisherman,Start_hh
   2. y_par - y axis paramater - mtc, Sum or species name, as character
-  3. tw_family - TRUE if I want the gam model to by in tweedie family
+  
   
   output:
   gam list with 4 gam models:
@@ -1392,6 +1393,7 @@ input:
     3.simp_int - as 1 with interactions
     4. co_int - as 2 with interactions
     
+
 2. AIC_GAM_F - create table of AIC for the model get inside
   
   input:
@@ -1399,8 +1401,30 @@ input:
     
   output:
     table with models names and AIC values
+ 
+ 
+3. GAMM_auto_mtc_sum
+create list of gamm models, with and without autocorrelation
+
+input:
+  1. data_in = the data to make gamm on, whith the columns:
+  Year, Month, Depth,Fisherman,Start_hh, DateTime
+  
+  2. y_par - y axis paramater - mtc, Sum or species name, as character
+ 
+ output:
+  gamm list with 8 gam models: simp and co are withouth autocorrelation, and all the others are with autocorrelation of Net_number by month - autocorrealtion within any month. the number is about p. (simp_1 -> p=1)
+  simp - by Year, Depth and Month
+  simp_1
+  simp_3
+  co - with Fisherman and hour of start also
+  co_1
+  co_3
+  co_5
+
+   
     
-3. AIC_GAM_auto - create table of AIC for the autocorelation model get inside
+4. AIC_GAM_auto - create table of AIC for the autocorelation model get inside
   
   input:
     gamm list, the output of gamm function, 
@@ -1452,10 +1476,72 @@ AIC_GAM_F=function(gam_fun_out){
   AIC_v=c(AIC_v,AIC_df_n)
   }
   AIC_df$AIC=AIC_v
+  
+  AIC_df = AIC_df %>% arrange(AIC) %>% 
+  mutate(delta = AIC - first(AIC))
+  
   return(AIC_df)
 }
 
+
+
 #3
+GAMM_auto_mtc_sum=function(data_in,y_par){
+  
+  #create Net_number and YearMonth columns for the autocorrelation
+  temp = data_in %>% dplyr::select(y_par,Year, Month, Depth,Fisherman,Start_hh, DateTime )
+  temp = as.data.frame(temp)
+  temp = temp %>% arrange(DateTime) %>% mutate(Net_num = c(1:nrow(temp))) %>% dplyr::mutate(YearMonth = paste(Year, Month, sep = "/"))
+  temp$YearMonth = as.Date(as.yearmon(temp$YearMonth,"%Y/%m"))
+  
+  
+    #simple model - by Year Depth and Month
+   simp <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12), data = temp)
+   
+  print("simp")
+  
+   simp_1 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = temp)
+  
+  print("simp_1")
+  
+  simp_3 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
+  
+  print("simp_3")
+  
+  simp_5 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=5), data = temp)
+  
+  print("simp_5")
+  
+  co <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+  
+  print("co")
+  
+  co_1 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = temp)
+  
+  print("co_1")
+  
+  co_3 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
+  
+  print("co_3")
+  
+  co_5 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=5), data = temp)
+  
+  print("co_5")
+ 
+  
+  #create list of model outputs
+  gamm_list=list(simp, simp_1, simp_3, simp_5, co, co_1, co_3, co_5)
+  
+  names(gamm_list)=c("simp", "simp_1", "simp_3", "simp_5", "co", "co_1", "co_3", "co_5")
+  
+  return(gamm_list)
+  }#end GAMm_auto_list function
+
+
+
+
+
+#4
 AIC_GAM_auto=function(gam_fun_out){
   AIC_df=data.frame(model_name=names(gam_fun_out))
   AIC_v=c()
@@ -1464,6 +1550,10 @@ AIC_GAM_auto=function(gam_fun_out){
   AIC_v=c(AIC_v,AIC_df_n)
   }
   AIC_df$AIC=AIC_v
+  
+  AIC_df = AIC_df %>% arrange(AIC) %>% 
+  mutate(delta = AIC - first(AIC))
+  
   return(AIC_df)
 }
 ```
@@ -1488,7 +1578,7 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 #get out rows without mtc and depth deepre than 100 m 
  # start the  in 1991 [year],no gamberi net,, put date_num column
 
- net_red_mtc = net_red_mtc %>% filter(Year > 1990)  %>% dplyr::select(-Depth) %>% rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc)) %>% dplyr::filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% mutate(Date_num = as.numeric(Date))%>% filter(Year>1999)
+ net_red_mtc = net_red_mtc %>% filter(Year > 1990)  %>% dplyr::select(-Depth) %>% rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc)) %>% dplyr::filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% mutate(Date_num = as.numeric(Date))%>% filter(Year>1990)
  
  net_mediter_mtc = net_mediter_mtc %>% filter(Year > 1990)%>% dplyr::select(-Depth) %>%
    rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% mutate(Date_num = as.numeric(Date))
@@ -1518,6 +1608,18 @@ aic_med_mtc = AIC_GAM_F(med_mtc_gam)
 
 all_mtc_gam = GAM_models_mtc_sum(net_all_data,"mtc")
 aic_red_mtc = AIC_GAM_F(all_mtc_gam)
+
+
+#---call to autocorrelation gamm model and AIC - the function does'nt work, but work wiht handy running
+red_catch_gamm = GAMM_auto_mtc_sum(net_red_mtc,"mtc")
+aic_red_catch = AIC_GAM_auto(red_catch_gamm)
+
+
+med_catch_gamm = GAMM_auto_mtc_sum(net_medietr_mtc,"mtc")
+aic_med_catch = AIC_GAM_auto(med_catch_gamm)
+
+all_catch_gamm = GAMM_auto_mtc_sum(net_all_data,"mtc")
+aic_all_catch = AIC_GAM_auto(all_catch_gamm)
     
 
 ```
@@ -1870,7 +1972,7 @@ net_mediter_mtc = net_mediter_mtc %>% filter(Year<2018)
 
  
  
-  #call the function on Sum  gams
+  #------call the function on Sum  gams
 red_catch_gam = GAM_models_mtc_sum(net_red_mtc,"Sum")
 aic_red_catch = AIC_GAM_F(red_catch_gam)
 
@@ -1890,7 +1992,18 @@ aic_all_catch = AIC_GAM_F(all_catch_gam)
  par(mfrow = c(2,2))
   plot(  all_catch_gam[[1]],se=TRUE,col = "blue") 
  
+  
+  
+   #------call the autocorrelation function on Sum  gamms - whith autocorrelation
+  #- the function does'nt work, but work wiht handy running
+red_catch_gamm = GAMM_auto_mtc_sum(net_red_mtc,"Sum")
+aic_red_catch = AIC_GAM_auto(red_catch_gamm)
 
+
+med_catch_gamm = GAMM_auto_mtc_sum(net_medietr_mtc,"Sum")
+aic_med_catch = AIC_GAM_auto(med_catch_gamm)
+
+  
 
 
  #net cath model
@@ -1919,6 +2032,7 @@ aic_all_catch = AIC_GAM_F(all_catch_gam)
    
     red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_red_mtc)
     
+    
      summary(red_catch_gam)
      par(mfrow = c(2,2)) 
   gam.check(red_catch_gam)
@@ -1939,8 +2053,12 @@ plot( sm(mediter_catch_gam, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "bl
 
 plot( sm(red_catch_gam, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Red Sea species")
 
-  
- #-----interaction medels and graphs-----
+```
+
+
+ #-----biomass model - interaction medels and graphs-----
+```{r}
+
 
 # catch interaction model and graph
    temp = net_all_data %>% dplyr::select(Year, Month, Depth, Sum ) 
@@ -2096,7 +2214,6 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
     p1
 
 grid.arrange(p1)
-
 ```
 
 
@@ -2261,7 +2378,11 @@ aic_all_catchF = AIC_GAM_F(all_catchF_gam)
  par(mfrow = c(2,2))
   plot(  all_catchF_gam[[1]],se=TRUE,col = "blue")
   
+ #call to auotcorrelation gamm and AIC functions
+  #- the function does'nt work, but work wiht handy running
   
+all_catchF_gamm = GAMM_auto_mtc_sum(all_dataF,"Sum")
+aic_all_catchF = AIC_GAM_auto(all_catchF_gamm)
 
 
  all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = all_dataF )
