@@ -2372,7 +2372,7 @@ aic_species_list = aic_species_list %>% lapply(function(x){
   mutate(delta = AIC - first(AIC))
 })
 
-
+lapply(mylist, function(x) write.table( data.frame(x), 'test.csv'  , append= T, sep=',' ))
 
 
 ```
