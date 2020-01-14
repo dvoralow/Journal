@@ -1083,7 +1083,7 @@ input:
     gam list, the output of gam function
     
   output:
-    table with models names and AIC values
+    table with models names and AIC values, from smallest to largest, with delta column
  
  
 3. GAMM_auto_mtc_sum
@@ -1153,7 +1153,8 @@ GAM_models_mtc_sum=function(data_in,y_par){
 
 #2
 AIC_GAM_F=function(gam_fun_out){
-  AIC_df=data.frame(model_name=names(gam_fun_out))
+#Ittay part... just took it as is
+    AIC_df=data.frame(model_name=names(gam_fun_out))
   AIC_v=c()
   for(i in 1:length(gam_fun_out)){
   AIC_df_n=AIC(gam_fun_out[[i]])
@@ -1161,6 +1162,7 @@ AIC_GAM_F=function(gam_fun_out){
   }
   AIC_df$AIC=AIC_v
   
+  #arrange and write the delta values
   AIC_df = AIC_df %>% arrange(AIC) %>% 
   mutate(delta = AIC - first(AIC))
   
@@ -1176,8 +1178,8 @@ GAMM_auto_mtc_sum=function(net_data,y_par){
   temp = net_data
   temp = temp %>% dplyr::select(y_par,Year, Month, Depth,Fisherman,Start_hh, DateTime )
   temp = as.data.frame(temp)
-  temp = temp %>% arrange(DateTime) %>% mutate(Net_num = c(1:nrow(temp))) %>% dplyr::mutate(YearMonth = paste(Year, Month, sep = "/"))
-  temp$YearMonth = as.Date(as.yearmon(temp$YearMonth,"%Y/%m"))
+  # temp = temp %>% arrange(DateTime) %>% mutate(Net_num = c(1:nrow(temp))) %>% dplyr::mutate(YearMonth = paste(Year, Month, sep = "/"))
+  # temp$YearMonth = as.Date(as.yearmon(temp$YearMonth,"%Y/%m"))
   
     simp <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12), data = temp)
   
@@ -1246,7 +1248,10 @@ net_all_data = read.csv("prosseced data/net_mtc_data.CSV")
 
 #get out rows without mtc, and depth deeper then 100 m or less than 20
 net_all_data = net_all_data %>% filter(Year > 1990) %>% dplyr::select(-Depth) %>%
-   rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% mutate(Date_num = as.numeric(Date))
+   rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% mutate(Date_num = as.numeric(Date))  %>% arrange(DateTime) 
+net_all_data = net_all_data %>% mutate(Net_num = c(1:nrow(net_all_data))) %>% dplyr::mutate(YearMonth = paste(Year, Month, sep = "/"))
+net_all_data$YearMonth = as.Date(as.yearmon(net_all_data$YearMonth,"%Y/%m"))
+
 #---seperate by origin---
 
 #upload mediter and red sea data.
@@ -1256,12 +1261,17 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 #get out rows without mtc and depth deepre than 100 m 
  # start the  in 1991 [year],no gamberi net,, put date_num column
 
- net_red_mtc = net_red_mtc %>% filter(Year > 1990)  %>% dplyr::select(-Depth) %>% rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc)) %>% dplyr::filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% mutate(Date_num = as.numeric(Date))%>% filter(Year>1990)
+ net_red_mtc = net_red_mtc %>% filter(Year > 1990)  %>% dplyr::select(-Depth) %>% rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc)) %>% dplyr::filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% mutate(Date_num = as.numeric(Date))  %>% arrange(DateTime)
+ net_red_mtc = net_red_mtc %>% mutate(Net_num = c(1:nrow(net_red_mtc))) %>% dplyr::mutate(YearMonth = paste(Year, Month, sep = "/"))
+ net_red_mtc$YearMonth = as.Date(as.yearmon(net_red_mtc$YearMonth,"%Y/%m"))
  
  net_mediter_mtc = net_mediter_mtc %>% filter(Year > 1990)%>% dplyr::select(-Depth) %>%
-   rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% mutate(Date_num = as.numeric(Date))
+   rename(Depth = depth_meter) %>%  dplyr:: filter(!is.na(mtc))  %>% dplyr::filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% mutate(Date_num = as.numeric(Date))  %>% arrange(DateTime) 
+ net_mediter_mtc = net_mediter_mtc%>% mutate(Net_num = c(1:nrow(net_mediter_mtc))) %>% dplyr::mutate(YearMonth = paste(Year, Month, sep = "/"))
 
-
+ net_mediter_mtc$YearMonth = as.Date(as.yearmon(net_mediter_mtc$YearMonth,"%Y/%m"))
+ 
+ 
 ```
 
 
@@ -1488,13 +1498,16 @@ write.csv(aic_mtc,"prosseced data/aic_mtc_gamm.CSV")
 ```{r}
 
  #all data gam model
+gam_all = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+ s(Start_hh, bs = "cr")+s(Depth)+ (Fisherman),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = net_all_data)
 
-
-gam_all = gam(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
-                             s(Month, bs = "cc", k=12),data =net_all_data)
+gam_all = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+                             s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=1),data =net_all_data)
+#
+#gam_all = gam(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+                           #  s(Month, bs = "cc", k=12),data =net_all_data)
 #+ (Fisherman)+ s(Start_hh, bs = "cr")+s(Date_num, bs = "gp")
 
-summary(gam_all)
+summary(gam_all$gam)
     par(mfrow = c(2,2))
       gam.check(gam_all)
 
@@ -1504,48 +1517,52 @@ par(mfrow = c(2,2))
 plot(gam_all,se=TRUE,col = "blue")
 
 
-  mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")   +s(Month, bs = "cc", k=12),data =net_mediter_mtc)
+mediter_gam_month = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
+
+ # mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")   +s(Month, bs = "cc", k=12),data =net_mediter_mtc)
   
   # + (Fisherman)+ s(Start_hh, bs = "cr")  +   s(Date_num, bs = "gp")  
                         
   
-  summary(mediter_gam_month)
+  summary(mediter_gam_month$gam)
     par(mfrow = c(2,2))
-      gam.check(mediter_gam_month)
+      gam.check(mediter_gam_month$gam)
   
 par(mfrow = c(2,2)) 
-plot(mediter_gam_month,se=TRUE,col = "blue")
+plot(mediter_gam_month$gam,se=TRUE,col = "blue")
    # net_red_mtc = net_red_mtc %>% filter(Year>1999)
 
+red_gam_month = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
   
-  red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")   +s(Month, bs = "cc", k=12) ,data = net_red_mtc,method = "REML")
+
+ # red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")   +s(Month, bs = "cc", k=12) ,data = net_red_mtc,method = "REML")
 
   
   #autocorrelation model
     #red_gam_month =  gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth), correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp) 
 #(Fisherman)+ s(Start_hh, bs = "cr")+s(Date_num, bs = "gp")  + 
   
-  summary(red_gam_month)
+  summary(red_gam_month$gam)
     par(mfrow = c(2,2))
-      gam.check(red_gam_month)
+      gam.check(red_gam_month$gam)
       
       par(mfrow = c(2,2)) 
-plot(red_gam_month,se=TRUE,col = "blue")
+plot(red_gam_month$gam,se=TRUE,col = "blue")
   
   #---------------nice graphs for thesis-------------
-  gam_all = getViz(gam_all)
-mediter_gam_month <- getViz(mediter_gam_month)
-red_gam_month = getViz(red_gam_month)
+  gam_all = getViz(gam_all$gam)
+mediter_gam_month <- getViz(mediter_gam_month$gam)
+red_gam_month = getViz(red_gam_month$gam)
 #red_gam_month = getViz(red_gam_month$gam)
 
-plot( sm(red_gam_month, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 1))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2))  +ggtitle("Red Sea species")
+plot( sm(red_gam_month, 2) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 1))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2))  +ggtitle("MTC model - Red Sea species")
 
 
-plot( sm(gam_all, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole known origin species")
+plot( sm(gam_all, 1) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole known origin species")
 
 
 
-plot( sm(mediter_gam_month, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("mediteranian species")
+plot( sm(mediter_gam_month, 2) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("MTC model - mediteranian species")
 
 
 
@@ -1791,12 +1808,9 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
 
 
 
-#----biomass model - sum of catch and by month, yaer and depth-------
+#----biomass model - sum of catch and by month, yaer and depth for Med and Red. all is in phnology part-------
 ```{r}
 #create Sum columns - sum of the catch of any net
-tempor_sum = net_all_data %>% dplyr::select(Aal:WHT) 
- catch_net_sum = rowSums(tempor_sum)
- net_all_data = net_all_data %>% dplyr::mutate(Sum = cbind(catch_net_sum)) 
 
 tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT) 
  catch_net_sum = rowSums(tempor_sum)
@@ -1807,9 +1821,9 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
  net_red_mtc = net_red_mtc %>% dplyr::mutate(Sum = cbind(catch_net_sum)) 
  
   #the chatch of 2018 is problematic - half a year, effecting the model
- net_all_data = net_all_data %>% filter(Year<2018)
 net_mediter_mtc = net_mediter_mtc %>% filter(Year<2018)
  net_red_mtc = net_red_mtc %>% filter(Year<2018)
+ #%>% filter(Year>1999)
  
 
  
@@ -1845,52 +1859,51 @@ row.names(aic_med_catch) = c("med","2","3","4","5","6")
 
 aic_catch = rbind(aic_red_catch,aic_med_catch)
 
- #net cath model
- all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_all_data)
- 
- summary(all_catch_gam)
-  gam.check(all_catch_gam)
-  
-  par(mfrow = c(2,2)) 
-  plot(  all_catch_gam,se=TRUE,col = "blue")
-    title("whole known origin species catch by month and year",line = -2, outer=TRUE)
 
-  mediter_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_mediter_mtc )
+
+    
+mediter_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
+
+#without interaction
+mediter_catch_gam = gamm(Sum ~ s(Month, bs = "cc", k=12) + s(Year, bs = "cr")  +s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
+    
+  #mediter_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_mediter_mtc )
   
   #better without them:
   # +(Fisherman)+ s(Start_hh, bs = "cr")  + s(Date_num, bs = "gp")
   
-  summary(mediter_catch_gam)
-  gam.check(mediter_catch_gam)
+  summary(mediter_catch_gam$gam)
+  gam.check(mediter_catch_gam$gam)
   
   
   par(mfrow = c(2,2)) 
-  plot(  mediter_catch_gam,se=TRUE,col = "blue")
+  plot(  mediter_catch_gam$gam,se=TRUE,col = "blue")
     title("Mediteranean species catch by month And year",line = -2, outer=TRUE)
 
+   red_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
    
-    red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_red_mtc)
+   #without interaction
+    red_catch_gam = gamm(Sum ~ s(Month, bs = "cc", k=12) + s(Year, bs = "cr")  +s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
+   
+    #red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_red_mtc)
     
     
-     summary(red_catch_gam)
+     summary(red_catch_gam$gam)
      par(mfrow = c(2,2)) 
-  gam.check(red_catch_gam)
+  gam.check(red_catch_gam$gam)
   
   par(mfrow = c(2,2)) 
-  plot(  red_catch_gam,se=TRUE,col = "blue")
+  plot(  red_catch_gam$gam,se=TRUE,col = "blue")
   title("Red species catch by month and year",line = -2, outer=TRUE)
   
 #nice plots  
+mediter_catch_gam <- getViz(mediter_catch_gam$gam)
+red_catch_gam = getViz(red_catch_gam$gam)
 
-  all_catch_gam = getViz(all_catch_gam)
-mediter_catch_gam <- getViz(mediter_catch_gam)
-red_catch_gam = getViz(red_catch_gam)
-
-plot( sm(all_catch_gam, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole known origin species")
  
-plot( sm(mediter_catch_gam, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Mediterranean species")
+plot( sm(mediter_catch_gam, 2) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Biomass - Mediterranean species")
 
-plot( sm(red_catch_gam, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Red Sea species")
+plot( sm(red_catch_gam, 2) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Biomass - Red Sea species")
 
 ```
 
@@ -2161,7 +2174,8 @@ all_dataF = read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAs
  scientific_namesF = scientific_namesF %>% dplyr:: filter(Sp_code != "BOX") %>% dplyr::filter(Sp_code != "FIS") %>% dplyr::filter(Sp_code != "SPL")
  
  # set NA to FALSE and remove rows with gamberi nets, the columns "fish (FIS)", "general box (BOX)", Speciel fish boxes (SPL), start from 1991, remove depth deeper than 100 m, and stay with 1 depth column, called "Depth"
-  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL, -loc_DEPTH, -Depth) %>% filter(Year>1990) %>% rename(Depth = depth_meter) %>% filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE)
+  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL, -loc_DEPTH, -Depth) %>% filter(Year>1990) %>% rename(Depth = depth_meter) %>% filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% arrange(DateTime) 
+ all_dataF = all_dataF%>% mutate(Net_num = c(1:nrow(all_dataF))) %>% dplyr::mutate(YearMonth = paste(Year, Month, sep = "/"))
   
   
  #cerate species names and code vectors
@@ -2185,7 +2199,7 @@ all_dataF = read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAs
  catch_ex =all_dataF %>% dplyr::select(Year, Aal:DLS) %>% group_by(Year) %>% 
   summarize_all(.fun = function(x) sum(x>0,na.rm = T)) %>% gather(Species, Catch, Aal:DLS, factor_key=TRUE) %>% spread(Year, Catch)
  
-write.csv(catch_ex, file = "prosseced data/sum of nets for species for year.csv")
+#write.csv(catch_ex, file = "prosseced data/sum of nets for species for year.csv")
 
 #table of the species abondance enough for model
 catch_sum = read.csv("prosseced data/years for species.csv")
@@ -2229,18 +2243,19 @@ aic_catch = rbind(aic_catch,aic_all_catchF)
 
 write.csv(aic_catch,"prosseced data/aic_catch_gamm.CSV")
 
+all_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+ s(Start_hh, bs = "cr")+s(Depth)+ (Fisherman),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = all_dataF)
 
- all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = all_dataF )
- summary(all_catch_gam)
-  gam.check(all_catch_gam)
+ #all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = all_dataF )
+ summary(all_catch_gam$gam)
+  gam.check(all_catch_gam$gam)
   
   par(mfrow = c(2,2)) 
-  plot(  all_catch_gam,se=TRUE,col = "blue")
+  plot(  all_catch_gam$gam,se=TRUE,col = "blue")
     title("whole fish species catch by month and year",line = -2, outer=TRUE)
 
-    all_catch_gam = getViz(all_catch_gam)
+    all_catch_gam = getViz(all_catch_gam$gam)
 
-plot( sm(all_catch_gam, 1) )+ l_ciPoly(fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole fish species")
+plot( sm(all_catch_gam, 2) )+ l_ciPoly(level = 0.95 ,fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 3))+labs(y ="relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("whole fish species")
 
 
 # interaction model and graph
@@ -2307,34 +2322,45 @@ aic_species_list = list()
 for (i in 1:length(abondance_species))
 {
 
-   temp = all_dataF %>% dplyr::select(abondance_species[i], Year, Month, Depth, Fisherman,Start_hh ) %>% filter(Year >= catch_sum$Year_S[i] )  %>% filter(Year <= catch_sum$Year_E[i] )
+   temp = all_dataF %>% dplyr::select(abondance_species[i], Year, Month, Depth, Fisherman,Start_hh,Net_num,YearMonth   ) %>% filter(Year >= catch_sum$Year_S[i] )  %>% filter(Year <= catch_sum$Year_E[i] )
   
 temp = as.data.frame(temp)
    
 print(abondance_species[i])
-    simp <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12), data = temp, family = tw)
-  
-  print(simp)
-   
-  co <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp, family = tw)
-  
-  print(co)
-  
-  simp_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth), data = temp, family = tw)
-  
-  print(simp_int)
-  
-  co_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp, family = tw)
 
-  print(co_int)
+
+  simp <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12), data = temp)
   
-  #create list of model outputs
-   species_gam_list =list(simp, co, simp_int, co_int)
- # paste("gam",abondance_species[i],"list",sep = "_") =list(simp, co, simp_int, co_int)
+   print(simp$gam)
+    
+  simp_3 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
   
-  names(species_gam_list)=c("simp","co","simp_int","co_int")
+ print(simp_3$gam)
   
-  aic_species = AIC_GAM_F(species_gam_list)
+    simp_int = gamm(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
+  
+    print(simp_int$gam)
+  
+   co <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+  
+   print(co$gam)
+   
+   
+  co_3 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
+  
+  print(co_3$gam)
+  
+  co_int = gamm(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=2), data = temp)
+
+    
+  
+ #create list of model outputs
+  species_gamm_list=list(simp, simp_3, simp_int, co, co_3, co_int)
+  
+  names(species_gamm_list)=c("simp", "simp_3", "simp_int", "co", "co_3", "co_int")
+  
+  
+  aic_species = AIC_GAM_auto(species_gamm_list)
 
     aic_species_list[[i]] =aic_species
   
@@ -2350,7 +2376,21 @@ aic_species_list = aic_species_list %>% lapply(function(x){
 
 
 ```
+simp <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12), data = temp, family = tw)
+  
+  print(simp)
+   
+  co <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp, family = tw)
+  
+  print(co)
+  
+  simp_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth), data = temp, family = tw)
+  
+  print(simp_int)
+  
+  co_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp, family = tw)
 
+  print(co_int)
 
 
 #--loop - create interaction graphs for the whole species
