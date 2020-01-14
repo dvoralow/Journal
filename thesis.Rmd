@@ -28,6 +28,7 @@ library(mgcViz)
 library(curl)
 library(DataCombine)
 library(nlme)
+library(ggpubr)
 
 
 ```
@@ -138,7 +139,7 @@ end chunk
 #the old code for this function is in "mtc_function", I dont think its useful
 annual_catch=function(the_big_data,code){
     
-    filter_data=dplyr::select(all_data,Year,code)
+    filter_data=dplyr::select(the_big_data,Year,code)
     filter_data=aggregate.data.frame(filter_data,list(filter_data$Year),FUN = sum,drop=F)
     filter_data=dplyr:: select(filter_data,Year=Group.1,code ) 
     return(filter_data)
@@ -750,7 +751,7 @@ month_red_mtc=cbind(month_red_mtc,"Month"=c(rep(1:12,each=(nrow(month_red_mtc))/
 ```
 
 
-#---season graphs for thesis [8 graphs]
+#---MTC by Year - season graphs  [8 graphs]
 ```{r}
 
 formula <- y ~ poly(x, 2, raw = TRUE)
@@ -966,141 +967,7 @@ grid.arrange(p1,p2,p3,p4, ncol = 2)
 
 
 
-#---- graphs for the 4 season together [2 graphs]--
-```{r}
- net_mediter_data = read.csv("prosseced data/mediter_net_mtc.CSV")
-    net_red_data = read.csv("prosseced data/red_net_mtc.CSV")
 
-#Mediterranian
-ggplot(net_mediter_data, aes(x=SST ,y=mtc,colour=Season, size=3))+
-  geom_point(size = 0.5)+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
-scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
-  scale_y_continuous(breaks=seq(16,28, by =0.5))+
- # ggtitle("Mediter")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
-
-
-#red Sea
-ggplot(net_red_data, aes(x=SST ,y=mtc,colour=Season, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
- scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
-  scale_y_continuous(breaks=seq(23,28, by =0.25))+
- # ggtitle("Red Sea")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = FALSE, size = 1.5)
-  
-
-
-#for any season separatly
-ggplot(net_mediter_data[net_mediter_data$Season=="winter",], aes(x=SST ,y=mtc, size=3 ))+
-  geom_point(color = "green", size = 1.5)+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
-scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
-  scale_y_continuous(breaks=seq(16,28, by =0.5))+
-  ggtitle("Mediter - winter")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
-
-ggplot(net_mediter_data[net_mediter_data$Season=="spring",], aes(x=SST ,y=mtc, size=3 ))+
-  geom_point(color = "green", size = 1.5)+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
-scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
-  scale_y_continuous(breaks=seq(16,28, by =0.5))+
- ggtitle("Mediter - spring")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
-
-ggplot(net_mediter_data[net_mediter_data$Season=="autumn",], aes(x=SST ,y=mtc, size=3 ))+
-  geom_point(color = "green", size = 1.5)+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
-scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
-  scale_y_continuous(breaks=seq(16,28, by =0.5))+
- ggtitle("Mediter - autumn")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
-
-ggplot(net_mediter_data[net_mediter_data$Season=="summer",], aes(x=SST ,y=mtc, size=3 ))+
-  geom_point(color = "green", size = 1.5)+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
-scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
-  scale_y_continuous(breaks=seq(16,28, by =0.5))+
-  ggtitle("Mediter - summer")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
-
-
-#red sea
-ggplot(net_red_data[net_red_data$Season=="winter",], aes(x=SST ,y=mtc, size=3 ))+
-  geom_point(color = "green", size = 1.5)+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
-scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
-  scale_y_continuous(breaks=seq(16,28, by =0.5))+
-  ggtitle("red - winter")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
-
-ggplot(net_red_data[net_red_data$Season=="spring",], aes(x=SST ,y=mtc, size=3 ))+
-  geom_point(color = "green", size = 1.5)+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
-scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
-  scale_y_continuous(breaks=seq(16,28, by =0.5))+
- ggtitle("red - spring")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
-
-ggplot(net_red_data[net_red_data$Season=="autumn",], aes(x=SST ,y=mtc, size=3 ))+
-  geom_point(color = "green", size = 1.5)+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
-scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
-  scale_y_continuous(breaks=seq(16,28, by =0.5))+
- ggtitle("red - autumn")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
-
-ggplot(net_red_data[net_red_data$Season=="summer",], aes(x=SST ,y=mtc, size=3 ))+
-  geom_point(color = "green", size = 1.5)+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
-scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
-  scale_y_continuous(breaks=seq(16,28, by =0.5))+
-  ggtitle("red - summer")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
-
-
-```
 
 
 #--mtc by SST graphs
@@ -1126,8 +993,8 @@ net_red_data = net_red_data %>%  dplyr:: filter(!is.na(mtc)) %>%
     group_by(Year) %>% summarise_all(.funs=mean) %>%
       dplyr::mutate("SST_anom" = SST - mean(SST)) %>%   dplyr::mutate("mtc_anom" = mtc - mean(mtc))
 
-  library(ggpubr)
- 
+
+   
 
 #Corolation of SST by MTc -  mean yearly values,
 
@@ -1185,190 +1052,6 @@ ggplot(anom_red, aes(x=SST_anom ,y=mtc_anom, size=3))+
   stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = T, size = 1.5, color = "red") 
 
-
-#create data with lag between MTC and SST
-  #Mediterranean Sea
-lag_1_sst_m = anom_med %>% select(Year_lag = Year, SST, SST_anom) %>% filter(Year_lag != 2018)
-lag_2_sst_m = lag_1_sst_m %>% select(Year_lag, SST, SST_anom) %>% filter(Year_lag != 2017)
-lag_3_sst_m = lag_2_sst_m %>% select(Year_lag, SST, SST_anom) %>% filter(Year_lag != 2016)
-
-lag_1_m =anom_med %>% select(Year, mtc, mtc_anom) %>% filter(Year != 1991) %>% cbind(lag_1_sst_m)
-lag_2_m =lag_1_m %>% select(Year, mtc, mtc_anom) %>% filter(Year != 1992)%>% cbind(lag_2_sst_m)
-lag_3_m =lag_2_m %>% select(Year, mtc, mtc_anom) %>% filter(Year != 1993)%>% cbind(lag_3_sst_m)
-
-  #red Sea
-lag_1_sst_r = anom_red %>% select(Year_lag = Year, SST, SST_anom) %>% filter(Year_lag != 2018)
-lag_2_sst_r = lag_1_sst_r %>% select(Year_lag, SST, SST_anom) %>% filter(Year_lag != 2017)
-lag_3_sst_r = lag_2_sst_r %>% select(Year_lag, SST, SST_anom) %>% filter(Year_lag != 2016)
-
-lag_1_r =anom_red %>% select(Year, mtc, mtc_anom) %>% filter(Year != 2001) %>% cbind(lag_1_sst_r)
-lag_2_r =lag_1_r %>% select(Year, mtc, mtc_anom) %>% filter(Year != 2002)%>% cbind(lag_2_sst_r)
-lag_3_r =lag_2_r %>% select(Year, mtc, mtc_anom) %>% filter(Year != 2003)%>% cbind(lag_3_sst_r)
-
-
-#1-3 lag mean value graphs
-  #1
-  ggplot(lag_1_m, aes(x=SST ,y=mtc, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
-  #scale_y_continuous (breaks=seq(18,23, by = 0.5))+
-  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
-  ggtitle("Mediterranean Sea species - 1 year lag, MTC by SST")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = T, size = 1.5) 
-
-
-ggplot(lag_1_r, aes(x=SST ,y=mtc, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(19,26, by = 1))+ 
-  scale_y_continuous (breaks=seq(25,28, by = 0.5))+
-  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
-  ggtitle("Red Sea species- 1 year lag, MTC by SST")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
-
-
- #2
-  ggplot(lag_2_m, aes(x=SST ,y=mtc, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
-  #scale_y_continuous (breaks=seq(18,23, by = 0.5))+
-  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
-  ggtitle("Mediterranean Sea species - 2 year lag, MTC by SST")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = T, size = 1.5) 
-
-
-ggplot(lag_2_r, aes(x=SST ,y=mtc, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(19,26, by = 1))+ 
-  scale_y_continuous (breaks=seq(25,28, by = 0.5))+
-  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
-  ggtitle("Red Sea species- 2 year lag, MTC by SST")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
-
- #3
-  ggplot(lag_3_m, aes(x=SST ,y=mtc, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
-  #scale_y_continuous (breaks=seq(18,23, by = 0.5))+
-  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
-  ggtitle("Mediterranean Sea species - 3 year lag, MTC by SST")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = T, size = 1.5) 
-
-
-ggplot(lag_3_r, aes(x=SST ,y=mtc, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC")+#axis text
- scale_x_continuous (breaks=seq(19,26, by = 1))+ 
-  scale_y_continuous (breaks=seq(25,28, by = 0.5))+
-  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
-  ggtitle("Red Sea species- 3 year lag, MTC by SST")+
-  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
-
-
-
-
-
-
-#1-3 lag anomaly value graphs
-  #1
-ggplot(lag_1_m, aes(x=SST_anom ,y=mtc_anom, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC anomaly", x = "SST anomaly")+#axis text
- #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
-  #scale_y_continuous (breaks=seq(18,23, by = 0.5))+
-  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
-  ggtitle("Mediterranean Sea species - 1 year lag, MTC anomaly by SST anomaly")+
-  stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = T, size = 1.5) 
-
-
-ggplot(lag_1_r, aes(x=SST_anom ,y=mtc_anom, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC anomaly", x = "SST anomaly")+#axis text
- #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
-  #scale_y_continuous (breaks=seq(25,28, by = 0.5))+
-  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
-  ggtitle("Red Sea species - 1 year lag, MTC anomaly by SST anomaly")+
-  stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
-
-  #2
-ggplot(lag_2_m, aes(x=SST_anom ,y=mtc_anom, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC anomaly", x = "SST anomaly")+#axis text
- #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
-  #scale_y_continuous (breaks=seq(18,23, by = 0.5))+
-  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
-  ggtitle("Mediterranean Sea species - 2 year lag, MTC anomaly by SST anomaly")+
-  stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = T, size = 1.5) 
-
-
-ggplot(lag_2_r, aes(x=SST_anom ,y=mtc_anom, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC anomaly", x = "SST anomaly")+#axis text
- #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
-  #scale_y_continuous (breaks=seq(25,28, by = 0.5))+
-  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
-  ggtitle("Red Sea species - 2 year lag, MTC anomaly by SST anomaly")+
-  stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
-
-#3
-ggplot(lag_3_m, aes(x=SST_anom ,y=mtc_anom, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC anomaly", x = "SST anomaly")+#axis text
- #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
-  #scale_y_continuous (breaks=seq(18,23, by = 0.5))+
-  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
-  ggtitle("Mediterranean Sea species - 3 year lag, MTC anomaly by SST anomaly")+
-  stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = T, size = 1.5) 
-
-
-ggplot(lag_3_r, aes(x=SST_anom ,y=mtc_anom, size=3))+
-  geom_point()+
-    scale_size(guide = 'none')+#no legend to the "size"
-  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
-  labs(y ="MTC anomaly", x = "SST anomaly")+#axis text
- #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
-  #scale_y_continuous (breaks=seq(25,28, by = 0.5))+
-  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
-  ggtitle("Red Sea species - 3 year lag, MTC anomaly by SST anomaly")+
-  stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
-              method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
 
 ```
 
@@ -1438,7 +1121,8 @@ input:
 #1
 GAM_models_mtc_sum=function(data_in,y_par){
   
-  temp = data_in %>% dplyr::select(y_par,Year, Month, Depth,Fisherman,Start_hh )
+  temp = data_in
+  temp = temp %>% dplyr::select(y_par,Year, Month, Depth,Fisherman,Start_hh )
   temp = as.data.frame(temp)
   
   
@@ -1486,53 +1170,45 @@ AIC_GAM_F=function(gam_fun_out){
 
 
 #3
-GAMM_auto_mtc_sum=function(data_in,y_par){
+GAMM_auto_mtc_sum=function(net_data,y_par){
   
   #create Net_number and YearMonth columns for the autocorrelation
-  temp = data_in %>% dplyr::select(y_par,Year, Month, Depth,Fisherman,Start_hh, DateTime )
+  temp = net_data
+  temp = temp %>% dplyr::select(y_par,Year, Month, Depth,Fisherman,Start_hh, DateTime )
   temp = as.data.frame(temp)
   temp = temp %>% arrange(DateTime) %>% mutate(Net_num = c(1:nrow(temp))) %>% dplyr::mutate(YearMonth = paste(Year, Month, sep = "/"))
   temp$YearMonth = as.Date(as.yearmon(temp$YearMonth,"%Y/%m"))
   
+    simp <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12), data = temp)
   
-    #simple model - by Year Depth and Month
-   simp <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12), data = temp)
-   
-  print("simp")
-  
-   simp_1 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = temp)
-  
-  print("simp_1")
-  
+    summary(simp$gam)
+    
   simp_3 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
   
-  print("simp_3")
+  summary(simp_3$gam)
   
-  simp_5 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=5), data = temp)
+    simp_int = gamm(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
   
-  print("simp_5")
+    summary(simp_int$gam)
   
-  co <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+   co <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
   
-  print("co")
-  
-  co_1 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = temp)
-  
-  print("co_1")
-  
+   summary(co$gam)
+   
+   
   co_3 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
   
-  print("co_3")
+  summary(co_3$gam)
   
-  co_5 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=5), data = temp)
+  co_int = gamm(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
   
-  print("co_5")
- 
+summary(co_int$gam)
+  
   
   #create list of model outputs
-  gamm_list=list(simp, simp_1, simp_3, simp_5, co, co_1, co_3, co_5)
+  gamm_list=list(simp, simp_3, simp_int, co, co_3, co_int)
   
-  names(gamm_list)=c("simp", "simp_1", "simp_3", "simp_5", "co", "co_1", "co_3", "co_5")
+  names(gamm_list)=c("simp", "simp_3", "simp_int", "co", "co_3", "co_int")
   
   return(gamm_list)
   }#end GAMm_auto_list function
@@ -1556,6 +1232,8 @@ AIC_GAM_auto=function(gam_fun_out){
   
   return(AIC_df)
 }
+
+
 ```
 
 
@@ -1587,6 +1265,163 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 ```
 
 
+#---- MTC by SST correlation  - graphs for the 4 season together, and separete [10 graphs]--
+```{r}
+
+
+  #4 season together
+#Mediterranian
+ggplot(net_mediter_mtc, aes(x=SST ,y=mtc,colour=Season, size=3))+
+  #geom_point(size = 0.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+ # ggtitle("Mediter")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+
+#red Sea
+ggplot(net_red_mtc, aes(x=SST ,y=mtc,colour=Season, size=3))+
+  #geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+ scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(23,28, by =0.25))+
+ # ggtitle("Red Sea")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5)
+  
+#pearson correlation: 
+sp <- ggscatter(net_mediter_mtc[net_mediter_mtc$Season=="winter",], x = "SST", y = "mtc",palette = "jco",
+   add = "reg.line",  # Add regressin line
+   add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
+   conf.int = TRUE # Add confidence interval
+   )
+# Add correlation coefficient
+sp+ stat_cor(method = "pearson", label.x = 3, label.y = 30)
+  #scale_x_continuous (breaks=seq(15,30, by = 2), limits = c(15,25))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =1), limits = c(16,28)) 
+
+
+sp <- ggscatter(net_mediter_mtc[net_mediter_mtc$Season=="summer",], x = "SST", y = "mtc",palette = "jco",
+   add = "reg.line",  # Add regressin line
+   add.params = list(color = "blue", fill = "lightgray"), # Customize reg. line
+   conf.int = TRUE # Add confidence interval
+   )
+# Add correlation coefficient
+sp+ stat_cor(method = "pearson", label.x = 3, label.y = 30)
+
+
+#for any season separatly
+ggplot(net_mediter_mtc[net_mediter_mtc$Season=="winter",], aes(x=SST ,y=mtc, size=3 ))+
+  geom_point(color = "green", size = 1.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+  ggtitle("Mediter - winter")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+ggplot(net_mediter_mtc[net_mediter_mtc$Season=="spring",], aes(x=SST ,y=mtc, size=3 ))+
+  geom_point(color = "green", size = 1.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+ ggtitle("Mediter - spring")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+ggplot(net_mediter_mtc[net_mediter_mtc$Season=="autumn",], aes(x=SST ,y=mtc, size=3 ))+
+  geom_point(color = "green", size = 1.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+ ggtitle("Mediter - autumn")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+ggplot(net_mediter_mtc[net_mediter_mtc$Season=="summer",], aes(x=SST ,y=mtc, size=3 ))+
+  geom_point(color = "green", size = 1.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+  ggtitle("Mediter - summer")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+
+#red sea
+ggplot(net_red_mtc[net_red_mtc$Season=="winter",], aes(x=SST ,y=mtc, size=3 ))+
+  geom_point(color = "green", size = 1.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+  ggtitle("red - winter")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+ggplot(net_red_mtc[net_red_mtc$Season=="spring",], aes(x=SST ,y=mtc, size=3 ))+
+  geom_point(color = "green", size = 1.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+ ggtitle("red - spring")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+ggplot(net_red_mtc[net_red_mtc$Season=="autumn",], aes(x=SST ,y=mtc, size=3 ))+
+  geom_point(color = "green", size = 1.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+ ggtitle("red - autumn")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+ggplot(net_red_mtc[net_red_mtc$Season=="summer",], aes(x=SST ,y=mtc, size=3 ))+
+  geom_point(color = "green", size = 1.5)+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(15,30, by = 2))+ #x axis years apeared
+scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option = "D") +#color of the graph
+  scale_y_continuous(breaks=seq(16,28, by =0.5))+
+  ggtitle("red - summer")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = FALSE, size = 1.5) 
+
+
+```
+
+
 #call to gam function and AIC on mtc gams
 
 ```{r}
@@ -1595,6 +1430,7 @@ net_red_mtc = read.csv("prosseced data/red_net_mtc.CSV")
 #call the function on mtc red sea gams
 red_mtc_gam = GAM_models_mtc_sum(net_red_mtc,"mtc")
 aic_red_mtc = AIC_GAM_F(red_mtc_gam)
+
 
  par(mfrow = c(2,2))
   plot(  red_mtc_gam[[4]],se=TRUE,col = "blue") 
@@ -1611,16 +1447,22 @@ aic_red_mtc = AIC_GAM_F(all_mtc_gam)
 
 
 #---call to autocorrelation gamm model and AIC - the function does'nt work, but work wiht handy running
-red_catch_gamm = GAMM_auto_mtc_sum(net_red_mtc,"mtc")
-aic_red_catch = AIC_GAM_auto(red_catch_gamm)
+red_mtc_gamm = GAMM_auto_mtc_sum(net_red_mtc,"mtc")
+aic_red_mtc = AIC_GAM_auto(red_mtc_gamm)
 
 
-med_catch_gamm = GAMM_auto_mtc_sum(net_medietr_mtc,"mtc")
-aic_med_catch = AIC_GAM_auto(med_catch_gamm)
+med_mtc_gamm = GAMM_auto_mtc_sum(net_medietr_mtc,"mtc")
+aic_med_mtc = AIC_GAM_auto(med_mtc_gamm)
 
-all_catch_gamm = GAMM_auto_mtc_sum(net_all_data,"mtc")
-aic_all_catch = AIC_GAM_auto(all_catch_gamm)
+all_mtc_gamm = GAMM_auto_mtc_sum(net_all_data,"mtc")
+aic_all_mtc = AIC_GAM_auto(all_mtc_gamm)
     
+row.names(aic_red_mtc) = c("red","2","3","4","5","6")
+row.names(aic_all_mtc) = c("all","2","3","4","5","6")
+row.names(aic_med_mtc) = c("med","2","3","4","5","6")
+
+aic_mtc = rbind(aic_all_mtc, aic_med_mtc, aic_red_mtc)
+write.csv(aic_mtc,"prosseced data/aic_mtc_gamm.CSV")
 
 ```
   
@@ -1986,11 +1828,6 @@ aic_med_catch = AIC_GAM_F(med_catch_gam)
  par(mfrow = c(2,2))
   plot(  med_catch_gam[[1]],se=TRUE,col = "blue") 
 
-all_catch_gam = GAM_models_mtc_sum(net_all_data,"Sum")
-aic_all_catch = AIC_GAM_F(all_catch_gam)
-    
- par(mfrow = c(2,2))
-  plot(  all_catch_gam[[1]],se=TRUE,col = "blue") 
  
   
   
@@ -2003,8 +1840,10 @@ aic_red_catch = AIC_GAM_auto(red_catch_gamm)
 med_catch_gamm = GAMM_auto_mtc_sum(net_medietr_mtc,"Sum")
 aic_med_catch = AIC_GAM_auto(med_catch_gamm)
 
-  
+ row.names(aic_red_catch) = c("red","2","3","4","5","6")
+row.names(aic_med_catch) = c("med","2","3","4","5","6") 
 
+aic_catch = rbind(aic_red_catch,aic_med_catch)
 
  #net cath model
  all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_all_data)
@@ -2383,6 +2222,12 @@ aic_all_catchF = AIC_GAM_F(all_catchF_gam)
   
 all_catchF_gamm = GAMM_auto_mtc_sum(all_dataF,"Sum")
 aic_all_catchF = AIC_GAM_auto(all_catchF_gamm)
+
+row.names(aic_all_catchF) = c("all","2","3","4","5","6")
+
+aic_catch = rbind(aic_catch,aic_all_catchF)
+
+write.csv(aic_catch,"prosseced data/aic_catch_gamm.CSV")
 
 
  all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = all_dataF )
@@ -3474,4 +3319,191 @@ graphs of the ratio catch
       
     }#end for
 
+
+  #-- correlation between mtc and SST wiht lag
+  
+
+  #create data with lag between MTC and SST
+  #Mediterranean Sea
+lag_1_sst_m = anom_med %>% select(Year_lag = Year, SST, SST_anom) %>% filter(Year_lag != 2018)
+lag_2_sst_m = lag_1_sst_m %>% select(Year_lag, SST, SST_anom) %>% filter(Year_lag != 2017)
+lag_3_sst_m = lag_2_sst_m %>% select(Year_lag, SST, SST_anom) %>% filter(Year_lag != 2016)
+
+lag_1_m =anom_med %>% select(Year, mtc, mtc_anom) %>% filter(Year != 1991) %>% cbind(lag_1_sst_m)
+lag_2_m =lag_1_m %>% select(Year, mtc, mtc_anom) %>% filter(Year != 1992)%>% cbind(lag_2_sst_m)
+lag_3_m =lag_2_m %>% select(Year, mtc, mtc_anom) %>% filter(Year != 1993)%>% cbind(lag_3_sst_m)
+
+  #red Sea
+lag_1_sst_r = anom_red %>% select(Year_lag = Year, SST, SST_anom) %>% filter(Year_lag != 2018)
+lag_2_sst_r = lag_1_sst_r %>% select(Year_lag, SST, SST_anom) %>% filter(Year_lag != 2017)
+lag_3_sst_r = lag_2_sst_r %>% select(Year_lag, SST, SST_anom) %>% filter(Year_lag != 2016)
+
+lag_1_r =anom_red %>% select(Year, mtc, mtc_anom) %>% filter(Year != 2001) %>% cbind(lag_1_sst_r)
+lag_2_r =lag_1_r %>% select(Year, mtc, mtc_anom) %>% filter(Year != 2002)%>% cbind(lag_2_sst_r)
+lag_3_r =lag_2_r %>% select(Year, mtc, mtc_anom) %>% filter(Year != 2003)%>% cbind(lag_3_sst_r)
+
+
+  #1-3 lag mean value graphs
+  #1
+  ggplot(lag_1_m, aes(x=SST ,y=mtc, size=3))+
+  geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
+  #scale_y_continuous (breaks=seq(18,23, by = 0.5))+
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Mediterranean Sea species - 1 year lag, MTC by SST")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = T, size = 1.5) 
+
+
+ggplot(lag_1_r, aes(x=SST ,y=mtc, size=3))+
+  geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(19,26, by = 1))+ 
+  scale_y_continuous (breaks=seq(25,28, by = 0.5))+
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Red Sea species- 1 year lag, MTC by SST")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
+
+
+ #2
+  ggplot(lag_2_m, aes(x=SST ,y=mtc, size=3))+
+  geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
+  #scale_y_continuous (breaks=seq(18,23, by = 0.5))+
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Mediterranean Sea species - 2 year lag, MTC by SST")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = T, size = 1.5) 
+
+
+ggplot(lag_2_r, aes(x=SST ,y=mtc, size=3))+
+  geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(19,26, by = 1))+ 
+  scale_y_continuous (breaks=seq(25,28, by = 0.5))+
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Red Sea species- 2 year lag, MTC by SST")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
+
+ #3
+  ggplot(lag_3_m, aes(x=SST ,y=mtc, size=3))+
+  geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
+  #scale_y_continuous (breaks=seq(18,23, by = 0.5))+
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Mediterranean Sea species - 3 year lag, MTC by SST")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = T, size = 1.5) 
+
+
+ggplot(lag_3_r, aes(x=SST ,y=mtc, size=3))+
+  geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC")+#axis text
+ scale_x_continuous (breaks=seq(19,26, by = 1))+ 
+  scale_y_continuous (breaks=seq(25,28, by = 0.5))+
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Red Sea species- 3 year lag, MTC by SST")+
+  stat_smooth(aes(y = mtc), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
+
+
+
+
+
+
+  #1-3 lag anomaly value graphs
+  #1
+ggplot(lag_1_m, aes(x=SST_anom ,y=mtc_anom, size=3))+
+  geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC anomaly", x = "SST anomaly")+#axis text
+ #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
+  #scale_y_continuous (breaks=seq(18,23, by = 0.5))+
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Mediterranean Sea species - 1 year lag, MTC anomaly by SST anomaly")+
+  stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = T, size = 1.5) 
+
+
+ggplot(lag_1_r, aes(x=SST_anom ,y=mtc_anom, size=3))+
+  geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC anomaly", x = "SST anomaly")+#axis text
+ #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
+  #scale_y_continuous (breaks=seq(25,28, by = 0.5))+
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Red Sea species - 1 year lag, MTC anomaly by SST anomaly")+
+  stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
+
+  #2
+ggplot(lag_2_m, aes(x=SST_anom ,y=mtc_anom, size=3))+
+  geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC anomaly", x = "SST anomaly")+#axis text
+ #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
+  #scale_y_continuous (breaks=seq(18,23, by = 0.5))+
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Mediterranean Sea species - 2 year lag, MTC anomaly by SST anomaly")+
+  stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = T, size = 1.5) 
+
+
+ggplot(lag_2_r, aes(x=SST_anom ,y=mtc_anom, size=3))+
+  geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC anomaly", x = "SST anomaly")+#axis text
+ #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
+  #scale_y_continuous (breaks=seq(25,28, by = 0.5))+
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Red Sea species - 2 year lag, MTC anomaly by SST anomaly")+
+  stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
+
+  #3
+ggplot(lag_3_m, aes(x=SST_anom ,y=mtc_anom, size=3))+
+  geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC anomaly", x = "SST anomaly")+#axis text
+ #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
+  #scale_y_continuous (breaks=seq(18,23, by = 0.5))+
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Mediterranean Sea species - 3 year lag, MTC anomaly by SST anomaly")+
+  stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = T, size = 1.5) 
+
+
+ggplot(lag_3_r, aes(x=SST_anom ,y=mtc_anom, size=3))+
+  geom_point()+
+    scale_size(guide = 'none')+#no legend to the "size"
+  theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1))+#size of text
+  labs(y ="MTC anomaly", x = "SST anomaly")+#axis text
+ #scale_x_continuous (breaks=seq(19,26, by = 1))+ 
+  #scale_y_continuous (breaks=seq(25,28, by = 0.5))+
+  scale_color_viridis(begin = 0, end = 0.8 ,direction = 1,discrete = FALSE, option = "D") +
+  ggtitle("Red Sea species - 3 year lag, MTC anomaly by SST anomaly")+
+  stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
+              method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
 
