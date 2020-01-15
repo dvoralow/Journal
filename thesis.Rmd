@@ -1698,35 +1698,37 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
 
 
 
-
-
 #Medeterranean species interaction model
-temp = net_mediter_mtc %>% dplyr::select(Year, Month, Depth, mtc ) 
+temp = net_mediter_mtc %>% dplyr::select(Year, Month, Depth, mtc, Net_num, YearMonth ) 
   
 temp = as.data.frame(temp)
   
    temp_gam = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
   
- 
+#temp_gam = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
+   #+ (Fisherman)+ s(Start_hh, bs = "cr")
+    
   summary(temp_gam)
   par(mfrow = c(2,2)) 
   gam.check(temp_gam)
   
   par(mfrow(2,2))
+  
   plot(  temp_gam,se=TRUE,col = "blue")  
   #plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
   
   ## Look at the fitted model
+ 
 ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
 
 ## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
 
 
 pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
-                                  Month = seq(1, 12, length.out = 100), Depth =30))
+                                  Month = seq(1, 12, length.out = 100), Depth =30,S))
 
 ## Add on the fitted values and SEs *on the log [link] scale*
-pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam$gam, newdata = pdata, type = "link", se.fit = TRUE)))
 
 ## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
 pdata <- transform(pdata,
