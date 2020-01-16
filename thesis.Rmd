@@ -1217,6 +1217,55 @@ summary(co_int$gam)
 
 
 
+bam_mtc_sum=function(net_data,y_par){
+  
+  #create Net_number and YearMonth columns for the autocorrelation
+  temp = net_data
+  temp = temp %>% dplyr::select(y_par,Year, Month, Depth,Fisherman,Start_hh)
+  temp = as.data.frame(temp)
+  # temp = temp %>% arrange(DateTime) %>% mutate(Net_num = c(1:nrow(temp))) %>% dplyr::mutate(YearMonth = paste(Year, Month, sep = "/"))
+  # temp$YearMonth = as.Date(as.yearmon(temp$YearMonth,"%Y/%m"))
+  
+  
+  co <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+ print("co")
+  
+  co_1 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp)
+  
+  print("co_1") 
+   
+  co_3 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp)
+  
+  print("co_3")
+  
+  co_5 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.5, data = temp)
+  
+  print("co_5")
+ 
+  co_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)   + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+ print("co_int")
+  
+  co_1_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp)
+  
+  print("co_1_int") 
+   
+  co_3_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp)
+  
+  print("co_3_int")
+  
+  co_5_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.5, data = temp)
+  
+  print("co_5_int")
+  
+  
+  #create list of model outputs
+  bam_list=list(co, co_1, co_3, co_5,co_int, co_1_int, co_3_int, co_5_int )
+  
+  names(bam_list)=c("co" ,"co_1", "co_3", "co_5","co_int" ,"co_1_int", "co_3_int", "co_5_int" )
+  
+  return(bam_list)
+  }#end bam_auto_list function
+
 
 
 #4
@@ -1441,6 +1490,9 @@ scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option
 red_mtc_gam = GAM_models_mtc_sum(net_red_mtc,"mtc")
 aic_red_mtc = AIC_GAM_F(red_mtc_gam)
 
+red_mtc_bam = bam_mtc_sum(net_red_mtc,"mtc")
+aic_red_mtc = AIC_GAM_F(red_mtc_bam)
+
 
  par(mfrow = c(2,2))
   plot(  red_mtc_gam[[4]],se=TRUE,col = "blue") 
@@ -1449,11 +1501,25 @@ aic_red_mtc = AIC_GAM_F(red_mtc_gam)
 med_mtc_gam = GAM_models_mtc_sum(net_mediter_mtc,"mtc")
 aic_med_mtc = AIC_GAM_F(med_mtc_gam)
 
+med_mtc_bam = bam_mtc_sum(net_mediter_mtc,"mtc")
+aic_med_mtc = AIC_GAM_F(med_mtc_bam)
+
  par(mfrow = c(2,2))
   plot(  med_mtc_gam[[4]],se=TRUE,col = "blue") 
 
 all_mtc_gam = GAM_models_mtc_sum(net_all_data,"mtc")
-aic_red_mtc = AIC_GAM_F(all_mtc_gam)
+aic_all_mtc = AIC_GAM_F(all_mtc_gam)
+
+all_mtc_bam = bam_mtc_sum(net_all_data,"mtc")
+aic_all_mtc = AIC_GAM_F(all_mtc_bam)
+
+row.names(aic_red_mtc) = c("red","2","3","4","5","6","7","8")
+row.names(aic_all_mtc) = c("all","2","3","4","5","6","7","8")
+row.names(aic_med_mtc) = c("med","2","3","4","5","6","7","8")
+
+aic_mtc = rbind(aic_all_mtc, aic_med_mtc, aic_red_mtc)
+write.csv(aic_mtc,"prosseced data/aic_mtc_bam.CSV")
+write.csv(aic_mtc,"C:/Users/dvora/Google Drive/second degree/thesis/aic_mtc_bam.CSV")
 
 
 #---call to autocorrelation gamm model and AIC - the function does'nt work, but work wiht handy running
@@ -1534,6 +1600,7 @@ plot(mediter_gam_month$gam,se=TRUE,col = "blue")
 
 red_gam_month = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
   
+red_gam_month = bam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),rho = 0.5, data = net_red_mtc)
 
  # red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")   +s(Month, bs = "cc", k=12) ,data = net_red_mtc,method = "REML")
 
@@ -1553,6 +1620,7 @@ plot(red_gam_month$gam,se=TRUE,col = "blue")
   gam_all = getViz(gam_all$gam)
 mediter_gam_month <- getViz(mediter_gam_month$gam)
 red_gam_month = getViz(red_gam_month$gam)
+red_gam_month = getViz(red_gam_month)
 #red_gam_month = getViz(red_gam_month$gam)
 
 plot( sm(red_gam_month, 2) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = -2),axis.title.y = element_text(vjust = 1))+labs(y ="Temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2))  +ggtitle("MTC model - Red Sea species")
@@ -1704,6 +1772,9 @@ temp = net_mediter_mtc %>% dplyr::select(Year, Month, Depth, mtc, Net_num, YearM
 temp = as.data.frame(temp)
   
    temp_gam = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
+   
+    temp_bam = bam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth),rho = 0.7 ,data = temp)
+    #
   
 #temp_gam = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
    #+ (Fisherman)+ s(Start_hh, bs = "cr")
@@ -1712,23 +1783,25 @@ temp = as.data.frame(temp)
   par(mfrow = c(2,2)) 
   gam.check(temp_gam)
   
-  par(mfrow(2,2))
-  
-  plot(  temp_gam,se=TRUE,col = "blue")  
+   par(mfrow=c(2,2))
+  plot(  temp_gam,se=TRUE,col = "blue")
+  plot(  temp_bam,se=TRUE,col = "blue")  
   #plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
   
   ## Look at the fitted model
  
 ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+ilink <- family(temp_bam)$linkinv   # this is the inverse of the link function, as an R function
 
 ## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
 
 
 pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
-                                  Month = seq(1, 12, length.out = 100), Depth =30,S))
+                                  Month = seq(1, 12, length.out = 100), Depth =30))
 
 ## Add on the fitted values and SEs *on the log [link] scale*
-pdata <- cbind(pdata, as.data.frame(predict(temp_gam$gam, newdata = pdata, type = "link", se.fit = TRUE)))
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+pdata <- cbind(pdata, as.data.frame(predict(temp_bam, newdata = pdata, type = "link", se.fit = TRUE)))
 
 ## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
 pdata <- transform(pdata,
@@ -1824,27 +1897,36 @@ tempor_sum = net_mediter_mtc %>% dplyr::select(Aal:WHT)
  
   #the chatch of 2018 is problematic - half a year, effecting the model
 net_mediter_mtc = net_mediter_mtc %>% filter(Year<2018)
- net_red_mtc = net_red_mtc %>% filter(Year<2018)
- #%>% filter(Year>1999)
+ net_red_mtc = net_red_mtc %>% filter(Year<2018)%>% filter(Year>1999)
+ #
  
 
  
  
-  #------call the function on Sum  gams
+  #------call the function on Sum  gams and bam
 red_catch_gam = GAM_models_mtc_sum(net_red_mtc,"Sum")
 aic_red_catch = AIC_GAM_F(red_catch_gam)
 
+red_catch_bam = bam_mtc_sum(net_red_mtc,"Sum")
+aic_red_catch = AIC_GAM_F(red_catch_bam)
+
  par(mfrow = c(2,2))
-  plot(  red_catch_gam[[1]],se=TRUE,col = "blue") 
+  plot(  red_catch_bam[[4]],se=TRUE,col = "blue") 
  
 
 med_catch_gam = GAM_models_mtc_sum(net_mediter_mtc,"Sum")
 aic_med_catch = AIC_GAM_F(med_catch_gam)
 
+med_catch_bam = bam_mtc_sum(net_mediter_mtc,"Sum")
+aic_med_catch = AIC_GAM_F(med_catch_bam)
+
  par(mfrow = c(2,2))
   plot(  med_catch_gam[[1]],se=TRUE,col = "blue") 
 
- 
+ row.names(aic_red_catch) = c("red","2","3","4","5","6", "7", "8")
+row.names(aic_med_catch) = c("med","2","3","4","5","6", "7", "8") 
+
+aic_catch = rbind(aic_red_catch,aic_med_catch)
   
   
    #------call the autocorrelation function on Sum  gamms - whith autocorrelation
@@ -1909,8 +1991,7 @@ plot( sm(red_catch_gam, 2) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(col
 
 ```
 
-
- #-----biomass model - interaction medels and graphs-----
+#-----biomass model - interaction medels and graphs-----
 ```{r}
 
 
@@ -2072,98 +2153,6 @@ grid.arrange(p1)
 
 
 
-
-
-#---create month sum without Year
-
-```{r}
-
-#take just the relevant column 
-  month_sum=dplyr:: select(all_data,Month,species_code)
-    #sum the cathc by month by year
-    month_sum=aggregate.data.frame(month_sum,list(month_sum$Month),FUN = sum,drop=F)
-    #rename the new column and drop sum of years and month   
-    month_sum=month_sum %>% dplyr:: select(Month=Group.1,species_code ) %>% filter(Month %in% c(1:12))
-    
-    scientific_names=read.csv(file = "prosseced data/sceintific_names_fishes_known_origin.csv", stringsAsFactors = F)
-#cerate species names vector
- sp_code = scientific_names$Sp_code
- scientific_code = scientific_names$scintific_name
-
- #get out columns with catch sum small than 1000 KG
-   catch_sum = colSums(month_sum)
-   catch_logic= catch_sum>2000
-month_sum = month_sum[,catch_logic]
-month_sum = month_sum %>% mutate(Month = c(1:12))
-
-#separate to mediter and red sea
-mediter_month_sum=month_sum[,which(!(colnames(month_sum) %in% red_code))]
-red_month_sum=month_sum[,which(!(colnames(month_sum) %in% mediter_code))]
-
-mediter_month_sum_1 = mediter_month_sum %>%dplyr:: select(MUL,BAT,Bbo,Mme,WHT,Month)
-mediter_month_sum_2 = mediter_month_sum %>%dplyr:: select(Arg,EPI,Pca,SPI,Month)
-mediter_month_sum_3 = mediter_month_sum %>%dplyr:: select(Lmo,Sd,Bca,Per,Sja,Month)
-
-#covert to long format
-red_month_long <- melt(red_month_sum, id="Month")  # convert to long format
-mediter_month_long_1 <- melt(mediter_month_sum_1, id="Month")  # convert to long format
-mediter_month_long_2 <- melt(mediter_month_sum_2, id="Month")  # convert to long format
-mediter_month_long_3 <- melt(mediter_month_sum_3, id="Month")  # convert to long format
-
-ggplot(red_month_long , aes(x=Month,  y=value, colour=variable)) +
-    geom_line(size = 1)+
-    #scale_colour_gradientn(colours=rainbow(4))+
-    #ggtitle(paste (sp_code[i],scientific_code[i],"Preffrence Temperature" ,mean_tcode[i,1],sep =" - "))+
-    ylab("Sum of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)+
-    theme(text = element_text(size=20),axis.text.x = element_text( hjust=1))#size of text
-    
-ggplot(mediter_month_long_1 , aes(x=Month,  y=value, colour=variable)) +
-    geom_line(size = 1)+
-    #scale_colour_gradientn(colours=rainbow(4))+
-    #ggtitle(paste (sp_code[i],scientific_code[i],"Preffrence Temperature" ,mean_tcode[i,1],sep =" - "))+
-    ylab("Sum of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)+
-    theme(text = element_text(size=20),axis.text.x = element_text( hjust=1))#size of text
-
-ggplot(mediter_month_long_2 , aes(x=Month,  y=value, colour=variable)) +
-    geom_line(size = 1)+
-    #scale_colour_gradientn(colours=rainbow(4))+
-    #ggtitle(paste (sp_code[i],scientific_code[i],"Preffrence Temperature" ,mean_tcode[i,1],sep =" - "))+
-    ylab("Sum of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)+
-    theme(text = element_text(size=20),axis.text.x = element_text( hjust=1))#size of text
-
-ggplot(mediter_month_long_3 , aes(x=Month,  y=value, colour=variable)) +
-    geom_line(size = 1)+
-    #scale_colour_gradientn(colours=rainbow(4))+
-    #ggtitle(paste (sp_code[i],scientific_code[i],"Preffrence Temperature" ,mean_tcode[i,1],sep =" - "))+
-    ylab("Sum of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)+
-    theme(text = element_text(size=20),axis.text.x = element_text( hjust=1))#size of text
-
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #---------------------fenology-----------------------------------------------------------------------------
 
 uploud the whole fish data
@@ -2229,6 +2218,8 @@ all_dataF = all_dataF %>% filter(Year<2018)
 all_catchF_gam = GAM_models_mtc_sum(all_dataF,"Sum")
 aic_all_catchF = AIC_GAM_F(all_catchF_gam)
 
+all_catchF_bam = bam_mtc_sum(all_dataF,"Sum")
+aic_all_catchF = AIC_GAM_F(all_catchF_gam)
     
  par(mfrow = c(2,2))
   plot(  all_catchF_gam[[1]],se=TRUE,col = "blue")
@@ -3548,4 +3539,74 @@ ggplot(lag_3_r, aes(x=SST_anom ,y=mtc_anom, size=3))+
   ggtitle("Red Sea species - 3 year lag, MTC anomaly by SST anomaly")+
   stat_smooth(aes(y = mtc_anom), #smooth to mtc, with no shadow
               method = "lm", formula = formula_l, se = T, size = 1.5, color = "red")
+
+
+
+  #---create month sum without Year
+
+
+
+  #take just the relevant column 
+  month_sum=dplyr:: select(all_data,Month,species_code)
+    #sum the cathc by month by year
+    month_sum=aggregate.data.frame(month_sum,list(month_sum$Month),FUN = sum,drop=F)
+    #rename the new column and drop sum of years and month   
+    month_sum=month_sum %>% dplyr:: select(Month=Group.1,species_code ) %>% filter(Month %in% c(1:12))
+    
+    scientific_names=read.csv(file = "prosseced data/sceintific_names_fishes_known_origin.csv", stringsAsFactors = F)
+  #cerate species names vector
+ sp_code = scientific_names$Sp_code
+ scientific_code = scientific_names$scintific_name
+
+ #get out columns with catch sum small than 1000 KG
+   catch_sum = colSums(month_sum)
+   catch_logic= catch_sum>2000
+month_sum = month_sum[,catch_logic]
+month_sum = month_sum %>% mutate(Month = c(1:12))
+
+  #separate to mediter and red sea
+mediter_month_sum=month_sum[,which(!(colnames(month_sum) %in% red_code))]
+red_month_sum=month_sum[,which(!(colnames(month_sum) %in% mediter_code))]
+
+mediter_month_sum_1 = mediter_month_sum %>%dplyr:: select(MUL,BAT,Bbo,Mme,WHT,Month)
+mediter_month_sum_2 = mediter_month_sum %>%dplyr:: select(Arg,EPI,Pca,SPI,Month)
+mediter_month_sum_3 = mediter_month_sum %>%dplyr:: select(Lmo,Sd,Bca,Per,Sja,Month)
+
+  #covert to long format
+red_month_long <- melt(red_month_sum, id="Month")  # convert to long format
+mediter_month_long_1 <- melt(mediter_month_sum_1, id="Month")  # convert to long format
+mediter_month_long_2 <- melt(mediter_month_sum_2, id="Month")  # convert to long format
+mediter_month_long_3 <- melt(mediter_month_sum_3, id="Month")  # convert to long format
+
+ggplot(red_month_long , aes(x=Month,  y=value, colour=variable)) +
+    geom_line(size = 1)+
+    #scale_colour_gradientn(colours=rainbow(4))+
+    #ggtitle(paste (sp_code[i],scientific_code[i],"Preffrence Temperature" ,mean_tcode[i,1],sep =" - "))+
+    ylab("Sum of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)+
+    theme(text = element_text(size=20),axis.text.x = element_text( hjust=1))#size of text
+    
+ggplot(mediter_month_long_1 , aes(x=Month,  y=value, colour=variable)) +
+    geom_line(size = 1)+
+    #scale_colour_gradientn(colours=rainbow(4))+
+    #ggtitle(paste (sp_code[i],scientific_code[i],"Preffrence Temperature" ,mean_tcode[i,1],sep =" - "))+
+    ylab("Sum of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)+
+    theme(text = element_text(size=20),axis.text.x = element_text( hjust=1))#size of text
+
+ggplot(mediter_month_long_2 , aes(x=Month,  y=value, colour=variable)) +
+    geom_line(size = 1)+
+    #scale_colour_gradientn(colours=rainbow(4))+
+    #ggtitle(paste (sp_code[i],scientific_code[i],"Preffrence Temperature" ,mean_tcode[i,1],sep =" - "))+
+    ylab("Sum of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)+
+    theme(text = element_text(size=20),axis.text.x = element_text( hjust=1))#size of text
+
+ggplot(mediter_month_long_3 , aes(x=Month,  y=value, colour=variable)) +
+    geom_line(size = 1)+
+    #scale_colour_gradientn(colours=rainbow(4))+
+    #ggtitle(paste (sp_code[i],scientific_code[i],"Preffrence Temperature" ,mean_tcode[i,1],sep =" - "))+
+    ylab("Sum of Catchs [Kg]")+scale_x_continuous(breaks = 1:12)+
+    theme(text = element_text(size=20),axis.text.x = element_text( hjust=1))#size of text
+
+
+
+
 
