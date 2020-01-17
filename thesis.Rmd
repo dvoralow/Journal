@@ -1603,7 +1603,6 @@ plot(mediter_gam_month,se=TRUE,col = "blue")
 
 red_gam_month = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
   
-red_gam_month = bam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),rho = 0.5, data = net_red_mtc)
 
 red_gam_month <- bam(mtc ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = net_red_mtc)
 
@@ -1721,12 +1720,14 @@ title("mtc red sea gam - autocorrolation within MOnt")
 # The data is from the "upload data" chunk, just above
 
 #whole konon origin species togother
-temp = net_all_data %>% dplyr::select(Year, Month, Depth, mtc ) 
+temp = net_all_data %>% dplyr::select(Year, Month, Depth, mtc, Fisherman, Start_hh  ) 
   
 temp = as.data.frame(temp)
   
-   temp_gam = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
+  # temp_gam = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
   
+#to take the gam model I choose above
+   temp_gam = gam_all
  
   summary(temp_gam)
   par(mfrow = c(2,2)) 
@@ -1762,23 +1763,22 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
     labs(title = "Known origin species",
          x = NULL,
          y = "Relative temperature affinity") +
-    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)
-#+
- 
-# theme_update(text = element_text(size=20))
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
+  theme_update(text = element_text(size=40))
     
     p1
 
 
 
 #Medeterranean species interaction model
-temp = net_mediter_mtc %>% dplyr::select(Year, Month, Depth, mtc, Net_num, YearMonth ) 
+temp = net_mediter_mtc %>% dplyr::select(Year, Month, Depth, mtc, Fisherman, Start_hh ) 
   
 temp = as.data.frame(temp)
   
-   temp_gam = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
-   
-    #
+ #  temp_gam = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
+  
+#to take the gam model I choose above 
+    temp_gam = mediter_gam_month
   
 #temp_gam = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
    #+ (Fisherman)+ s(Start_hh, bs = "cr")
@@ -1833,11 +1833,13 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
 
 
 #red sea interaction
-temp = net_red_mtc %>% dplyr::select(Year, Month, Depth, mtc )
+temp = net_red_mtc %>% dplyr::select(Year, Month, Depth, mtc, Fisherman, Start_hh )
 temp = as.data.frame(temp)
   
-   temp_gam = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
+   #temp_gam = gam(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp)
    
+   #to take the gam model I choose above
+   temp_gam = red_gam_month
    
   summary(temp_gam)
   par(mfrow = c(2,2)) 
@@ -1872,12 +1874,9 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
     scale_color_viridis(option = "plasma", end = 0.95) +
     labs(title = "Red Sea species",
          x = NULL,
-         y = "Temperature affinity") +
+         y = "Relative temperature affinity") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
   theme_update(text = element_text(size=40))
-#+
- # theme_update(text = element_text(size=40))
-    
     
     p1
 
@@ -2012,12 +2011,14 @@ plot( sm(red_catch_gam, 1) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(col
 
 
 #mediter interaction model
- temp = net_mediter_mtc %>% dplyr::select(Year, Month, Depth, Sum ) 
+ temp = net_mediter_mtc %>% dplyr::select(Year, Month, Depth, Sum, Fisherman, Start_hh ) 
   
 temp = as.data.frame(temp)
   
-   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp )
+  # temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp )
   
+#take the model I choos above
+temp_gam = mediter_catch_gam
  
   summary(temp_gam)
   par(mfrow = c(2,2)) 
@@ -2064,12 +2065,14 @@ grid.arrange(p1)
 
 
 #red sea interaction
-temp = net_red_mtc %>% dplyr::select(Year, Month, Depth, Sum ) 
+temp = net_red_mtc %>% dplyr::select(Year, Month, Depth, Sum, Fisherman, Start_hh ) 
   
 temp = as.data.frame(temp)
   
-   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp )
-  
+#   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp )
+ 
+#take the model I choos above
+temp_gam = red_catch_gam 
  
   summary(temp_gam)
   par(mfrow = c(2,2)) 
@@ -2106,7 +2109,7 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
          x = NULL,
          y = "Relative catch") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
-    theme_update(text = element_text(size=40))
+    theme_update(text = element_text(size=-10))
     
     p1
 
@@ -2175,7 +2178,7 @@ abondance_species_data = scientific_namesF %>% dplyr::select(Sp_code, Sceintific
 #--gam model for the whole data cathc - regular gam graph, and phenology interaction graph
 
 ```{r}
-all_dataF = all_dataF %>% filter(Year<2018)
+#all_dataF = all_dataF %>% filter(Year<2018)
 
 
 #call to gam and AIC functions
@@ -2222,12 +2225,14 @@ plot( sm(all_catch_gam, 1) )+ l_ciPoly(level = 0.95 ,fill = "grey")+l_fitLine(co
 
 
 # interaction model and graph
-   temp = all_dataF %>% dplyr::select(Year, Month, Depth, Sum ) 
+   temp = all_dataF %>% dplyr::select(Year, Month, Depth, Sum, Fisherman, Start_hh ) 
   
 temp = as.data.frame(temp)
   
-   temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp )
+  # temp_gam = gam(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth) ,data = temp )
   
+#take the model I choose above
+temp_gam = all_catch_gam
  
   summary(temp_gam)
   par(mfrow = c(2,2)) 
@@ -2264,7 +2269,7 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
          x = NULL,
          y = "Relative catch") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
-  theme_update(text = element_text(size=40))
+  theme_update(text = element_text(size=20))
     
     p1
 
@@ -2285,47 +2290,96 @@ aic_species_list = list()
 for (i in 1:length(abondance_species))
 {
 
-   temp = all_dataF %>% dplyr::select(abondance_species[i], Year, Month, Depth, Fisherman,Start_hh,Net_num,YearMonth   ) %>% filter(Year >= catch_sum$Year_S[i] )  %>% filter(Year <= catch_sum$Year_E[i] )
+   temp = all_dataF %>% dplyr::select(abondance_species[i], Year, Month, Depth, Fisherman,Start_hh   ) %>% filter(Year >= catch_sum$Year_S[i] )  %>% filter(Year <= catch_sum$Year_E[i] )
   
 temp = as.data.frame(temp)
    
 print(abondance_species[i])
 
-
-  simp <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12), data = temp)
+ co <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+ print("co")
   
-   print(simp$gam)
-    
-  simp_3 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
+  co_1 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp)
   
- print(simp_3$gam)
-  
-    simp_int = gamm(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
-  
-    print(simp_int$gam)
-  
-   co <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
-  
-   print(co$gam)
+  print("co_1") 
    
+  co_3 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp)
+  
+  print("co_3")
+  
+  co_5 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.5, data = temp)
+  
+  print("co_5")
+ 
+  co_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)   + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+ print("co_int")
+  
+  co_1_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp)
+  
+  print("co_1_int") 
    
-  co_3 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
+  co_3_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp)
   
-  print(co_3$gam)
+  print("co_3_int")
   
-  co_int = gamm(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=2), data = temp)
-
+  co_5_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.5, data = temp)
+  
+  print("co_5_int")
+  
+  
+  #create list of model outputs
+  species_bam_list=list(co, co_1, co_3, co_5,co_int, co_1_int, co_3_int, co_5_int )
+  
+  names(species_bam_list)=c("co" ,"co_1", "co_3", "co_5","co_int" ,"co_1_int", "co_3_int", "co_5_int" )
+  
+  
+  aic_species = AIC_GAM_F(species_bam_list)
+  
+  aic_species_list[[i]] =aic_species
+   
+  model_name = aic_species[1,1]
+  print(model_name)
+  temp_gam = species_bam_list[[model_name]]
+  
+  
+  print(abondance_species[i])
     
   
- #create list of model outputs
-  species_gamm_list=list(simp, simp_3, simp_int, co, co_3, co_int)
-  
-  names(species_gamm_list)=c("simp", "simp_3", "simp_int", "co", "co_3", "co_int")
-  
-  
-  aic_species = AIC_GAM_auto(species_gamm_list)
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
 
-    aic_species_list[[i]] =aic_species
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100), Depth =30,Start_hh = 50,Fisherman = "Levi"))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = paste( abondance_species_data[i,2],catch_sum$Year_S[i],"-",catch_sum$Year_E[i],sep = " "),
+         x = NULL,
+         y = "Relative catch") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
+  theme_update(text = element_text(size=20))
+    
+    
+
+grid.arrange(p1)
+
+#ggsave(paste("C:/Users/dvora/Google Drive/second degree/thesis/data/R/graphs/phenology/",abondance_species[i],".png",sep = ""), p1, dpi = 100, width = 8.5, height = 5.5)
+
+ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/phenology/",abondance_species[i],".png",sep = ""), p1, dpi = 200)
+  #, width = 8.5, height = 5.5
   
 }#end for
 
@@ -2335,7 +2389,7 @@ aic_species_list = aic_species_list %>% lapply(function(x){
   mutate(delta = AIC - first(AIC))
 })
 
-lapply(mylist, function(x) write.table( data.frame(x), 'test.csv'  , append= T, sep=',' ))
+lapply(aic_species_list, function(x) write.table( data.frame(x), 'aic_species_list.csv'  , append= T, sep=',' ))
 
 
 ```
@@ -2362,7 +2416,7 @@ simp <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12
 
 for (i in 1:length(abondance_species))
 {
-
+  
    temp = all_dataF %>% dplyr::select(Year, Month, Depth, abondance_species[i] ) %>% filter(Year >= catch_sum$Year_S[i] )  %>% filter(Year <= catch_sum$Year_E[i] )
   
 temp = as.data.frame(temp)
@@ -2556,47 +2610,60 @@ aic_bsize_list = list()
     
 {
 
-   temp = b_size_all %>% dplyr::select(kg_b ,species, Year=Year.XXXX., Month=Month.XX., Fishermen, Start_Time_hh) %>% filter(species==species_b[i]) %>% filter(Year >= catch_b_years$Year_S[i] )  %>% filter(Year <= catch_b_years$Year_E[i] ) 
   
-temp = as.data.frame(temp)
-
-print(species_b[i])
-   
-       simp <- gam(temp[,1] ~ s(Year, bs = "cr") +  s(Month, bs = "cc", k=12), data = temp, family = tw)
-  
-  print(simp)
-
-   co <- gam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cr"), data = temp, family = tw)
-  
-  print(co)
-  
-  simp_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr")), data = temp, family = tw)
-  
-  print(simp_int)
-  
-  co_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+ (Fishermen)+ s(Start_Time_hh, bs = "cr"), data = temp, family = tw)
-
-  print(co_int)
-  
-  #create list of model outputs
-   bsize_gam_list =list(simp, co, simp_int, co_int)
- # paste("gam",abondance_species[i],"list",sep = "_") =list(simp, co, simp_int, co_int)
-  
-  names(bsize_gam_list)=c("simp","co","simp_int","co_int")
-  
-  aic_bsize = AIC_GAM_F(bsize_gam_list)
-
- aic_bsize_list[[i]] =aic_bsize
  
+   #!!!---!!!Dont work!!!---!!!
+  model_name =  aic_bsize[1,1]
+  print(model_name)
+  temp_gam =  bsize_bam_list[[model_name]]
+  
+  
+  print(species_b[i])
+    
+  
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100),Start_Time_hh = 50,Fishermen = "Levi"))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = paste( species_b_data[i,3],catch_b_years$Year_S[i],"-",catch_b_years$Year_E[i],sep = " "),
+         x = NULL,
+         y = "Relative catch") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
+  theme_update(text = element_text(size=20))
+    
+   
+
+grid.arrange(p1)
+
+ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/b size/",species_b[i],".png",sep = ""), p1, dpi = 200)
+
+
+  
 }#end for
+
+ 
 
 #temp_species_b = species_b[!species_b %in% "Umo"]
 names(aic_bsize_list) = temp_species_b
 
-aic_bsize_list = aic_bsize_list %>% lapply(function(x){
-  arrange(x,AIC) %>% 
-  mutate(delta = AIC - first(AIC))
-})
+
   
 
 
