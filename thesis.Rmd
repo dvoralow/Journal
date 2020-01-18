@@ -2338,6 +2338,7 @@ print(abondance_species[i])
   aic_species_list[[i]] =aic_species
    
   model_name = aic_species[1,1]
+  model_name = as.character(model_name)
   print(model_name)
   temp_gam = species_bam_list[[model_name]]
   
@@ -2614,6 +2615,8 @@ aic_bsize_list = list()
  
    #!!!---!!!Dont work!!!---!!!
   model_name =  aic_bsize[1,1]
+   model_name = as.character(model_name)
+  print(model_name)
   print(model_name)
   temp_gam =  bsize_bam_list[[model_name]]
   
