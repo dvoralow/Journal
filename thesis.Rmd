@@ -1131,7 +1131,7 @@ GAM_models_mtc_sum=function(data_in,y_par){
   
   print(simp)
   
-  co <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+  co <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp)
   
   print(co)
   
@@ -1139,7 +1139,7 @@ GAM_models_mtc_sum=function(data_in,y_par){
   
   print(simp_int)
   
-  co_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+  co_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp)
 
   print(co_int)
   
@@ -1193,16 +1193,16 @@ GAMM_auto_mtc_sum=function(net_data,y_par){
   
     summary(simp_int$gam)
   
-   co <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+   co <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp)
   
    summary(co$gam)
    
    
-  co_3 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
+  co_3 <- gamm(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
   
   summary(co_3$gam)
   
-  co_int = gamm(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
+  co_int = gamm(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp)
   
 summary(co_int$gam)
   
@@ -1227,33 +1227,33 @@ bam_mtc_sum=function(net_data,y_par){
   # temp$YearMonth = as.Date(as.yearmon(temp$YearMonth,"%Y/%m"))
   
   
-  co <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+  co <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp)
  print("co")
   
-  co_1 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp)
+  co_1 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.1, data = temp)
   
   print("co_1") 
    
-  co_3 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp)
+  co_3 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.3, data = temp)
   
   print("co_3")
   
-  co_5 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.5, data = temp)
+  co_5 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.5, data = temp)
   
   print("co_5")
  
-  co_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)   + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+  co_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)   + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp)
  print("co_int")
   
-  co_1_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp)
+  co_1_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.1, data = temp)
   
   print("co_1_int") 
    
-  co_3_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp)
+  co_3_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.3, data = temp)
   
   print("co_3_int")
   
-  co_5_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.5, data = temp)
+  co_5_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.5, data = temp)
   
   print("co_5_int")
   
@@ -1563,16 +1563,16 @@ write.csv(aic_mtc,"prosseced data/aic_mtc_gamm.CSV")
 ```{r}
 
  #all data gam model
-gam_all = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+ s(Start_hh, bs = "cr")+s(Depth)+ (Fisherman),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = net_all_data)
+gam_all = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+ s(Start_hh, bs = "cc")+s(Depth)+ (Fisherman),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = net_all_data)
 
-gam_all = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+gam_all = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cc") + s(Depth)   + 
                              s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=1),data =net_all_data)
 
- gam_all <- bam(mtc ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = net_all_data)
+ gam_all <- bam(mtc ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.3, data = net_all_data)
 #
-#gam_all = gam(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+#gam_all = gam(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cc") + s(Depth)   + 
                            #  s(Month, bs = "cc", k=12),data =net_all_data)
-#+ (Fisherman)+ s(Start_hh, bs = "cr")+s(Date_num, bs = "gp")
+#+ (Fisherman)+ s(Start_hh, bs = "cc")+s(Date_num, bs = "gp")
 
 summary(gam_all$gam)
     par(mfrow = c(2,2))
@@ -1584,13 +1584,13 @@ par(mfrow = c(2,2))
 plot(gam_all,se=TRUE,col = "blue")
 
 
-mediter_gam_month = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
+mediter_gam_month = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
 
-mediter_gam_month <- bam(mtc ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = net_mediter_mtc)
+mediter_gam_month <- bam(mtc ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.3, data = net_mediter_mtc)
 
- # mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")   +s(Month, bs = "cc", k=12),data =net_mediter_mtc)
+ # mediter_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cc")   +s(Month, bs = "cc", k=12),data =net_mediter_mtc)
   
-  # + (Fisherman)+ s(Start_hh, bs = "cr")  +   s(Date_num, bs = "gp")  
+  # + (Fisherman)+ s(Start_hh, bs = "cc")  +   s(Date_num, bs = "gp")  
                         
   
   summary(mediter_gam_month$gam)
@@ -1601,17 +1601,17 @@ par(mfrow = c(2,2))
 plot(mediter_gam_month,se=TRUE,col = "blue")
    # net_red_mtc = net_red_mtc %>% filter(Year>1999)
 
-red_gam_month = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
+red_gam_month = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
   
 
-red_gam_month <- bam(mtc ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = net_red_mtc)
+red_gam_month <- bam(mtc ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.3, data = net_red_mtc)
 
- # red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cr")   +s(Month, bs = "cc", k=12) ,data = net_red_mtc,method = "REML")
+ # red_gam_month = gam(mtc ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cc")   +s(Month, bs = "cc", k=12) ,data = net_red_mtc,method = "REML")
 
   
   #autocorrelation model
     #red_gam_month =  gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth), correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = temp) 
-#(Fisherman)+ s(Start_hh, bs = "cr")+s(Date_num, bs = "gp")  + 
+#(Fisherman)+ s(Start_hh, bs = "cc")+s(Date_num, bs = "gp")  + 
   
   summary(red_gam_month$gam)
     par(mfrow = c(2,2))
@@ -1670,7 +1670,7 @@ net_red_mtc$YearMonth = as.Date(as.yearmon(net_red_mtc$YearMonth,"%Y/%m"))
 
 
 #gamm with autocorrolation within day - ARM1
-gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cc") + s(Depth)   + 
                              s(Month, bs = "cc", k=12),correlation=corAR1(form = ~Net_num|Date_num), data =net_red_mtc)
 
 
@@ -1679,7 +1679,7 @@ title("mtc red sea gam - autocorrolation within day")
 
 
 #gamm with autocorrolation within month - ARM1
-gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cc") + s(Depth)   + 
                              s(Month, bs = "cc", k=12),correlation=corAR1(form = ~Net_num|YearMonth), data =net_red_mtc)
 
 
@@ -1694,7 +1694,7 @@ title("mtc red sea gam - autocorrolation within month")
 
 
 #gamm with autocorrolation within day - ARMA
-gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cc") + s(Depth)   + 
                              s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|Date_num,p=3), data =net_red_mtc)
 
 
@@ -1702,7 +1702,7 @@ plot(gamm_red$gam,se=TRUE,col = "blue")
 title("mtc red sea gam - autocorrolation within day")
 
 #gamm with autocorrolation within day - ARMA
-gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cr") + s(Depth)   + 
+gamm_red = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cc") + s(Depth)   + 
                              s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data =net_red_mtc)
 
 
@@ -1781,7 +1781,7 @@ temp = as.data.frame(temp)
     temp_gam = mediter_gam_month
   
 #temp_gam = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
-   #+ (Fisherman)+ s(Start_hh, bs = "cr")
+   #+ (Fisherman)+ s(Start_hh, bs = "cc")
     
   summary(temp_gam)
   par(mfrow = c(2,2)) 
@@ -1951,18 +1951,18 @@ row.names(aic_med_catch) = c("med","2","3","4","5","6")
 aic_catch = rbind(aic_red_catch,aic_med_catch)
 
 
-mediter_catch_gam <- bam(Sum ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = net_mediter_mtc)
+mediter_catch_gam <- bam(Sum ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.1, data = net_mediter_mtc)
 
 
-mediter_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
+mediter_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
 
 #without interaction
-mediter_catch_gam = gamm(Sum ~ s(Month, bs = "cc", k=12) + s(Year, bs = "cr")  +s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
+mediter_catch_gam = gamm(Sum ~ s(Month, bs = "cc", k=12) + s(Year, bs = "cr")  +s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
     
   #mediter_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_mediter_mtc )
   
   #better without them:
-  # +(Fisherman)+ s(Start_hh, bs = "cr")  + s(Date_num, bs = "gp")
+  # +(Fisherman)+ s(Start_hh, bs = "cc")  + s(Date_num, bs = "gp")
   
   summary(mediter_catch_gam$gam)
   gam.check(mediter_catch_gam$gam)
@@ -1972,14 +1972,14 @@ mediter_catch_gam = gamm(Sum ~ s(Month, bs = "cc", k=12) + s(Year, bs = "cr")  +
   plot(  mediter_catch_gam$gam,se=TRUE,col = "blue")
     title("Mediteranean species catch by month And year",line = -2, outer=TRUE)
 
-    red_catch_gam <- bam(Sum ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.5, data = net_red_mtc)
+    red_catch_gam <- bam(Sum ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.5, data = net_red_mtc)
     
     
     
-   red_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
+   red_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
    
    #without interaction
-    red_catch_gam = gamm(Sum ~ s(Month, bs = "cc", k=12) + s(Year, bs = "cr")  +s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
+    red_catch_gam = gamm(Sum ~ s(Month, bs = "cc", k=12) + s(Year, bs = "cr")  +s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
    
     #red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_red_mtc)
     
@@ -2133,7 +2133,7 @@ all_dataF = read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAs
  all_dataF = all_dataF %>% mutate(DLS = Lmo+WHT+DIP)
  
  # set NA to FALSE and remove rows with gamberi nets, the columns "fish (FIS)", "general box (BOX)", Speciel fish boxes (SPL), start from 1991, remove depth deeper than 100 m, and stay with 1 depth column, called "Depth"
-  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL, -loc_DEPTH, -Depth) %>% filter(Year>1990) %>% rename(Depth = depth_meter) %>% filter(Depth<100)%>% replace_na(list(Gambari_net = FALSE)) %>% filter(Gambari_net==FALSE) %>% arrange(DateTime) 
+  all_dataF = all_dataF %>% replace_na(list(Gambari_net=FALSE)) %>% dplyr::filter(Gambari_net=="FALSE") %>% dplyr::select( everything(),-BOX, -FIS, -SPL, -loc_DEPTH, -Depth) %>% filter(Year>1990) %>% rename(Depth = depth_meter) %>% filter(Depth<100) %>% arrange(DateTime) %>% filter(Month>0)
  all_dataF = all_dataF%>% mutate(Net_num = c(1:nrow(all_dataF))) %>% dplyr::mutate(YearMonth = paste(Year, Month, sep = "/"))
   
   
@@ -2172,6 +2172,10 @@ catch_ab_ex = catch_ex %>% filter(Species %in% abondance_species)
 
 abondance_species_data = scientific_namesF %>% dplyr::select(Sp_code, Sceintific_names = scintific_name) %>% filter(Sp_code %in% abondance_species)
 
+write.csv(abondance_species_data,"prosseced data/abondance species.CSV")
+abondance_species_subnames = read.csv("prosseced data/abondance species sub names.CSV")
+abondance_species_subnames = abondance_species_subnames %>% dplyr::select(-X)
+
 ```
 
 
@@ -2207,9 +2211,9 @@ aic_catch = rbind(aic_catch,aic_all_catchF)
 
 write.csv(aic_catch,"prosseced data/aic_catch_gamm.CSV")
 
-all_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+ s(Start_hh, bs = "cr")+s(Depth)+ (Fisherman),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = all_dataF)
+all_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+ s(Start_hh, bs = "cc")+s(Depth)+ (Fisherman),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = all_dataF)
 
- all_catch_gam <- bam(Sum ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = all_dataF)
+ all_catch_gam <- bam(Sum ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.1, data = all_dataF)
 
  #all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = all_dataF )
  summary(all_catch_gam$gam)
@@ -2287,61 +2291,64 @@ For runing this chunk, need to run the first chunk of "phenology part" - uploud 
 ```{r}
 aic_species_list = list()
 
+
 for (i in 1:length(abondance_species))
 {
 
    temp = all_dataF %>% dplyr::select(abondance_species[i], Year, Month, Depth, Fisherman,Start_hh   ) %>% filter(Year >= catch_sum$Year_S[i] )  %>% filter(Year <= catch_sum$Year_E[i] )
   
+  
+   
 temp = as.data.frame(temp)
    
 print(abondance_species[i])
 
- co <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp  )
+
+ co <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp  , family=tw)
  print("co")
-  
-  co_1 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp  )
-  
-  print("co_1") 
-   
-  co_3 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp )
-  
-  
-  print("co_3")
-  
-  co_5 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.5, data = temp)
-  
-  print("co_5")
  
-  co_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)   + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
- print("co_int")
+
+ #co <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12), data = temp, family = tw)
   
-  co_1_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp )
+ 
+  co_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)   + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp, family = tw)
   
-  print("co_1_int") 
-   
-  co_3_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp )
-  
-  print("co_3_int")
-  
-  co_5_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.5, data = temp)
-  
-  print("co_5_int")
+ #co_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth), data = temp, family = tw)
+ 
+  print("co_int")
   
   
   #create list of model outputs
-  species_bam_list=list(co, co_1, co_3, co_5,co_int, co_1_int, co_3_int, co_5_int )
+  species_gam_list=list(co, co_int )
   
-  names(species_bam_list)=c("co" ,"co_1", "co_3", "co_5","co_int" ,"co_1_int", "co_3_int", "co_5_int" )
+  names(species_gam_list)=c("co" ,"co_int" )
   
   
-  aic_species = AIC_GAM_F(species_bam_list)
+  aic_species = AIC_GAM_F(species_gam_list)
+    
+  #--cerate deviece explain dataframe
+  #deviance of "co" model
+  dev_ex =  1-co$deviance/co$null.deviance
+  #deviance of "co_int" model
+  dev_ex_co_int = 1-co_int$deviance/co_int$null.deviance
+  #join to 1 data, create colnames, as dataframe, with another column with model names
+  dev_ex = rbind(dev_ex, dev_ex_co_int)
+  colnames(dev_ex) = c("dev_ex")
+  dev_ex = as.data.frame(dev_ex)
+  dev_ex = dev_ex%>% mutate(model_name = c("co","co_int"))
+    
+  #join deviance explain with aic table
+ aic_species =  left_join(aic_species, dev_ex)
   
   aic_species_list[[i]] =aic_species
-   
+  
+
+  
+  
   model_name = aic_species[1,1]
   model_name = as.character(model_name)
   print(model_name)
-  temp_gam = species_bam_list[[model_name]]
+  temp_gam = species_gam_list[[model_name]]
   
   
   print(abondance_species[i])
@@ -2368,30 +2375,31 @@ pdata <- transform(pdata,
 p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
     geom_line() +
     scale_color_viridis(option = "plasma", end = 0.95) +
-    labs(title = paste( abondance_species_data[i,2],catch_sum$Year_S[i],"-",catch_sum$Year_E[i],sep = " "),
+    labs(title = abondance_species_subnames[i,3], 
+         subtitle = abondance_species_subnames[i,4],
          x = NULL,
          y = "Relative catch") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
-  theme_update(text = element_text(size=20))
+  theme_update(text = element_text(size=20))+
+  theme(plot.subtitle=element_text(size = 8))
     
     
 
 grid.arrange(p1)
 
-#ggsave(paste("C:/Users/dvora/Google Drive/second degree/thesis/data/R/graphs/phenology/",abondance_species[i],".png",sep = ""), p1, dpi = 100, width = 8.5, height = 5.5)
+ggsave(paste("C:/Users/dvora/Google Drive/second degree/thesis/data/R/graphs/phenology/",abondance_species[i],".png",sep = ""), p1, dpi = 100, width = 8.5, height = 5.5)
 
-ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/phenology/",abondance_species[i],".png",sep = ""), p1, dpi = 200)
+#ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/phenology/",abondance_species[i],".png",sep = ""), p1, dpi = 200)
   #, width = 8.5, height = 5.5
   
 }#end for
 
 names(aic_species_list) = abondance_species
-aic_species_list = aic_species_list %>% lapply(function(x){
-  arrange(x,AIC)%>% 
-  mutate(delta = AIC - first(AIC))
-})
 
-lapply(aic_species_list, function(x) write.table( data.frame(x), 'aic_species_list.csv'  , append= T, sep=',' ))
+aic_species_data <- do.call(rbind, aic_species_list)
+aic_species_data = as.data.frame(aic_species_data)
+write.csv(aic_species_data, "prosseced data/aic_species.CSV")
+
 
 
 ```
@@ -2399,7 +2407,7 @@ simp <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12
   
   print(simp)
    
-  co <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp, family = tw)
+  co <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp, family = tw)
   
   print(co)
   
@@ -2407,9 +2415,79 @@ simp <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12
   
   print(simp_int)
   
-  co_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp, family = tw)
+  co_int = gam(temp[,1] ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp, family = tw)
 
   print(co_int)
+
+#---loop - create seasonal graphs, without interaction, for interactions' species
+
+```{r}
+
+
+int_species = c("Bbo", "Ccr", "DLS", "EPI", "Per", "SAR", "SPH", "Sud", "Upo")
+int_species_subnames = abondance_species_subnames %>% filter(Sp_code %in% int_species)
+
+for (i in 1:length(int_species))
+{
+
+   temp = all_dataF %>% dplyr::select(int_species[i], Year, Month, Depth, Fisherman,Start_hh   ) %>% filter(Year >= catch_sum$Year_S[i] )  %>% filter(Year <= catch_sum$Year_E[i] )
+  
+  
+   
+temp = as.data.frame(temp)
+   
+print(int_species[i])
+
+
+ temp_gam <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp  , family=tw)
+ print("co")
+ 
+  
+  print(int_species[i])
+    
+  
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100), Depth =30,Start_hh = 50,Fisherman = "Levi"))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = int_species_subnames[i,3], 
+         subtitle = int_species_subnames[i,4],
+         x = NULL,
+         y = "Relative catch") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
+  theme_update(text = element_text(size=20))+
+  theme(plot.subtitle=element_text(size = 8))
+    
+    
+
+grid.arrange(p1)
+
+ggsave(paste("C:/Users/dvora/Google Drive/second degree/thesis/data/R/graphs/phenology/season/",int_species[i],".png",sep = ""), p1, dpi = 100, width = 8.5, height = 5.5)
+
+#ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/phenology/season/",int_species[i],".png",sep = ""), p1, dpi = 200)
+  #, width = 8.5, height = 5.5
+  
+}#end for
+
+```
+
 
 
 #--loop - create interaction graphs for the whole species
@@ -2600,13 +2678,16 @@ write.csv(catch_exB, "prosseced data/num catch per year b size.CSV")
 ```
 
 
-#Loop of gam model, AIC, and interaction-seasonality graphs function
-```{r}
-#remove "Sud" and "Sd", wich has just 6 years, not enough for modeling
-species_b = species_b[!species_b%in% c("Sud","Sja","SPH","Sd","Umo")]
-b_size_all = b_size_all %>%dplyr::filter(!species %in% c("Sud","Sja","SPH","Sd","Umo"))
 
-aic_bsize_list = list()
+```{r}
+season_species_b = c("DLS", "MUL", "Sud","Sja","SPH","Sd","Umo")
+b_size_all = b_size_all %>%dplyr::filter(species %in% c("DLS", "MUL","Sud","Sja","SPH","Sd","Umo"))
+
+season_b_subname = scientific_namesF %>% dplyr::select(Sp_code, Common_name, Scientific_name = scintific_name)
+%>% filter(Sp_code %in% season_species_b)
+write.csv(season_species_b,"prosseced data/season_b_subname.CSV")
+
+species_b_subname = read.csv("prosseced data/species_b_subname.CSV")
 
  for (i in 1:length(species_b))
     
@@ -2620,38 +2701,113 @@ print(species_b[i])
 
 
 
- co <- bam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cr"), data = temp )
+ temp_gam <- bam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
+ 
  print("co")
   
-  co_1 <- bam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cr"), rho = 0.1, data = temp )
+    
   
-  print("co_1") 
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100),Start_Time_hh = 50,Fishermen = "Levi"))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = species_b_subname[i,5], 
+         subtitle = species_b_subname[i,6],
+         x = NULL,
+         y = "Relative catch") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
+  theme_update(text = element_text(size=20))+
+  theme(plot.subtitle=element_text(size = 8))
+    
    
-  co_3 <- bam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cr"), rho = 0.3, data = temp )
+
+grid.arrange(p1)
+
+#ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/b size/season",species_b[i],".png",sep = ""), p1, dpi = 200)
+
+ggsave(paste("C:/Users/Dvora/Google Drive/second degree/thesis/data/R/graphs/b size/season",species_b[i],".png",sep = ""), p1, dpi = 200)
+ }#end for
+
+```
+
+
+#Loop of gam model, AIC, and interaction-seasonality graphs function
+```{r}
+#remove "Sud" and "Sd", wich has just 6 years, not enough for modeling
+species_b = species_b[!species_b%in% c("Sud","Sja","SPH","Sd","Umo")]
+b_size_all = b_size_all %>%dplyr::filter(!species %in% c("Sud","Sja","SPH","Sd","Umo"))
+
+aic_bsize_list = list()
+species_b_subname = read.csv("prosseced data/species_b_subname.CSV")
+
+ for (i in 1:length(species_b))
+    
+{
+temp = b_size_all %>% dplyr::select(kg_b ,species, Year=Year.XXXX., Month=Month.XX., Fishermen, Start_Time_hh) %>% filter(species==species_b[i]) %>% filter(Year >= catch_b_years$Year_S[i] )  %>% filter(Year <= catch_b_years$Year_E[i] ) 
   
-  print("co_3")
-  
-  co_5 <- bam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cr"), rho = 0.5, data = temp )
-  
-  print("co_5")
- 
-  co_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)   + ti(Month,Year, bs = c("cc","cr"))  + (Fishermen)+ s(Start_Time_hh, bs = "cr"), data = temp )
- print("co_int")
-  
-  co_1_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))  + (Fishermen)+ s(Start_Time_hh, bs = "cr"), rho = 0.1, data = temp )
-  
-  print("co_1_int") 
    
-  co_3_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))  + (Fishermen)+ s(Start_Time_hh, bs = "cr"), rho = 0.3, data = temp )
-  
-  print("co_3_int")
-  
-  co_5_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))  + (Fishermen)+ s(Start_Time_hh, bs = "cr"), rho = 0.5, data = temp )
-  
-  print("co_5_int")
+temp = as.data.frame(temp)
+   
+print(species_b[i])
+
+
+
+ co <- bam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
  
-   #!!!---!!!Dont work!!!---!!!
-  model_name =  aic_bsize[1,1]
+ print("co")
+  
+  
+ 
+  co_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)   + ti(Month,Year, bs = c("cc","cr"))  + (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
+ 
+  print("co_int")
+  
+
+  #create list of model outputs
+  bsize_bam_list=list(co, co_int )
+  names(bsize_bam_list)=c("co" ,"co_int" ) 
+  
+  #call to AIC functions
+   aic_bsize = AIC_GAM_F(bsize_bam_list)
+  
+   
+    #--cerate deviece explain dataframe
+  #deviance of "co" model
+  dev_ex =  1-co$deviance/co$null.deviance
+  #deviance of "co_int" model
+  dev_ex_co_int = 1-co_int$deviance/co_int$null.deviance
+  #join to 1 data, create colnames, as dataframe, with another column with model names
+  dev_ex = rbind(dev_ex, dev_ex_co_int)
+  colnames(dev_ex) = c("dev_ex")
+  dev_ex = as.data.frame(dev_ex)
+  dev_ex = dev_ex%>% mutate(model_name = c("co","co_int"))
+    
+  #join deviance explain with aic table
+ aic_bsize =  left_join(aic_bsize, dev_ex)
+   
+   
+   #put in the list
+  aic_bsize_list[[i]] =aic_bsize
+ 
+  #extract best model name and gam model
+   model_name =  aic_bsize[1,1]
   model_name = as.character(model_name)
   print(model_name)
   temp_gam =  bsize_bam_list[[model_name]]
@@ -2681,32 +2837,30 @@ pdata <- transform(pdata,
 p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
     geom_line() +
     scale_color_viridis(option = "plasma", end = 0.95) +
-    labs(title = paste( species_b_data[i,3],catch_b_years$Year_S[i],"-",catch_b_years$Year_E[i],sep = " "),
+    labs(title = species_b_subname[i,5], 
+         subtitle = species_b_subname[i,6],
          x = NULL,
          y = "Relative catch") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
-  theme_update(text = element_text(size=20))
+  theme_update(text = element_text(size=20))+
+  theme(plot.subtitle=element_text(size = 8))
     
    
 
 grid.arrange(p1)
 
-ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/b size/",species_b[i],".png",sep = ""), p1, dpi = 200)
+#ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/b size/",species_b[i],".png",sep = ""), p1, dpi = 200)
 
-
+ggsave(paste("C:/Users/Dvora/Google Drive/second degree/thesis/data/R/graphs/b size/",species_b[i],".png",sep = ""), p1, dpi = 200)
   
 }#end for
 
+names(aic_bsize_list) = species_b
+
+aic_bsize_data <- do.call(rbind, aic_bsize_list)
+aic_bsize_data = as.data.frame(aic_bsize_data)
+write.csv(aic_species_data, "prosseced data/aic_bsize.CSV")
  
-
-#temp_species_b = species_b[!species_b %in% "Umo"]
-names(aic_bsize_list) = temp_species_b
-
-
-  
-
-
-
 
 ```
 
@@ -3685,4 +3839,118 @@ ggplot(mediter_month_long_3 , aes(x=Month,  y=value, colour=variable)) +
 
 
 
+
+  For runing this chunk, need to run the first chunk of "phenology part" - uploud the data
+
+  ```{r}
+aic_species_list = list()
+
+    for (i in 1:length(abondance_species))
+  {
+
+   temp = all_dataF %>% dplyr::select(abondance_species[i], Year, Month, Depth, Fisherman,Start_hh   ) %>% filter(Year >= catch_sum$Year_S[i] )  %>% filter(Year <= catch_sum$Year_E[i] )
+  
+temp = as.data.frame(temp)
+   
+print(abondance_species[i])
+
+ co <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp  )
+ print("co")
+  
+  co_1 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp  )
+  
+  print("co_1") 
+   
+  co_3 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp )
+  
+  
+  print("co_3")
+  
+  co_5 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.5, data = temp)
+  
+  print("co_5")
+ 
+  co_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)   + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+ print("co_int")
+  
+  co_1_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp )
+  
+  print("co_1_int") 
+   
+  co_3_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp )
+  
+  print("co_3_int")
+  
+  co_5_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.5, data = temp)
+  
+  print("co_5_int")
+  
+  
+  #create list of model outputs
+  species_bam_list=list(co, co_1, co_3, co_5,co_int, co_1_int, co_3_int, co_5_int )
+  
+  names(species_bam_list)=c("co" ,"co_1", "co_3", "co_5","co_int" ,"co_1_int", "co_3_int", "co_5_int" )
+  
+  
+  aic_species = AIC_GAM_F(species_bam_list)
+  
+  aic_species_list[[i]] =aic_species
+   
+  model_name = aic_species[1,1]
+  model_name = as.character(model_name)
+  print(model_name)
+  temp_gam = species_bam_list[[model_name]]
+  
+  
+  print(abondance_species[i])
+    
+  
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100), Depth =30,Start_hh = 50,Fisherman = "Levi"))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = paste( abondance_species_data[i,2],catch_sum$Year_S[i],"-",catch_sum$Year_E[i],sep = " "),
+         x = NULL,
+         y = "Relative catch") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
+  theme_update(text = element_text(size=20))
+    
+    
+
+grid.arrange(p1)
+
+  #ggsave(paste("C:/Users/dvora/Google Drive/second degree/thesis/data/R/graphs/phenology/",abondance_species[i],".png",sep = ""), p1, dpi = 100, width = 8.5, height = 5.5)
+
+ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/phenology/",abondance_species[i],".png",sep = ""), p1, dpi = 200)
+  #, width = 8.5, height = 5.5
+  
+}#end for
+
+names(aic_species_list) = abondance_species
+aic_species_list = aic_species_list %>% lapply(function(x){
+  arrange(x,AIC)%>% 
+  mutate(delta = AIC - first(AIC))
+})
+
+lapply(aic_species_list, function(x) write.table( data.frame(x), 'aic_species_list.csv'  , append= T, sep=',' ))
+
+
+```
 
