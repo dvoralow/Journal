@@ -2281,7 +2281,7 @@ grid.arrange(p1)
 
 
 
-#---GAM models and AIC for phenology of spcies--
+#---loop - GAM models, AIC test, and graphs for phenology and seasonality of spcies--
 For runing this chunk, need to run the first chunk of "phenology part" - uploud the data
 
 ```{r}
@@ -2296,14 +2296,15 @@ temp = as.data.frame(temp)
    
 print(abondance_species[i])
 
- co <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
+ co <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp  )
  print("co")
   
-  co_1 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp)
+  co_1 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp  )
   
   print("co_1") 
    
-  co_3 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp)
+  co_3 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp )
+  
   
   print("co_3")
   
@@ -2314,11 +2315,11 @@ print(abondance_species[i])
   co_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)   + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), data = temp)
  print("co_int")
   
-  co_1_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp)
+  co_1_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.1, data = temp )
   
   print("co_1_int") 
    
-  co_3_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp)
+  co_3_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cr"), rho = 0.3, data = temp )
   
   print("co_3_int")
   
@@ -2599,7 +2600,7 @@ write.csv(catch_exB, "prosseced data/num catch per year b size.CSV")
 ```
 
 
-#gam and AIC function
+#Loop of gam model, AIC, and interaction-seasonality graphs function
 ```{r}
 #remove "Sud" and "Sd", wich has just 6 years, not enough for modeling
 species_b = species_b[!species_b%in% c("Sud","Sja","SPH","Sd","Umo")]
@@ -2610,13 +2611,48 @@ aic_bsize_list = list()
  for (i in 1:length(species_b))
     
 {
-
+temp = b_size_all %>% dplyr::select(kg_b ,species, Year=Year.XXXX., Month=Month.XX., Fishermen, Start_Time_hh) %>% filter(species==species_b[i]) %>% filter(Year >= catch_b_years$Year_S[i] )  %>% filter(Year <= catch_b_years$Year_E[i] ) 
   
+   
+temp = as.data.frame(temp)
+   
+print(species_b[i])
+
+
+
+ co <- bam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cr"), data = temp )
+ print("co")
+  
+  co_1 <- bam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cr"), rho = 0.1, data = temp )
+  
+  print("co_1") 
+   
+  co_3 <- bam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cr"), rho = 0.3, data = temp )
+  
+  print("co_3")
+  
+  co_5 <- bam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cr"), rho = 0.5, data = temp )
+  
+  print("co_5")
+ 
+  co_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)   + ti(Month,Year, bs = c("cc","cr"))  + (Fishermen)+ s(Start_Time_hh, bs = "cr"), data = temp )
+ print("co_int")
+  
+  co_1_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))  + (Fishermen)+ s(Start_Time_hh, bs = "cr"), rho = 0.1, data = temp )
+  
+  print("co_1_int") 
+   
+  co_3_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))  + (Fishermen)+ s(Start_Time_hh, bs = "cr"), rho = 0.3, data = temp )
+  
+  print("co_3_int")
+  
+  co_5_int <- bam(temp[,1] ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))  + (Fishermen)+ s(Start_Time_hh, bs = "cr"), rho = 0.5, data = temp )
+  
+  print("co_5_int")
  
    #!!!---!!!Dont work!!!---!!!
   model_name =  aic_bsize[1,1]
-   model_name = as.character(model_name)
-  print(model_name)
+  model_name = as.character(model_name)
   print(model_name)
   temp_gam =  bsize_bam_list[[model_name]]
   
