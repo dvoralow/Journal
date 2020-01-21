@@ -2634,7 +2634,7 @@ upload data and replace the dipoldus, Marmir, pijama (Lmo, WHT, DIP, Dce) specis
 #species_names_seperate=species_names_seperate[order(species_names_seperate$Sp_code),]
 #I choose just the relevant species
 #--!! I removed "Mme", Bakala, because it doesn't exist in species abondance model. to check it ---!!--#
-species_b = c("Sd", "MUL", "Per", "Nra", "Sud", "Sja", "SPH", "Ccr", "Umo","DLS")
+species_b = c("Sd","MUL", "Per", "Nra", "Sud", "Sja", "SPH", "Ccr", "Umo","DLS")
 species_b = sort(species_b)
 
 #uplaod relavant years of catch for each species
@@ -2658,7 +2658,8 @@ b_size_all <- FindReplace(data = b_size_all, Var = "species", replaceData = Repl
 
 scientific_namesF = read.csv(file = "prosseced data/sceintific_names_fishes_only.csv", stringsAsFactors = F)
 species_b_data = scientific_namesF %>% dplyr::select(Sp_code, Common_name, Scientific_name = scintific_name) %>% filter(Sp_code %in% species_b)
-
+write.csv(species_b_data,"prosseced data/species_b_names.CSV")
+species_b_data = read.csv("prosseced data/species_b_names1.CSV")
 
 ```
 
@@ -2677,17 +2678,10 @@ write.csv(catch_exB, "prosseced data/num catch per year b size.CSV")
 
 ```
 
-
+#Just seasonality graphs
 
 ```{r}
-season_species_b = c("DLS", "MUL", "Sud","Sja","SPH","Sd","Umo")
-b_size_all = b_size_all %>%dplyr::filter(species %in% c("DLS", "MUL","Sud","Sja","SPH","Sd","Umo"))
 
-season_b_subname = scientific_namesF %>% dplyr::select(Sp_code, Common_name, Scientific_name = scintific_name)
-%>% filter(Sp_code %in% season_species_b)
-write.csv(season_species_b,"prosseced data/season_b_subname.CSV")
-
-species_b_subname = read.csv("prosseced data/species_b_subname.CSV")
 
  for (i in 1:length(species_b))
     
@@ -2728,8 +2722,8 @@ pdata <- transform(pdata,
 p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
     geom_line() +
     scale_color_viridis(option = "plasma", end = 0.95) +
-    labs(title = species_b_subname[i,5], 
-         subtitle = species_b_subname[i,6],
+    labs(title = species_b_data[i,5], 
+         subtitle = species_b_data[i,6],
          x = NULL,
          y = "Relative catch") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
