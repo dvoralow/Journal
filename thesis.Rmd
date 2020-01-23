@@ -2684,7 +2684,7 @@ write.csv(catch_exB, "prosseced data/num catch per year b size.CSV")
 ```{r}
 
 #!!!---!!CAUTION!!!-----!!!
-#the looop does'nt finish. i = 1:8 is OK, and i=10, but i=9 is Sud, wich need separete model, whith k=6 at Years.
+#the looop does'nt finish. i = 1:5 is OK, and i=10, but i=7 is sja, i=6 sd i=9 is Sud, wich need separete model, whith k=6 at Years.
 
  for (i in 1:length(species_b))
     
@@ -2700,10 +2700,11 @@ print(species_b[i])
 
  temp_gam <- bam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
  
- #model for "sud" species, included just 6 years
-# temp_gam <- bam(temp[,1] ~ s(Year, bs = "cr",k=6)  +  s(Month, bs = "cc",k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
+ #model for "sud" and "sd" species, included just 6 years
+ #temp_gam <- bam(temp[,1] ~ s(Year, bs = "cr",k=6)  +  s(Month, bs = "cc",k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
  
- print("co")
+ #model for "sja" species, included just 7 years
+ #temp_gam <- bam(temp[,1] ~ s(Year, bs = "cr",k=7)  +  s(Month, bs = "cc",k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
   
     
   
@@ -2739,9 +2740,9 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
 
 grid.arrange(p1)
 
-#ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/b size/season",species_b[i],".png",sep = ""), p1, dpi = 200)
+ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/b size/season",species_b[i],".png",sep = ""), p1, dpi = 200)
 
-ggsave(paste("C:/Users/Dvora/Google Drive/second degree/thesis/data/R/graphs/b size/season",species_b[i],".png",sep = ""), p1, dpi = 200)
+#ggsave(paste("C:/Users/Dvora/Google Drive/second degree/thesis/data/R/graphs/b size/season",species_b[i],".png",sep = ""), p1, dpi = 200)
  }#end for
 
 ```
