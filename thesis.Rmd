@@ -2487,6 +2487,85 @@ ggsave(paste("C:/Users/dvora/Google Drive/second degree/thesis/data/R/graphs/phe
 ```
 
 
+#create seasonal model with the bsize years for  Ccr (2001-2012)and Sud (2013,2018) general catch
+
+```{r}
+
+limit_year_species = c("Ccr", "Sud")
+limit_year_species_subnames = abondance_species_subnames %>% filter(Sp_code %in% limit_year_species)
+
+for (i in 1:length(limit_year_species))
+{
+
+   temp = all_dataF %>% dplyr::select(limit_year_species[i], Year, Month, Depth, Fisherman,Start_hh   ) 
+   if (i==1)
+   {
+   temp = all_dataF %>% filter(Year >= 2001 )  %>% filter(Year <= 2012 ) 
+   temp = as.data.frame(temp)
+
+ temp_gam <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp  , family=tw)
+ 
+   
+   }
+   
+   else
+   {
+     temp = all_dataF %>% filter(Year >= 2013 )  %>% filter(Year <= 2018 )  
+     
+     temp = as.data.frame(temp)
+
+
+ temp_gam <- bam(temp[,1] ~ s(Year, bs = "cr",k=6) + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp  , family=tw)
+ 
+   }
+   
+  
+  
+  print(limit_year_species[i])
+    
+  
+  ## Look at the fitted model
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+pdata <- with(temp, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100), Depth =30,Start_hh = 50,Fisherman = "Levi"))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = limit_year_species_subnames[i,3], 
+         x = NULL,
+         y = "Relative catch") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
+  theme_update(text = element_text(size=20))+
+  theme(plot.title = element_text(face = "italic"))
+    
+    
+
+grid.arrange(p1)
+
+ggsave(paste("C:/Users/dvora/Google Drive/second degree/thesis/data/R/graphs/phenology/season/limit year",limit_year_species[i],".png",sep = ""), p1, dpi = 200, width = 8.5, height = 5.5)
+
+#ggsave(paste("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/phenology/season/limit year",limit_year_species[i],".png",sep = ""), p1, dpi = 200)
+  #, width = 8.5, height = 5.5
+  
+}#end for
+
+```
+
+
 
 #--loop - create interaction graphs for the whole species
 ```{r}
@@ -2860,7 +2939,7 @@ names(aic_bsize_list) = species_b
 
 aic_bsize_data <- do.call(rbind, aic_bsize_list)
 aic_bsize_data = as.data.frame(aic_bsize_data)
-write.csv(aic_species_data, "prosseced data/aic_bsize.CSV")
+write.csv(aic_bsize_data, "prosseced data/aic_bsize.CSV")
  
 
 ```
@@ -3039,6 +3118,7 @@ geom_point()+
 ggsave(paste("C:/Users/Dvora/Google Drive/second degree/thesis/data/R/graphs/b size/season rough",species_b,".png",sep = ""), p2, dpi = 200)
 
 ```
+
 
 
 
