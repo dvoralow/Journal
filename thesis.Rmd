@@ -1117,6 +1117,15 @@ input:
 
 
 
+5. dev_ex_fun - put deviance explained of bam/gam modells to the AIC table
+
+  input: 
+    bam list, the output of bam function
+    aic dataframe, the output of AIC function
+    
+  output: 
+    AIC table with column of deviance explain
+
 ```{r}
 #1
 GAM_models_mtc_sum=function(data_in,y_par){
@@ -1263,6 +1272,7 @@ bam_mtc_sum=function(net_data,y_par){
   
   names(bam_list)=c("co" ,"co_1", "co_3", "co_5","co_int" ,"co_1_int", "co_3_int", "co_5_int" )
   
+    
   return(bam_list)
   }#end bam_auto_list function
 
@@ -1283,6 +1293,31 @@ AIC_GAM_auto=function(gam_fun_out){
   
   return(AIC_df)
 }
+
+#5
+dev_ex_fun = function(aic_dataframe,bam_list_in){
+  #--cerate deviece explain dataframe
+  #deviance of each model
+ 
+  dev_v = c()
+  for (i in 1:length(bam_list_in)) {
+    
+    dev_temp = 1-bam_list_in[[i]]$deviance/bam_list_in[[i]]$null.deviance
+    dev_temp = dev_temp*100
+    dev_v[i] = dev_temp
+    
+  }
+
+  dev_ex = data.frame(model_name = names(bam_list_in))
+  dev_ex$Deviance_explained =dev_v
+  
+  #joind deviance explain to AIC data frame
+ aic_dataframe =  left_join(aic_dataframe, dev_ex)
+  
+  return(aic_dataframe)
+}
+  
+
 
 
 ```
@@ -1487,31 +1522,33 @@ scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option
 
 
 #call the function on mtc red sea gams
-red_mtc_gam = GAM_models_mtc_sum(net_red_mtc,"mtc")
-aic_red_mtc = AIC_GAM_F(red_mtc_gam)
+#red_mtc_gam = GAM_models_mtc_sum(net_red_mtc,"mtc")
+#aic_red_mtc = AIC_GAM_F(red_mtc_gam)
 
 red_mtc_bam = bam_mtc_sum(net_red_mtc,"mtc")
 aic_red_mtc = AIC_GAM_F(red_mtc_bam)
-
+aic_red_mtc = dev_ex_fun(aic_red_mtc,red_mtc_bam)
 
  par(mfrow = c(2,2))
   plot(  red_mtc_gam[[4]],se=TRUE,col = "blue") 
  
 
-med_mtc_gam = GAM_models_mtc_sum(net_mediter_mtc,"mtc")
-aic_med_mtc = AIC_GAM_F(med_mtc_gam)
+#med_mtc_gam = GAM_models_mtc_sum(net_mediter_mtc,"mtc")
+#aic_med_mtc = AIC_GAM_F(med_mtc_gam)
 
 med_mtc_bam = bam_mtc_sum(net_mediter_mtc,"mtc")
 aic_med_mtc = AIC_GAM_F(med_mtc_bam)
+aic_med_mtc = dev_ex_fun(aic_med_mtc,med_mtc_bam)
 
  par(mfrow = c(2,2))
   plot(  med_mtc_gam[[4]],se=TRUE,col = "blue") 
 
-all_mtc_gam = GAM_models_mtc_sum(net_all_data,"mtc")
-aic_all_mtc = AIC_GAM_F(all_mtc_gam)
+#all_mtc_gam = GAM_models_mtc_sum(net_all_data,"mtc")
+#aic_all_mtc = AIC_GAM_F(all_mtc_gam)
 
 all_mtc_bam = bam_mtc_sum(net_all_data,"mtc")
 aic_all_mtc = AIC_GAM_F(all_mtc_bam)
+aic_all_mtc = dev_ex_fun(aic_all_mtc, all_mtc_bam)
 
 row.names(aic_red_mtc) = c("red","2","3","4","5","6","7","8")
 row.names(aic_all_mtc) = c("all","2","3","4","5","6","7","8")
@@ -1521,23 +1558,6 @@ aic_mtc = rbind(aic_all_mtc, aic_med_mtc, aic_red_mtc)
 write.csv(aic_mtc,"prosseced data/aic_mtc_bam.CSV")
 
 
-#---call to autocorrelation gamm model and AIC - the function does'nt work, but work wiht handy running
-red_mtc_gamm = GAMM_auto_mtc_sum(net_red_mtc,"mtc")
-aic_red_mtc = AIC_GAM_auto(red_mtc_gamm)
-
-
-med_mtc_gamm = GAMM_auto_mtc_sum(net_medietr_mtc,"mtc")
-aic_med_mtc = AIC_GAM_auto(med_mtc_gamm)
-
-all_mtc_gamm = GAMM_auto_mtc_sum(net_all_data,"mtc")
-aic_all_mtc = AIC_GAM_auto(all_mtc_gamm)
-    
-row.names(aic_red_mtc) = c("red","2","3","4","5","6")
-row.names(aic_all_mtc) = c("all","2","3","4","5","6")
-row.names(aic_med_mtc) = c("med","2","3","4","5","6")
-
-aic_mtc = rbind(aic_all_mtc, aic_med_mtc, aic_red_mtc)
-write.csv(aic_mtc,"prosseced data/aic_mtc_gamm.CSV")
 
 ```
   
@@ -1563,10 +1583,10 @@ write.csv(aic_mtc,"prosseced data/aic_mtc_gamm.CSV")
 ```{r}
 
  #all data gam model
-gam_all = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+ s(Start_hh, bs = "cc")+s(Depth)+ (Fisherman),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = net_all_data)
+#gam_all = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+ s(Start_hh, bs = "cc")+s(Depth)+ (Fisherman),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = net_all_data)
 
-gam_all = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cc") + s(Depth)   + 
-                             s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=1),data =net_all_data)
+#gam_all = gamm(mtc ~ s(Year, bs = "cr")+ (Fisherman)+ s(Start_hh, bs = "cc") + s(Depth)   + 
+                             #s(Month, bs = "cc", k=12),correlation=corARMA(form = ~Net_num|YearMonth,p=1),data #=net_all_data)
 
  gam_all <- bam(mtc ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.3, data = net_all_data)
 #
@@ -1584,7 +1604,7 @@ par(mfrow = c(2,2))
 plot(gam_all,se=TRUE,col = "blue")
 
 
-mediter_gam_month = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
+#mediter_gam_month = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
 
 mediter_gam_month <- bam(mtc ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.3, data = net_mediter_mtc)
 
@@ -1601,7 +1621,7 @@ par(mfrow = c(2,2))
 plot(mediter_gam_month,se=TRUE,col = "blue")
    # net_red_mtc = net_red_mtc %>% filter(Year>1999)
 
-red_gam_month = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
+#red_gam_month = gamm(mtc ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
   
 
 red_gam_month <- bam(mtc ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12) + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.3, data = net_red_mtc)
@@ -1626,15 +1646,25 @@ mediter_gam_month <- getViz(mediter_gam_month)
 red_gam_month = getViz(red_gam_month)
 #red_gam_month = getViz(red_gam_month$gam)
 
-p_red_mtc = plot( sm(red_gam_month, 1) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = 0),axis.title.y = element_text(vjust = 1))+labs(y ="Relative temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2))  +ggtitle("Red Sea species")
 
 
-p_all_mtc = plot( sm(gam_all, 1) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "green")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = 0),axis.title.y = element_text(vjust = 3))+labs(y ="Relative temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Whole known origin species")
+p_red_mtc = plot( sm(red_gam_month, 1) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = 0),axis.title.y = element_text(vjust = 1))+labs(y ="Relative MTC")+scale_x_continuous (breaks=seq(1991,2018, by = 2))  +ggtitle("Alien species")
+#dev.copy(png,'p_red_mtc.png', width = 1600, height = 1200)
+#save the graph
+dev.copy(png,'p_red_mtc.png')
+ dev.off()
+
+p_all_mtc = plot( sm(gam_all, 1) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "purple")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = 0),axis.title.y = element_text(vjust = 3))+labs(y ="Relative MTC")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Whole known origin species")
+#save the graph
+dev.copy(png,'p_all_mtc.png')
+ dev.off()
 
 
 
-
-  plot( sm(mediter_gam_month, 1) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = 0),axis.title.y = element_text(vjust = 3))+labs(y ="Relative temperature affinity")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Mediterranean species")
+  plot( sm(mediter_gam_month, 1) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = 0),axis.title.y = element_text(vjust = 3))+labs(y ="Relative MTC")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Indigenous species")
+#save the graph
+  dev.copy(png,'p_med_mtc.png')
+ dev.off()
 
 
 
@@ -1760,13 +1790,16 @@ pdata <- transform(pdata,
 p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
     geom_line() +
     scale_color_viridis(option = "plasma", end = 0.95) +
-    labs(title = "Known origin species",
+    labs(title = "Whole known origin species",
          x = NULL,
-         y = "Relative temperature affinity") +
+         y = "MTC") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
-  theme_update(text = element_text(size=40))
+  theme_update(text = element_text(size=25))
     
     p1
+    
+    ggsave("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/mtc/all_int.png", p1, dpi = 200)
+  
 
 
 
@@ -1818,16 +1851,16 @@ pdata <- transform(pdata,
 p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
     geom_line() +
     scale_color_viridis(option = "plasma", end = 0.95) +
-    labs(title = "Mediterranean species",
+    labs(title = "Indigenous species",
          x = NULL,
-         y = "Relative temperature affinity") +
+         y = "MTC") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
-  theme_update(text = element_text(size=40))
+  theme_update(text = element_text(size=25))
     
     
     p1
 
-
+  ggsave("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/mtc/med_int.png", p1, dpi = 200)
 
 
 
@@ -1872,15 +1905,16 @@ pdata <- transform(pdata,
 p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
     geom_line() +
     scale_color_viridis(option = "plasma", end = 0.95) +
-    labs(title = "Red Sea species",
+    labs(title = "Alien species",
          x = NULL,
-         y = "Relative temperature affinity") +
+         y = "MTC") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
-  theme_update(text = element_text(size=40))
+  theme_update(text = element_text(size=25))
     
     p1
 
-
+ ggsave("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/mtc/red_int.png", p1, dpi = 200)
+  
 
 
 
@@ -1911,21 +1945,24 @@ net_mediter_mtc = net_mediter_mtc %>% filter(Year<2018)
  
  
   #------call the function on Sum  gams and bam
-red_catch_gam = GAM_models_mtc_sum(net_red_mtc,"Sum")
-aic_red_catch = AIC_GAM_F(red_catch_gam)
+#red_catch_gam = GAM_models_mtc_sum(net_red_mtc,"Sum")
+#aic_red_catch = AIC_GAM_F(red_catch_gam)
 
 red_catch_bam = bam_mtc_sum(net_red_mtc,"Sum")
 aic_red_catch = AIC_GAM_F(red_catch_bam)
+aic_red_catch = dev_ex_fun(aic_red_catch,red_catch_bam)
+
 
  par(mfrow = c(2,2))
   plot(  red_catch_bam[[4]],se=TRUE,col = "blue") 
  
 
-med_catch_gam = GAM_models_mtc_sum(net_mediter_mtc,"Sum")
-aic_med_catch = AIC_GAM_F(med_catch_gam)
+#med_catch_gam = GAM_models_mtc_sum(net_mediter_mtc,"Sum")
+#aic_med_catch = AIC_GAM_F(med_catch_gam)
 
 med_catch_bam = bam_mtc_sum(net_mediter_mtc,"Sum")
 aic_med_catch = AIC_GAM_F(med_catch_bam)
+aic_med_catch = dev_ex_fun(aic_med_catch,med_catch_bam)
 
  par(mfrow = c(2,2))
   plot(  med_catch_gam[[1]],se=TRUE,col = "blue") 
@@ -1936,34 +1973,11 @@ row.names(aic_med_catch) = c("med","2","3","4","5","6", "7", "8")
 aic_catch = rbind(aic_red_catch,aic_med_catch)
   
   
-   #------call the autocorrelation function on Sum  gamms - whith autocorrelation
-  #- the function does'nt work, but work wiht handy running
-red_catch_gamm = GAMM_auto_mtc_sum(net_red_mtc,"Sum")
-aic_red_catch = AIC_GAM_auto(red_catch_gamm)
-
-
-med_catch_gamm = GAMM_auto_mtc_sum(net_medietr_mtc,"Sum")
-aic_med_catch = AIC_GAM_auto(med_catch_gamm)
-
- row.names(aic_red_catch) = c("red","2","3","4","5","6")
-row.names(aic_med_catch) = c("med","2","3","4","5","6") 
-
-aic_catch = rbind(aic_red_catch,aic_med_catch)
-
+  
 
 mediter_catch_gam <- bam(Sum ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.1, data = net_mediter_mtc)
 
 
-mediter_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
-
-#without interaction
-mediter_catch_gam = gamm(Sum ~ s(Month, bs = "cc", k=12) + s(Year, bs = "cr")  +s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_mediter_mtc)
-    
-  #mediter_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_mediter_mtc )
-  
-  #better without them:
-  # +(Fisherman)+ s(Start_hh, bs = "cc")  + s(Date_num, bs = "gp")
-  
   summary(mediter_catch_gam$gam)
   gam.check(mediter_catch_gam$gam)
   
@@ -1972,17 +1986,9 @@ mediter_catch_gam = gamm(Sum ~ s(Month, bs = "cc", k=12) + s(Year, bs = "cr")  +
   plot(  mediter_catch_gam$gam,se=TRUE,col = "blue")
     title("Mediteranean species catch by month And year",line = -2, outer=TRUE)
 
-    red_catch_gam <- bam(Sum ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.5, data = net_red_mtc)
-    
-    
-    
-   red_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
-   
-   #without interaction
-    red_catch_gam = gamm(Sum ~ s(Month, bs = "cc", k=12) + s(Year, bs = "cr")  +s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"),correlation=corARMA(form = ~Net_num|YearMonth,p=3), data = net_red_mtc)
-   
-    #red_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = net_red_mtc)
-    
+  
+#red sea    
+      red_catch_gam <- bam(Sum ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.5, data = net_red_mtc)
     
      summary(red_catch_gam$gam)
      par(mfrow = c(2,2)) 
@@ -1997,9 +2003,14 @@ mediter_catch_gam <- getViz(mediter_catch_gam)
 red_catch_gam = getViz(red_catch_gam)
 
  
-plot( sm(mediter_catch_gam, 1) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = 0),axis.title.y = element_text(vjust = 1))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Mediterranean species")
+p_med_catch = plot( sm(mediter_catch_gam, 1) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = 0),axis.title.y = element_text(vjust = 1))+labs(y ="Relative catch biomass")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Indigenous species")
+dev.copy(png,'p_med_catch.png')
+ dev.off()
 
-plot( sm(red_catch_gam, 1) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = 0),axis.title.y = element_text(vjust = 1))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Red Sea species")
+p_red_catch = plot( sm(red_catch_gam, 1) )+ l_ciPoly(level = 0.95,fill = "grey")+l_fitLine(colour = "red")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=1),axis.title.x = element_text(vjust = 0),axis.title.y = element_text(vjust = 1))+labs(y ="Relative catch biomass")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Alien species")
+dev.copy(png,'p_red_catch.png')
+ dev.off()
+
 
 ```
 
@@ -2051,16 +2062,16 @@ pdata <- transform(pdata,
 p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
     geom_line() +
     scale_color_viridis(option = "plasma", end = 0.95) +
-    labs(title = "Mediter species",
+    labs(title = "Indigenous species",
          x = NULL,
-         y = "Relative catch") +
+         y = "Catch biomass per net [kg]") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
-    theme_update(text = element_text(size=-10))
+    theme_update(text = element_text(size=20))
     p1
 
 grid.arrange(p1)
   
-
+ggsave("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/biomass/med_int.png", p1, dpi = 200)
 
 
 
@@ -2105,15 +2116,16 @@ pdata <- transform(pdata,
 p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
     geom_line() +
     scale_color_viridis(option = "plasma", end = 0.95) +
-    labs(title = "Red Sea species",
+    labs(title = "Alien species",
          x = NULL,
-         y = "Relative catch") +
+         y = "Catch biomass per net [kg]") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
-    theme_update(text = element_text(size=-10))
+    theme_update(text = element_text(size=20))
     
     p1
 
 grid.arrange(p1)
+ggsave("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/biomass/red_int.png", p1, dpi = 200)
 ```
 
 
@@ -2186,11 +2198,13 @@ abondance_species_subnames = abondance_species_subnames %>% dplyr::select(-X)
 
 
 #call to gam and AIC functions
-all_catchF_gam = GAM_models_mtc_sum(all_dataF,"Sum")
-aic_all_catchF = AIC_GAM_F(all_catchF_gam)
+#all_catchF_gam = GAM_models_mtc_sum(all_dataF,"Sum")
+#aic_all_catchF = AIC_GAM_F(all_catchF_gam)
 
 all_catchF_bam = bam_mtc_sum(all_dataF,"Sum")
 aic_all_catchF = AIC_GAM_F(all_catchF_bam)
+aic_all_catchF = dev_ex_fun(aic_all_catchF,all_catchF_bam)
+
 
 row.names(aic_all_catchF) = c("all","2","3","4","5","6","7","8")
 aic_catch = rbind(aic_catch,aic_all_catchF)
@@ -2199,20 +2213,7 @@ write.csv(aic_catch,"prosseced data/aic_catch_bam.CSV")
  par(mfrow = c(2,2))
   plot(  all_catchF_bam[[5]],se=TRUE,col = "blue")
   
- #call to auotcorrelation gamm and AIC functions
-  #- the function does'nt work, but work wiht handy running
-  
-all_catchF_gamm = GAMM_auto_mtc_sum(all_dataF,"Sum")
-aic_all_catchF = AIC_GAM_auto(all_catchF_gamm)
-
-row.names(aic_all_catchF) = c("all","2","3","4","5","6")
-
-aic_catch = rbind(aic_catch,aic_all_catchF)
-
-write.csv(aic_catch,"prosseced data/aic_catch_gamm.CSV")
-
-all_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + ti(Month,Year, bs = c("cc","cr"))+ s(Start_hh, bs = "cc")+s(Depth)+ (Fisherman),correlation=corARMA(form = ~Net_num|YearMonth,p=1), data = all_dataF)
-
+ 
  all_catch_gam <- bam(Sum ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)  + ti(Month,Year, bs = c("cc","cr"))+s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.1, data = all_dataF)
 
  #all_catch_gam = gam(Sum ~ s(Year, bs = "cr") +s(Month, bs = "cc", k=12)+s(Depth), data = all_dataF )
@@ -2225,7 +2226,9 @@ all_catch_gam = gamm(Sum ~ te(Month, bs = "cc", k=12) + te(Year, bs = "cr")  + t
 
     all_catch_gam = getViz(all_catch_gam)
 
-plot( sm(all_catch_gam, 1) )+ l_ciPoly(level = 0.95 ,fill = "grey")+l_fitLine(colour = "blue")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=0),axis.title.x = element_text(vjust = 0),axis.title.y = element_text(vjust = 1))+labs(y ="Relative catch")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Whole fish species")
+p_all_catch = plot( sm(all_catch_gam, 1) )+ l_ciPoly(level = 0.95 ,fill = "grey")+l_fitLine(colour = "purple")  + theme(text = element_text(size=20),axis.text.x = element_text(angle=90, hjust=0),axis.title.x = element_text(vjust = 0),axis.title.y = element_text(vjust = 1))+labs(y ="Relative catch biomass")+scale_x_continuous (breaks=seq(1991,2018, by = 2)) +ggtitle("Whole fish species")
+dev.copy(png,'p_all_catch.png')
+ dev.off()
 
 
 # interaction model and graph
@@ -2271,14 +2274,16 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
     scale_color_viridis(option = "plasma", end = 0.95) +
     labs(title = "Whole fish species",
          x = NULL,
-         y = "Relative catch") +
+         y = "Catch biomass per net [kg]") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
   theme_update(text = element_text(size=20))
     
     p1
+  
 
 grid.arrange(p1)
-
+ggsave("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/biomass/all_int.png", p1, dpi = 200)
+  
 
 
 ```
