@@ -1,0 +1,21 @@
+,Sceintific name,Model name,AIC score,Delta AIC,Deviance explained,Deviance explained [%]
+Ccr.1,Caranx crysos/Alepes djedaba,year,1030.4,0.0,0.2,17.1
+Ccr.2,,co,1034.1,3.7,0.3,25.1
+DLS.1,Lithognathus mormyrus/Diplodus saragus/Diplodus vulgaris/Diplodus cervinus/Diplodus puntazoo,co,2675.9,0.0,0.2,22.2
+DLS.2,,year,2682.7,6.7,0.2,18.7
+MUL.1,Mullus barbatus/Mullus surmuletus,co,2513.3,0.0,0.4,38.3
+MUL.2,,year,2543.0,29.7,0.2,23.6
+Nra.1,Nemipterus randalli,co,5403.0,0.0,0.5,47.0
+Nra.2,,year,5417.9,14.9,0.3,25.6
+Per.1,Pagellus erythrinus,year,707.2,0.0,0.3,26.7
+Per.2,,co,709.2,2.0,0.3,28.7
+Sd.1,Seriola dumerili,co,1545.8,0.0,0.4,43.3
+Sd.2,,year,1578.1,32.3,0.3,27.4
+Sja.1,scomber japonicus,year,338.0,0.0,0.1,6.1
+Sja.2,,co,342.4,4.4,0.2,16.1
+SPH.1,Sphyraena sphyraena/Sphyraena chrysotaenia/Sphyraena viridensis,co,1016.9,0.0,0.3,32.9
+SPH.2,,year,1019.3,2.5,0.3,26.3
+Sud.1,Saurida undosquamis/Synodus saurus,co,1204.6,0.0,0.3,26.6
+Sud.2,,year,1206.0,1.3,0.2,17.6
+Umo.1,Upeneus moluccensis,co,2474.9,0.0,0.5,54.0
+Umo.2,,year,2510.4,35.6,0.4,40.1

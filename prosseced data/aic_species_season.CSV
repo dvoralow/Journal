@@ -1,0 +1,45 @@
+,Sceintific name,Model name,AIC score,Delta AIC,Deviance explained,Deviance explained [%]
+Arg.1,Argyrosomus regius,co,6093.7,0.0,0.3,26.6
+Arg.2,,year,6101.3,7.7,0.2,19.8
+BAT.1,Batoidea (Superorder),co,4983.6,0.0,0.4,40.3
+BAT.2,,year,5239.8,256.2,0.2,23.3
+Bbo.1,Boops boops,co,11097.6,0.0,0.2,22.4
+Bbo.2,,year,11311.0,213.4,0.1,11.9
+Bca.1,Balistes carolinensis,co,9228.8,0.0,0.3,34.6
+Bca.2,,year,9336.1,107.3,0.2,19.6
+Ccr.1,Caranx crysos/Alepes djedaba,co,12254.2,0.0,0.2,19.7
+Ccr.2,,year,12329.2,75.0,0.2,16.0
+DLS.1,Lithognathus mormyrus/Diplodus saragus/Diplodus vulgaris/Diplodus cervinus/Diplodus puntazoo,co,13627.8,0.0,0.2,23.1
+DLS.2,,year,13637.4,9.7,0.2,22.1
+Eer.1,Engraulis encrasicolus / Stolephorus insularis ,co,6120.8,0.0,0.4,39.7
+Eer.2,,year,6160.3,39.5,0.1,11.7
+EPI.1,Epinephelus aeneus,co,11183.1,0.0,0.2,16.9
+EPI.2,,year,11207.1,24.0,0.1,13.7
+MUL.1,Mullus barbatus/Mullus surmuletus,co,19010.9,0.0,0.4,41.5
+MUL.2,,year,19428.3,417.4,0.3,32.5
+Nra.1,Nemipterus randalli,co,22858.8,0.0,0.4,39.2
+Nra.2,,year,23583.3,724.6,0.3,27.5
+Pca.1,Pagrus caeruleostictus,co,6740.2,0.0,0.4,38.2
+Pca.2,,year,6760.6,20.3,0.3,33.2
+Per.1,Pagellus erythrinus,co,6894.8,0.0,0.3,29.0
+Per.2,,year,6917.9,23.1,0.2,24.0
+SAR.1,Sardinella aurita/Sardinella maderensis/Etrumeus golanii/Spratelloides delicatulus/Sardinella gibbosa /Dussumieria elopsoides ,co,9506.0,0.0,0.2,24.9
+SAR.2,,year,9610.9,105.0,0.2,16.5
+Sco.1,scomberomorus commerson,co,13522.1,0.0,0.5,49.1
+Sco.2,,year,14342.0,819.9,0.2,22.1
+Sd.1,Seriola dumerili,co,8608.3,0.0,0.3,34.1
+Sd.2,,year,8751.3,143.0,0.1,14.2
+Sja.1,scomber japonicus,co,7245.7,0.0,0.3,32.4
+Sja.2,,year,7262.8,17.1,0.3,29.3
+SPH.1,Sphyraena sphyraena/Sphyraena chrysotaenia/Sphyraena viridensis,co,13465.2,0.0,0.3,28.2
+SPH.2,,year,13649.6,184.4,0.2,20.3
+Ssi.1,Sillago erythraea,co,6360.3,0.0,0.4,40.3
+Ssi.2,,year,6379.3,19.0,0.3,33.1
+Sud.1,Saurida undosquamis/Synodus saurus,co,26047.5,0.0,0.4,38.7
+Sud.2,,year,26094.2,46.7,0.4,37.8
+TRA.1,Trachurus trachurus/Trachurus mediterraneus/Decapterus Russelli,co,8030.8,0.0,0.4,43.7
+TRA.2,,year,8183.2,152.4,0.2,23.3
+Umo.1,Upeneus moluccensis,co,21884.0,0.0,0.2,22.4
+Umo.2,,year,22020.7,136.6,0.2,19.7
+Upo.1,Upeneus pori,co,6320.7,0.0,0.3,30.0
+Upo.2,,year,6337.6,16.9,0.2,24.9

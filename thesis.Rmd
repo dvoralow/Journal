@@ -1294,6 +1294,8 @@ AIC_GAM_auto=function(gam_fun_out){
   return(AIC_df)
 }
 
+
+
 #5
 dev_ex_fun = function(aic_dataframe,bam_list_in){
   #--cerate deviece explain dataframe
@@ -1317,6 +1319,55 @@ dev_ex_fun = function(aic_dataframe,bam_list_in){
   return(aic_dataframe)
 }
   
+
+
+#6
+bam_season_mtc_sum=function(net_data,y_par){
+  
+  #create Net_number and YearMonth columns for the autocorrelation
+  temp = net_data
+  temp = temp %>% dplyr::select(y_par,Year, Month, Depth,Fisherman,Start_hh)
+  temp = as.data.frame(temp)
+  
+  
+  co <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp)
+ print("co")
+  
+  co_1 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.1, data = temp)
+  
+  print("co_1") 
+   
+  co_3 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.3, data = temp)
+  
+  print("co_3")
+  
+  co_5 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.5, data = temp)
+  
+  print("co_5")
+ 
+  year <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cc"), data = temp)
+ print("year")
+  
+  year_1 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.1, data = temp)
+  print("year_1") 
+   
+  year_3 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.3, data = temp)
+  
+  print("year_3")
+  
+  year_5 <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) + (Fisherman)+ s(Start_hh, bs = "cc"), rho = 0.5, data = temp)
+  
+  print("year_5")
+  
+  
+  #create list of model outputs
+  bam_list=list(co, co_1, co_3, co_5,year, year_1, year_3, year_5 )
+  
+  names(bam_list)=c("co" ,"co_1", "co_3", "co_5","year" ,"year_1", "year_3", "year_5" )
+  
+    
+  return(bam_list)
+  }#end bam_auto_list function
 
 
 
@@ -1519,7 +1570,26 @@ scale_color_viridis(begin = 0, end = 0.8 ,direction = -1,discrete = TRUE, option
 #call to gam function and AIC on mtc gams
 
 ```{r}
+#compare between seasonality bam models to models without "month"
+#bam function, AIC and deviance explain functions:
+red_season_mtc_bam = bam_season_mtc_sum(net_red_mtc,"mtc")
+aic_red_season_mtc = AIC_GAM_F(red_season_mtc_bam)
+aic_red_season_mtc = dev_ex_fun(aic_red_season_mtc,red_season_mtc_bam)
 
+med_season_mtc_bam = bam_season_mtc_sum(net_mediter_mtc,"mtc")
+aic_med_season_mtc = AIC_GAM_F(med_season_mtc_bam)
+aic_med_season_mtc = dev_ex_fun(aic_med_season_mtc,med_season_mtc_bam)
+
+all_season_mtc_bam = bam_season_mtc_sum(net_all_data,"mtc")
+aic_all_season_mtc = AIC_GAM_F(all_season_mtc_bam)
+aic_all_season_mtc = dev_ex_fun(aic_all_season_mtc,all_season_mtc_bam)
+
+row.names(aic_red_season_mtc) = c("red","2","3","4","5","6","7","8")
+row.names(aic_all_season_mtc) = c("all","2","3","4","5","6","7","8")
+row.names(aic_med_season_mtc) = c("med","2","3","4","5","6","7","8")
+
+aic_season_mtc = rbind(aic_all_season_mtc, aic_med_season_mtc, aic_red_season_mtc)
+write.csv(aic_season_mtc,"prosseced data/aic_season_mtc_bam.CSV")
 
 #call the function on mtc red sea gams
 #red_mtc_gam = GAM_models_mtc_sum(net_red_mtc,"mtc")
@@ -1945,6 +2015,23 @@ net_mediter_mtc = net_mediter_mtc %>% filter(Year<2018)
  
  
   #------call the function on Sum  gams and bam
+#compare between seasonality bam models to models without "month"
+#bam function, AIC and deviance explain functions:
+red_season_sum_bam = bam_season_mtc_sum(net_red_mtc,"Sum")
+aic_red_season_sum = AIC_GAM_F(red_season_sum_bam)
+aic_red_season_sum = dev_ex_fun(aic_red_season_sum,red_season_sum_bam)
+
+med_season_sum_bam = bam_season_mtc_sum(net_mediter_mtc,"Sum")
+aic_med_season_sum = AIC_GAM_F(med_season_sum_bam)
+aic_med_season_sum = dev_ex_fun(aic_med_season_sum,med_season_sum_bam)
+
+row.names(aic_red_season_sum) = c("red","2","3","4","5","6","7","8")
+row.names(aic_med_season_sum) = c("med","2","3","4","5","6","7","8")
+
+aic_season_sum = rbind(aic_med_season_sum, aic_red_season_sum)
+
+ 
+ 
 #red_catch_gam = GAM_models_mtc_sum(net_red_mtc,"Sum")
 #aic_red_catch = AIC_GAM_F(red_catch_gam)
 
@@ -2132,7 +2219,7 @@ ggsave("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/biomass/r
 
 #---------------------fenology-----------------------------------------------------------------------------
 
-uploud the whole fish data
+#uploud the whole fish data
 ```{r}
 #uploud fishes only data. F in the end of names mean "full data", whith species whithout known origin. (difference from the code above)
 all_dataF = read.csv(file = "prosseced data/all_data_fishes_only.csv", stringsAsFactors = F)
@@ -2191,10 +2278,103 @@ abondance_species_subnames = abondance_species_subnames %>% dplyr::select(-X)
 ```
 
 
-#--gam model for the whole data cathc - regular gam graph, and phenology interaction graph
+#Fishing efort - interacton graphs of numbert of nets each month each year
+```{r}
+
+#create data with Year, Month and "count" - number of nets for each month each year  
+net_ex =all_dataF %>% dplyr::select(Year, Month) %>% group_by(Year,Month)%>% summarise(count=n())
+
+simp <-  bam(count ~ s(Year, bs = "cr")+  s(Month, bs = "cc", k=12), data = net_ex)
+ 
+  simp_int <- bam(count ~ te(Year, bs = "cr") + te(Month, bs = "cc", k=12)   + ti(Month,Year, bs = c("cc","cr")), data = net_ex)
+
+ net_gam_list=list(simp, simp_int )
+  
+  names(net_gam_list)=c("simp" ,"simp_int" )
+  
+  aic_net = AIC_GAM_F(net_gam_list)
+    
+  #--cerate deviece explain dataframe
+  #deviance of "simp" model
+  dev_ex =  1-simp$deviance/simp$null.deviance
+  #deviance of "simp_int" model
+  dev_ex_simp_int = 1-simp_int$deviance/simp_int$null.deviance
+  #join to 1 data, create simplnames, as dataframe, with another column with model names
+  dev_ex = rbind(dev_ex, dev_ex_simp_int)
+  colnames(dev_ex) = c("dev_ex")
+  dev_ex = as.data.frame(dev_ex)
+  dev_ex = dev_ex%>% mutate(model_name = c("simp","simp_int"))
+    
+  #join deviance explain with aic table
+ aic_net =  left_join(aic_net, dev_ex)
+ write.csv(aic_catch,"prosseced data/aic_fishing effort.CSV")
+  
+  
+temp_gam = simp_int
+par(mfrow = c(2,2))
+  plot(  temp_gam,se=TRUE,col = "blue")
+  
+
+ilink <- family(temp_gam)$linkinv   # this is the inverse of the link function, as an R function
+
+## Generate new data to predict at; to get smooth plots use ~ 100 evenly spaced values for each covariate
+pdata <- with(net_ex, expand.grid(Year = seq(min(Year), max(Year), length.out = 100),
+                                  Month = seq(1, 12, length.out = 100)))
+
+## Add on the fitted values and SEs *on the log [link] scale*
+pdata <- cbind(pdata, as.data.frame(predict(temp_gam, newdata = pdata, type = "link", se.fit = TRUE)))
+
+## Compute 95% confidence interval on link scale & back transform this & model fit to response scale
+pdata <- transform(pdata,
+                   Upper  = ilink(fit + (1.96 * se.fit)),
+                   Lower  = ilink(fit - (1.96 * se.fit)),
+                   Fitted = ilink(fit))
+
+
+
+p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year))) +
+    geom_line() +
+    scale_color_viridis(option = "plasma", end = 0.95) +
+    labs(title = "Fishing effort", 
+         x = NULL,
+         y = "Number of nets") +
+    scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
+  theme_update(text = element_text(size=20))
+    
+
+grid.arrange(p1)
+
+#ggsave("C:/Users/dvora/Google Drive/second degree/thesis/data/R/graphs/fishing effort.png", p1, dpi = 100, width = 8.5, height = 5.5)
+
+ggsave("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/fishing effort.png", p1, dpi = 200)
+  #, width = 8.5, height = 5.5
+  
+
+  
+  
+
+
+```
+
+
+
+#--gam model for the whole data catch - regular gam graph, and phenology interaction graph
 
 ```{r}
 #all_dataF = all_dataF %>% filter(Year<2018)
+
+
+#compare between seasonality bam models to models without "month"
+#bam function, AIC and deviance explain functions:
+all_season_sum_bam = bam_season_mtc_sum(all_dataF,"Sum")
+aic_all_season_sum = AIC_GAM_F(all_season_sum_bam)
+aic_all_season_sum = dev_ex_fun(aic_all_season_sum,all_season_sum_bam)
+
+row.names(aic_all_season_sum) = c("all","2","3","4","5","6","7","8")
+
+aic_season_sum = rbind(aic_season_sum, aic_all_season_sum)
+write.csv(aic_catch,"prosseced data/aic_season_catch_bam.CSV")
+ 
 
 
 #call to gam and AIC functions
@@ -2289,8 +2469,70 @@ ggsave("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/biomass/a
 ```
 
 
+#---Seasonality AIC: loop - GAM models, AIC test comparing between seasonality and non-seasonality models of spcies--
+For runing this chunk, need to run the first chunk of "phenology part" - uploud the data
 
-#---loop - GAM models, AIC test, and graphs for phenology and seasonality of spcies--
+```{r}
+aic_species_season_list = list()
+
+for (i in 1:length(abondance_species))
+{
+
+   temp = all_dataF %>% dplyr::select(abondance_species[i], Year, Month, Depth, Fisherman,Start_hh   ) %>% filter(Year >= catch_sum$Year_S[i] )  %>% filter(Year <= catch_sum$Year_E[i] )
+  
+   
+temp = as.data.frame(temp)
+   
+print(abondance_species[i])
+
+
+ co <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp  , family=tw)
+ print("co")
+ 
+ 
+  year <- bam(temp[,1] ~ s(Year, bs = "cr") + s(Depth)+ (Fisherman)+ s(Start_hh, bs = "cc"), data = temp  , family=tw)
+ 
+  print("year")
+  
+  
+  #create list of model outputs
+  species_gam_list=list(co, year )
+  
+  names(species_gam_list)=c("co" ,"year" )
+  
+  
+  aic_species = AIC_GAM_F(species_gam_list)
+    
+  #--cerate deviece explain dataframe
+  #deviance of "co" model
+  dev_ex =  1-co$deviance/co$null.deviance
+  #deviance of "year" model
+  dev_ex_year = 1-year$deviance/year$null.deviance
+  #join to 1 data, create colnames, as dataframe, with another column with model names
+  dev_ex = rbind(dev_ex, dev_ex_year)
+  colnames(dev_ex) = c("dev_ex")
+  dev_ex = as.data.frame(dev_ex)
+  dev_ex = dev_ex%>% mutate(model_name = c("co","year"))
+    
+  #join deviance explain with aic table
+ aic_species =  left_join(aic_species, dev_ex)
+ 
+ aic_species_season_list[[i]] =aic_species
+  
+}#end for
+
+names(aic_species_season_list) = abondance_species
+
+aic_species_season_data <- do.call(rbind, aic_species_season_list)
+aic_species_season_data = as.data.frame(aic_species_season_data)
+write.csv(aic_species_season_data, "prosseced data/aic_species_season.CSV")
+
+
+
+```
+
+
+#---Phenology graphs: loop - GAM models, AIC test, and graphs for phenology and seasonality of spcies--
 For runing this chunk, need to run the first chunk of "phenology part" - uploud the data
 
 ```{r}
@@ -2423,7 +2665,7 @@ simp <- gam(temp[,1] ~ s(Year, bs = "cr") + s(Depth) +  s(Month, bs = "cc", k=12
 
   print(co_int)
 
-#---loop - create seasonal graphs, without interaction, for interactions' species 
+#---Seasonal graphs: loop - create seasonal graphs, without interaction, for interactions' species 
 
 ```{r}
 
@@ -2492,7 +2734,7 @@ ggsave(paste("C:/Users/dvora/Google Drive/second degree/thesis/data/R/graphs/phe
 ```
 
 
-#create seasonal model with the bsize years for  Ccr (2001-2012)and Sud (2013,2018) general catch
+#Seasonal model with the bsize years for  Ccr (2001-2012)and Sud (2013,2018) general catch
 
 ```{r}
 
@@ -2572,7 +2814,7 @@ ggsave(paste("C:/Users/dvora/Google Drive/second degree/thesis/data/R/graphs/phe
 
 
 
-#--loop - create interaction graphs for the whole species
+#--Interaction graphs: loop - create interaction graphs for the whole species
 ```{r}
  
 
@@ -2653,6 +2895,8 @@ https://gist.github.com/gavinsimpson/6d05af9186b9f9419cca5a4507af3aa0
 #----------- b size ----------------- 
 
 order the two data (1976-2013 and 2013-2018) to 1
+
+!--NO need to run again-!
 ```{r}
 #uploud data
 size_data_1976 = read.csv("data/kg_data_code_1976_2013.CSV")
@@ -2671,6 +2915,8 @@ write.csv(size_all_data, "prosseced data/size all data.CSV")
 
 
 create raw data of b size - plots of the b size species throughout the years, and choos just the relavant species, have enough b size data.
+
+!--NO need to run again-!
 
 ```{r}
 
@@ -2749,7 +2995,7 @@ species_b_data = read.csv("prosseced data/species_b_names1.CSV")
 ```
 
 
-#----create "catch_ex"- exploration, table with number of nets with data for any species each year
+#----"catch_ex"- exploration, table with number of nets with data for any species each year
 ```{r}
  catch_exB =b_size_all %>% filter(Year.XXXX.>1990)%>% 
     spread(species, kg_b, fill = 0) %>%
@@ -2762,6 +3008,104 @@ write.csv(catch_exB, "prosseced data/num catch per year b size.CSV")
 
 
 ```
+
+
+#---loop - GAM models, AIC test comparing between seasonality and non-seasonality models of spcies
+
+```{r}
+aic_bsize_season_list = list()
+
+
+ for (i in 1:length(species_b))
+    
+{
+temp = b_size_all %>% dplyr::select(kg_b ,species, Year=Year.XXXX., Month=Month.XX., Fishermen, Start_Time_hh) %>% filter(species==species_b[i]) %>% filter(Year >= catch_b_years$Year_S[i] )  %>% filter(Year <= catch_b_years$Year_E[i] ) 
+  
+   
+temp = as.data.frame(temp)
+   
+print(species_b[i])
+
+
+ #model for "sud" and "sd" species, included just 6 years
+if((species_b[i]=="Sud") || (species_b[i]=="Sd"))
+{
+ 
+  co =  bam(temp[,1] ~ s(Year, bs = "cr",k=6)  +  s(Month, bs = "cc",k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
+  
+  year = bam(temp[,1] ~ s(Year, bs = "cr",k=6) + (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
+  
+}#end if
+
+
+
+#model for "sja" species, included just 7 years
+else if (species_b[i]=="Sja")
+  
+{
+   co =  bam(temp[,1] ~ s(Year, bs = "cr",k=7)  +  s(Month, bs = "cc",k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
+  
+  year = bam(temp[,1] ~ s(Year, bs = "cr",k=7) + (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
+  
+}#end else if
+
+
+
+else
+{
+ co <- bam(temp[,1] ~ s(Year, bs = "cr")  +  s(Month, bs = "cc", k=12)+ (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
+ 
+ print("co")
+  
+  
+ 
+  year <- bam(temp[,1] ~ s(Year, bs = "cr")+ (Fishermen)+ s(Start_Time_hh, bs = "cc"), data = temp, family = tw )
+    
+  print("year")
+  
+ 
+}#end else
+
+
+  #create list of model outputs
+  bsize_bam_list=list(co, year )
+  names(bsize_bam_list)=c("co" ,"year" ) 
+  
+  #call to AIC functions
+   aic_bsize = AIC_GAM_F(bsize_bam_list)
+  
+   
+    #--cerate deviece explain dataframe
+  #deviance of "co" model
+  dev_ex =  1-co$deviance/co$null.deviance
+  #deviance of "year" model
+  dev_ex_year = 1-year$deviance/year$null.deviance
+  #join to 1 data, create colnames, as dataframe, with another column with model names
+  dev_ex = rbind(dev_ex, dev_ex_year)
+  colnames(dev_ex) = c("dev_ex")
+  dev_ex = as.data.frame(dev_ex)
+  dev_ex = dev_ex%>% mutate(model_name = c("co","year"))
+    
+  #join deviance explain with aic table
+ aic_bsize =  left_join(aic_bsize, dev_ex)
+   
+   
+   #put in the list
+  aic_bsize_season_list[[i]] =aic_bsize
+ 
+  
+}#end for
+
+names(aic_bsize_season_list) = species_b
+
+aic_bsize_season_data <- do.call(rbind, aic_bsize_season_list)
+aic_bsize_season_data = as.data.frame(aic_bsize_season_data)
+write.csv(aic_bsize_season_data, "prosseced data/aic_bsize_season.CSV")
+ 
+
+
+```
+
 
 #Just seasonality graphs
 
@@ -3057,13 +3401,44 @@ hauls_num = rowSums(mme_hauls)
 
 
 
-
 #temporary data, model and graph
 temp = b_size_all %>% dplyr::select(kg_b ,species, Year=Year.XXXX., Month=Month.XX., Fishermen, Start_Time_hh) %>% filter(species==species_b) %>% filter(Year >= Mme_Year_E )  %>% filter(Year <= Mme_Year_S ) 
   
 temp = as.data.frame(temp)
    
 print(species_b)
+
+
+#compaer between seasonal to non-seasonal modle
+simp = bam(temp[,1] ~ s(Year, bs = "cr",k = 4)  +  s(Month, bs = "cc", k=12), data = temp, family = tw )
+
+year = bam(temp[,1] ~ s(Year, bs = "cr",k = 4)  , data = temp, family = tw )
+
+ #create list of model outputs
+  Mme_bam_list=list(simp, year )
+  names(Mme_bam_list)=c("simp" ,"year" ) 
+  
+  #call to AIC functions
+   aic_Mme = AIC_GAM_F(Mme_bam_list)
+  
+   
+    #--cerate deviece explain dataframe
+  #deviance of "simp" model
+  dev_ex =  1-simp$deviance/simp$null.deviance
+  #deviance of "year" model
+  dev_ex_year = 1-year$deviance/year$null.deviance
+  #join to 1 data, create colnames, as dataframe, with another column with model names
+  dev_ex = rbind(dev_ex, dev_ex_year)
+  colnames(dev_ex) = c("dev_ex")
+  dev_ex = as.data.frame(dev_ex)
+  dev_ex = dev_ex%>% mutate(model_name = c("simp","year"))
+    
+  #join deviance explain with aic table
+ aic_Mme =  left_join(aic_Mme, dev_ex)
+ write.csv(aic_Mme, "prosseced data/aic_Mme_season.CSV")  
+   
+  
+  
 
 
 #at s(Year, bs = "cr",k = 4), k = 4 because there is 4 years with data
