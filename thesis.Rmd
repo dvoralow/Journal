@@ -1833,7 +1833,7 @@ temp = as.data.frame(temp)
   par(mfrow = c(2,2)) 
   gam.check(temp_gam)
   
-  par(mfrow(2,2))
+  par(mfrow=c(2,2))
   plot(  temp_gam,se=TRUE,col = "blue")  
   #plot(Umo_gam, scheme = 2, n = 200, tran = family(Umo_gam)$linkinv)
   
@@ -1869,6 +1869,7 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
     p1
     
     ggsave("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/mtc/all_int.png", p1, dpi = 200)
+   
   
 
 
@@ -1925,7 +1926,7 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
          x = NULL,
          y = "MTC") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
-  theme_update(text = element_text(size=25))
+  theme_update(text = element_text(size=20))
     
     
     p1
@@ -1979,12 +1980,11 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
          x = NULL,
          y = "MTC") +
     scale_x_continuous(breaks = 1:12, minor_breaks = NULL, labels = month.abb)+
-  theme_update(text = element_text(size=25))
+  theme_update(text = element_text(size=20))
     
     p1
 
  ggsave("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/mtc/red_int.png", p1, dpi = 200)
-  
 
 
 
@@ -2278,7 +2278,7 @@ abondance_species_subnames = abondance_species_subnames %>% dplyr::select(-X)
 ```
 
 
-#Fishing efort - interacton graphs of numbert of nets each month each year
+#Fishing efort - interacton graphs of number of nets each month each year
 ```{r}
 
 #create data with Year, Month and "count" - number of nets for each month each year  
@@ -2373,7 +2373,7 @@ aic_all_season_sum = dev_ex_fun(aic_all_season_sum,all_season_sum_bam)
 row.names(aic_all_season_sum) = c("all","2","3","4","5","6","7","8")
 
 aic_season_sum = rbind(aic_season_sum, aic_all_season_sum)
-write.csv(aic_catch,"prosseced data/aic_season_catch_bam.CSV")
+write.csv(aic_season_sum,"prosseced data/aic_season_catch_bam.CSV")
  
 
 
@@ -2463,6 +2463,7 @@ p1 <- ggplot(pdata, aes(x = Month, y = Fitted, colour = Year,group = factor(Year
 
 grid.arrange(p1)
 ggsave("C:/Users/Admin/Google Drive/second degree/thesis/data/R/graphs/biomass/all_int.png", p1, dpi = 200)
+
   
 
 
